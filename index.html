@@ -142,9 +142,9 @@
       var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
       if (articles.length === 0) {
         articles = [
-          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada avec l\'ouverture d\'un bureau à Alberta.', image: 'assets/images/hero1.jpg', date: '2026-06-20', author: 'James Mukeshaba' },
-          { id: 2, title: 'Campagne : Ensemble contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une nouvelle campagne de sensibilisation est lancée à Bukavu pour lutter contre les violences basées sur le genre.', image: 'assets/images/hero2.jpg', date: '2026-06-18', author: 'Équipe Sensibilisation' },
-          { id: 3, title: 'Projet d\'assainissement : Bukavu ville propre', category: 'Projets', excerpt: 'Découvrez notre nouveau projet communautaire visant à améliorer les conditions sanitaires à Bukavu.', image: 'assets/images/hero3.jpg', date: '2026-06-15', author: 'James Mukeshaba' }
+          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada avec l\'ouverture d\'un bureau à Alberta.', image: '', date: '2026-06-20', author: 'James Mukeshaba' },
+          { id: 2, title: 'Campagne : Ensemble contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une nouvelle campagne de sensibilisation est lancée à Bukavu pour lutter contre les violences basées sur le genre.', image: '', date: '2026-06-18', author: 'Équipe Sensibilisation' },
+          { id: 3, title: 'Projet d\'assainissement : Bukavu ville propre', category: 'Projets', excerpt: 'Découvrez notre nouveau projet communautaire visant à améliorer les conditions sanitaires à Bukavu.', image: '', date: '2026-06-15', author: 'James Mukeshaba' }
         ];
         localStorage.setItem('admin_articles', JSON.stringify(articles));
       }

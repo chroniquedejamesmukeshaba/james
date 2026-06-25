@@ -134,11 +134,11 @@
       var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
       if (articles.length === 0) {
         articles = [
-          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada.', image: 'assets/images/hero1.jpg', date: '2026-06-20', author: 'James Mukeshaba' },
-          { id: 2, title: 'Campagne contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une campagne de sensibilisation à Bukavu.', image: 'assets/images/hero2.jpg', date: '2026-06-18', author: 'Équipe Sensibilisation' },
-          { id: 3, title: 'Projet Bukavu ville propre', category: 'Projets', excerpt: 'Mobilisation citoyenne pour un cadre de vie sain.', image: 'assets/images/hero3.jpg', date: '2026-06-15', author: 'James Mukeshaba' },
-          { id: 4, title: 'Rencontre avec les jeunes entrepreneurs de Goma', category: 'Actualité', excerpt: 'Échanges avec la nouvelle génération d\'entrepreneurs.', image: 'assets/images/hero4.jpg', date: '2026-06-12', author: 'Équipe Reportage' },
-          { id: 5, title: 'Les danses traditionnelles du Sud-Kivu', category: 'Héritage', excerpt: 'Plongée au coeur du patrimoine culturel.', image: 'assets/images/hero5.jpg', date: '2026-06-08', author: 'James Mukeshaba' }
+          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada.', image: '', date: '2026-06-20', author: 'James Mukeshaba' },
+          { id: 2, title: 'Campagne contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une campagne de sensibilisation à Bukavu.', image: '', date: '2026-06-18', author: 'Équipe Sensibilisation' },
+          { id: 3, title: 'Projet Bukavu ville propre', category: 'Projets', excerpt: 'Mobilisation citoyenne pour un cadre de vie sain.', image: '', date: '2026-06-15', author: 'James Mukeshaba' },
+          { id: 4, title: 'Rencontre avec les jeunes entrepreneurs de Goma', category: 'Actualité', excerpt: 'Échanges avec la nouvelle génération d\'entrepreneurs.', image: '', date: '2026-06-12', author: 'Équipe Reportage' },
+          { id: 5, title: 'Les danses traditionnelles du Sud-Kivu', category: 'Héritage', excerpt: 'Plongée au coeur du patrimoine culturel.', image: '', date: '2026-06-08', author: 'James Mukeshaba' }
         ];
         localStorage.setItem('admin_articles', JSON.stringify(articles));
       }
