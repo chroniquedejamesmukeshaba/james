@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article - Chronique de James Mukeshaba</title>
+  <meta name="theme-color" content="#1a3a5c">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <span>📞 RDC : +243 971460415 | Canada : +1 (825) 449-0187</span>
+      <div class="social-links">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="X (Twitter)">𝕏</a>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+        <div class="logo-text">
+          <h1>Chronique de James Mukeshaba</h1>
+          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+        </div>
+      </a>
+      <button class="menu-toggle" aria-label="Menu">☰</button>
+      <nav>
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="actualites.html">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
+          <li><a href="projets.html">Projets</a></li>
+          <li><a href="sensibilisation.html">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html">Objets perdus</a></li>
+          <li><a href="heritage.html">Héritage</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="donation.html">Donation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="breadcrumb">
+    <div class="container" id="breadcrumb-article">
+      <a href="index.html">Accueil</a> / <a href="actualites.html">Actualités</a> / <span id="article-breadcrumb-title">Article</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="article-detail" id="article-detail">
+        <div class="article-meta" id="article-meta"></div>
+        <div class="article-image" id="article-image">📰</div>
+        <h1 id="article-title" style="font-size:1.8rem;color:var(--primary);margin-bottom:20px;"></h1>
+        <div class="article-content" id="article-content"></div>
+      </div>
+
+      <!-- BOUTONS DE PARTAGE (correction erreur #4 : vrais boutons de partage) -->
+      <div style="text-align:center;margin:-20px 0 30px;">
+        <p style="margin-bottom:10px;color:var(--text-light);font-size:0.9rem;">Partager cet article :</p>
+        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href),'_blank');return false;">📘 Partager sur Facebook</a>
+        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(document.title)+'&url='+encodeURIComponent(window.location.href),'_blank');return false;">𝕏 Partager sur X</a>
+      </div>
+
+      <!-- COMMENTAIRES -->
+      <div class="comments-section">
+        <h3>Commentaires</h3>
+        <div id="comments-list" data-article-id=""></div>
+        <form id="comment-form" style="margin-top:20px;padding-top:20px;border-top:1px solid #eee;">
+          <h4 style="margin-bottom:15px;">Laisser un commentaire</h4>
+          <div class="form-group">
+            <input type="text" id="comment-name" class="form-input" placeholder="Votre nom" required>
+          </div>
+          <div class="form-group">
+            <textarea id="comment-text" class="form-input" placeholder="Votre commentaire..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="X (Twitter)">𝕏</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="actualites.html">Actualités</a></li>
+            <li><a href="projets.html">Projets</a></li>
+            <li><a href="objets-perdus.html">Objets perdus</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul>
+            <li>Bukavu, Sud-Kivu, RDC</li>
+            <li>+243 971460415</li>
+            <li>+1 (825) 449-0187 (Canada)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Administration</h4>
+          <ul>
+            <li><a href="admin/login.html">Espace administrateur</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var articleId = params.get('id') || '1';
+      var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      var article = articles.find(function(a) { return a.id == articleId; });
+
+      if (!article) {
+        var defaults = [
+          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Test', content: '<p>Article par défaut.</p>', date: '2026-06-20', author: 'James Mukeshaba' }
+        ];
+        article = defaults.find(function(a) { return a.id == articleId; }) || defaults[0];
+      }
+
+      document.getElementById('article-title').textContent = article.title;
+      document.getElementById('article-breadcrumb-title').textContent = article.title;
+      document.getElementById('article-meta').innerHTML =
+        '<span style="color:var(--secondary);font-weight:600;">' + article.category + '</span>' +
+        ' &bull; <span>' + (article.date || '') + '</span>' +
+        ' &bull; <span>Par ' + (article.author || '') + '</span>';
+      document.getElementById('article-content').innerHTML = article.content || '<p>Contenu non disponible.</p>';
+      var imgEl = document.getElementById('article-image');
+      if (article.image && article.image.startsWith('data:')) {
+        imgEl.outerHTML = '<img class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
+      }
+      document.getElementById('comments-list').dataset.articleId = articleId;
+      document.getElementById('comment-form').dataset.articleId = articleId;
+
+      loadComments();
+    });
+  </script>
+</body>
+</html>

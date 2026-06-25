@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modération des commentaires - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="comments.html" class="active">💬 Modération des commentaires</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <h2 style="color:var(--primary);margin-bottom:25px;">Modération des commentaires</h2>
+
+      <div style="background:#fff8e1;border-left:4px solid var(--accent);padding:15px;border-radius:4px;margin-bottom:20px;font-size:0.9rem;">
+        Les commentaires en attente d'approbation sont surlignés en jaune. Approuvez ou rejetez les commentaires avant leur publication.
+      </div>
+
+      <div class="admin-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Auteur</th>
+              <th>Commentaire</th>
+              <th>Date</th>
+              <th>Article</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="comments-table-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

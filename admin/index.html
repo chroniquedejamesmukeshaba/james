@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html" class="active">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <h2 style="color:var(--primary);margin-bottom:25px;">Tableau de bord</h2>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number" id="stat-articles">0</div>
+          <div class="label">Articles publiés</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="stat-comments">0</div>
+          <div class="label">Commentaires</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="stat-subs">0</div>
+          <div class="label">Abonnés newsletter</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="stat-visits">0</div>
+          <div class="label">Visites enregistrées</div>
+        </div>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Fréquence des visites (7 derniers jours)</h3>
+      <div id="visits-chart" style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);"></div>
+
+      <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:15px;">Actions rapides</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="articles.html" class="btn btn-primary">➕ Nouvel article</a>
+          <a href="comments.html" class="btn btn-outline">💬 Modérer les commentaires</a>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

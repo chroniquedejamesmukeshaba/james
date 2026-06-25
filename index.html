@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronique de James Mukeshaba - Média d'information RDC & Canada</title>
+  <meta name="description" content="La Chronique de James Mukeshaba : Média d'information en ligne, sensibilisation et projets communautaires. Basé à Bukavu avec des bureaux en RDC et au Canada.">
+  <meta name="theme-color" content="#1a3a5c">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <span>📞 RDC : +243 971460415 | Canada : +1 (825) 449-0187</span>
+      <div class="social-links">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="X (Twitter)">𝕏</a>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+        <div class="logo-text">
+          <h1>Chronique de James Mukeshaba</h1>
+          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+        </div>
+      </a>
+      <button class="menu-toggle" aria-label="Menu">☰</button>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">Accueil</a></li>
+          <li><a href="actualites.html">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
+          <li><a href="projets.html">Projets</a></li>
+          <li><a href="sensibilisation.html">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html">Objets perdus</a></li>
+          <li><a href="heritage.html">Héritage</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="donation.html">Donation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero-slider" id="hero-slider">
+    <div id="slides-container"></div>
+    <button class="slider-btn prev">❮</button>
+    <button class="slider-btn next">❯</button>
+    <div class="slider-nav" id="slider-nav"></div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="mission-banner">
+        <h2>Notre Mission</h2>
+        <p>Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Dernières Actualités</h2>
+      <div class="cards-grid" id="home-articles-grid"></div>
+      <div style="text-align:center;margin-top:30px;">
+        <a href="actualites.html" class="btn btn-outline">Voir toutes les actualités</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter-section">
+    <div class="container newsletter-inner">
+      <div class="newsletter-text">
+        <h3>Restez informé</h3>
+        <p>Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
+      </div>
+      <form class="newsletter-form" id="newsletter-form">
+        <input type="email" placeholder="Votre adresse email" required>
+        <button type="submit" class="btn btn-accent">S'abonner</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires. Basé à Bukavu avec une présence internationale.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="X (Twitter)">𝕏</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="actualites.html">Actualités</a></li>
+            <li><a href="projets.html">Projets</a></li>
+            <li><a href="sensibilisation.html">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html">Objets perdus</a></li>
+            <li><a href="heritage.html">Héritage</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul>
+            <li>Bukavu, Sud-Kivu, RDC</li>
+            <li>+243 971460415</li>
+            <li>+1 (825) 449-0187 (Canada)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Administration</h4>
+          <ul>
+            <li><a href="admin/login.html">Espace administrateur</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var grid = document.getElementById('home-articles-grid');
+      var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      if (articles.length === 0) {
+        articles = [
+          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada avec l\'ouverture d\'un bureau à Alberta.', image: 'assets/images/hero1.jpg', date: '2026-06-20', author: 'James Mukeshaba' },
+          { id: 2, title: 'Campagne : Ensemble contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une nouvelle campagne de sensibilisation est lancée à Bukavu pour lutter contre les violences basées sur le genre.', image: 'assets/images/hero2.jpg', date: '2026-06-18', author: 'Équipe Sensibilisation' },
+          { id: 3, title: 'Projet d\'assainissement : Bukavu ville propre', category: 'Projets', excerpt: 'Découvrez notre nouveau projet communautaire visant à améliorer les conditions sanitaires à Bukavu.', image: 'assets/images/hero3.jpg', date: '2026-06-15', author: 'James Mukeshaba' }
+        ];
+        localStorage.setItem('admin_articles', JSON.stringify(articles));
+      }
+      var sliderContainer = document.getElementById('slides-container');
+      var sliderNav = document.getElementById('slider-nav');
+      var slidesHtml = '';
+      var dotsHtml = '';
+      var sliderArticles = articles.filter(function(a) { return a.image && a.image.startsWith('data:'); });
+      if (sliderArticles.length === 0) sliderArticles = articles.slice(0, 3);
+      sliderArticles.slice(0, 5).forEach(function(a, i) {
+        var bg = a.image && a.image.startsWith('data:') ? a.image : '';
+        slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
+          '<div class="slide-overlay">' +
+          '<h2>' + a.title + '</h2>' +
+          '<p>' + (a.excerpt || '') + '</p>' +
+          '<a href="article.html?id=' + a.id + '" class="btn btn-accent">Lire l\'article</a>' +
+          '</div></div>';
+        dotsHtml += '<button class="slider-dot' + (i === 0 ? ' active' : '') + '"></button>';
+      });
+      sliderContainer.innerHTML = slidesHtml;
+      sliderNav.innerHTML = dotsHtml;
+      if (typeof initSlider === 'function') initSlider();
+
+      grid.innerHTML = articles.slice(0, 6).map(function(a) {
+        var imgHtml = a.image && a.image.startsWith('data:')
+          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
+          : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
+        return '<div class="card">' + imgHtml +
+          '<div class="card-body">' +
+          '<div class="card-category">' + a.category + '</div>' +
+          '<h3 class="card-title"><a href="article.html?id=' + a.id + '">' + a.title + '</a></h3>' +
+          '<p class="card-text">' + a.excerpt + '</p>' +
+          '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
+          '</div></div>';
+      }).join('');
+    });
+  </script>
+</body>
+</html>

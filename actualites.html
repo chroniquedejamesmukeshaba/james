@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actualités - Chronique de James Mukeshaba</title>
+  <meta name="description" content="Retrouvez toutes les actualités de la Chronique de James Mukeshaba : informations, reportages et enquêtes depuis Bukavu, Goma, Kinshasa et le Canada.">
+  <meta name="theme-color" content="#1a3a5c">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <span>📞 RDC : +243 971460415 | Canada : +1 (825) 449-0187</span>
+      <div class="social-links">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="X (Twitter)">𝕏</a>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+        <div class="logo-text">
+          <h1>Chronique de James Mukeshaba</h1>
+          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+        </div>
+      </a>
+      <button class="menu-toggle" aria-label="Menu">☰</button>
+      <nav>
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="actualites.html" class="active">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
+          <li><a href="projets.html">Projets</a></li>
+          <li><a href="sensibilisation.html">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html">Objets perdus</a></li>
+          <li><a href="heritage.html">Héritage</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="donation.html">Donation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="breadcrumb">
+    <div class="container">
+      <a href="index.html">Accueil</a> / <span>Actualités</span>
+    </div>
+  </section>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>Actualités</h1>
+      <p>Retrouvez toute l'actualité de la Chronique de James Mukeshaba</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cards-grid" id="all-articles-grid"></div>
+    </div>
+  </section>
+
+  <section class="newsletter-section">
+    <div class="container newsletter-inner">
+      <div class="newsletter-text">
+        <h3>Restez informé</h3>
+        <p>Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
+      </div>
+      <form class="newsletter-form" id="newsletter-form">
+        <input type="email" placeholder="Votre adresse email" required>
+        <button type="submit" class="btn btn-accent">S'abonner</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="X (Twitter)">𝕏</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="actualites.html">Actualités</a></li>
+            <li><a href="projets.html">Projets</a></li>
+            <li><a href="sensibilisation.html">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html">Objets perdus</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul>
+            <li>Bukavu, Sud-Kivu, RDC</li>
+            <li>+243 971460415</li>
+            <li>+1 (825) 449-0187 (Canada)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Administration</h4>
+          <ul>
+            <li><a href="admin/login.html">Espace administrateur</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var grid = document.getElementById('all-articles-grid');
+      var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      if (articles.length === 0) {
+        articles = [
+          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada.', image: 'assets/images/hero1.jpg', date: '2026-06-20', author: 'James Mukeshaba' },
+          { id: 2, title: 'Campagne contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une campagne de sensibilisation à Bukavu.', image: 'assets/images/hero2.jpg', date: '2026-06-18', author: 'Équipe Sensibilisation' },
+          { id: 3, title: 'Projet Bukavu ville propre', category: 'Projets', excerpt: 'Mobilisation citoyenne pour un cadre de vie sain.', image: 'assets/images/hero3.jpg', date: '2026-06-15', author: 'James Mukeshaba' },
+          { id: 4, title: 'Rencontre avec les jeunes entrepreneurs de Goma', category: 'Actualité', excerpt: 'Échanges avec la nouvelle génération d\'entrepreneurs.', image: 'assets/images/hero4.jpg', date: '2026-06-12', author: 'Équipe Reportage' },
+          { id: 5, title: 'Les danses traditionnelles du Sud-Kivu', category: 'Héritage', excerpt: 'Plongée au coeur du patrimoine culturel.', image: 'assets/images/hero5.jpg', date: '2026-06-08', author: 'James Mukeshaba' }
+        ];
+        localStorage.setItem('admin_articles', JSON.stringify(articles));
+      }
+      grid.innerHTML = articles.map(function(a) {
+        var imgHtml = a.image && a.image.startsWith('data:')
+          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
+          : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
+        return '<div class="card">' + imgHtml +
+          '<div class="card-body">' +
+          '<div class="card-category">' + a.category + '</div>' +
+          '<h3 class="card-title"><a href="article.html?id=' + a.id + '">' + a.title + '</a></h3>' +
+          '<p class="card-text">' + a.excerpt + '</p>' +
+          '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
+          '</div></div>';
+      }).join('');
+    });
+  </script>
+</body>
+</html>

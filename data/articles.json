@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "title": "Lancement officiel de la Chronique de James Mukeshaba au Canada",
+    "category": "International",
+    "excerpt": "Le média annonce son expansion au Canada avec l'ouverture d'un bureau à Alberta, marquant une nouvelle ère pour la diaspora congolaise.",
+    "content": "<p>La Chronique de James Mukeshaba franchit une étape historique avec l'ouverture officielle de son bureau à Alberta, Canada. Cette expansion permettra de couvrir l'actualité de la diaspora congolaise en Amérique du Nord tout en maintenant un lien fort avec les réalités locales de la RDC.</p><p>Cette initiative répond à une demande croissante de la communauté congolaise au Canada qui souhaite rester connectée aux événements et aux projets qui transforment le Sud-Kivu et l'ensemble de la République Démocratique du Congo.</p>",
+    "image": "assets/images/hero1.jpg",
+    "date": "2026-06-20",
+    "author": "James Mukeshaba",
+    "featured": true
+  },
+  {
+    "id": 2,
+    "title": "Campagne de sensibilisation : Ensemble contre les violences faites aux femmes",
+    "category": "Sensibilisation",
+    "excerpt": "Une nouvelle campagne de sensibilisation est lancée à Bukavu pour lutter contre les violences basées sur le genre et soutenir les victimes.",
+    "content": "<p>La Chronique de James Mukeshaba s'engage dans la lutte contre les violences faites aux femmes à travers une campagne de sensibilisation de grande envergure. Cette initiative vise à briser le silence et à offrir des ressources aux victimes.</p><p>En partenariat avec des organisations locales, nous organisons des ateliers, des conférences et des sessions d'écoute pour les femmes et les filles de Bukavu et ses environs.</p>",
+    "image": "assets/images/hero2.jpg",
+    "date": "2026-06-18",
+    "author": "Équipe Sensibilisation",
+    "featured": true
+  },
+  {
+    "id": 3,
+    "title": "Projet d'assainissement : Bukavu ville propre",
+    "category": "Projets",
+    "excerpt": "Découvrez notre nouveau projet communautaire visant à améliorer les conditions sanitaires dans les quartiers périphériques de Bukavu.",
+    "content": "<p>Le projet 'Bukavu Ville Propre' est une initiative communautaire portée par la Chronique de James Mukeshaba. Ce programme mobilise les jeunes des quartiers périphériques pour des actions de nettoyage, de sensibilisation à l'hygiène et de gestion des déchets.</p><p>L'objectif est de créer un mouvement citoyen durable pour améliorer le cadre de vie et prévenir les maladies liées à l'insalubrité.</p>",
+    "image": "assets/images/hero3.jpg",
+    "date": "2026-06-15",
+    "author": "James Mukeshaba",
+    "featured": true
+  },
+  {
+    "id": 4,
+    "title": "Rencontre avec les jeunes entrepreneurs de Goma",
+    "category": "Actualité",
+    "excerpt": "La Chronique était présente à Goma pour échanger avec la nouvelle génération d'entrepreneurs qui transforment le Nord-Kivu.",
+    "content": "<p>Une délégation de la Chronique de James Mukeshaba s'est rendue à Goma pour rencontrer les jeunes entrepreneurs qui dynamisent l'économie locale. Tech, agriculture, artisanat nombreux sont les secteurs innovants portés par la jeunesse.</p><p>Ces échanges ont permis de mettre en lumière les défis et les opportunités d'une jeunesse courageuse qui construit l'avenir du Nord-Kivu.</p>",
+    "image": "assets/images/hero4.jpg",
+    "date": "2026-06-12",
+    "author": "Équipe Reportage",
+    "featured": false
+  },
+  {
+    "id": 5,
+    "title": "Héritage culturel : Les danses traditionnelles du Sud-Kivu",
+    "category": "Héritage",
+    "excerpt": "Plongée au cœur du patrimoine culturel du Sud-Kivu à travers les danses et rituels transmis de génération en génération.",
+    "content": "<p>Le Sud-Kivu est riche d'un patrimoine culturel exceptionnel. Dans cet article, nous explorons les danses traditionnelles qui rythment la vie des communautés de la région, des cérémonies de mariage aux rituels de passage.</p><p>Ces danses, véritables trésors immatériels, sont menacées par la modernisation. La Chronique s'engage à documenter et valoriser cet héritage unique.</p>",
+    "image": "assets/images/hero5.jpg",
+    "date": "2026-06-08",
+    "author": "James Mukeshaba",
+    "featured": false
+  }
+]

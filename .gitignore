@@ -1,0 +1,15 @@
+# OS files
+Thumbs.db
+*.docx
+~$*
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Temp
+*.log
+.env

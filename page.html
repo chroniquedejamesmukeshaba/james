@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page - Chronique de James Mukeshaba</title>
+  <meta name="description" content="Chronique de James Mukeshaba">
+  <meta name="theme-color" content="#1a3a5c">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <span>📞 RDC : +243 971460415 | Canada : +1 (825) 449-0187</span>
+      <div class="social-links">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="X (Twitter)">𝕏</a>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+        <div class="logo-text">
+          <h1>Chronique de James Mukeshaba</h1>
+          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+        </div>
+      </a>
+      <button class="menu-toggle" aria-label="Menu">☰</button>
+      <nav>
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="actualites.html">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
+          <li><a href="projets.html">Projets</a></li>
+          <li><a href="sensibilisation.html">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html">Objets perdus</a></li>
+          <li><a href="heritage.html">Héritage</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="donation.html">Donation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="breadcrumb">
+    <div class="container">
+      <a href="index.html">Accueil</a> / <span id="page-breadcrumb">Page</span>
+    </div>
+  </section>
+
+  <section class="page-header" id="page-header">
+    <div class="container">
+      <h1 id="page-title-display">Page</h1>
+      <p id="page-meta-display"></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="article-detail" id="page-content-display">
+        <p>Contenu non disponible.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="X (Twitter)">𝕏</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="actualites.html">Actualités</a></li>
+            <li><a href="projets.html">Projets</a></li>
+            <li><a href="objets-perdus.html">Objets perdus</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul>
+            <li>Bukavu, Sud-Kivu, RDC</li>
+            <li>+243 971460415</li>
+            <li>+1 (825) 449-0187 (Canada)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Administration</h4>
+          <ul>
+            <li><a href="admin/login.html">Espace administrateur</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var params = new URLSearchParams(window.location.search);
+      var slug = params.get('slug');
+      if (!slug) { document.getElementById('page-content-display').innerHTML = '<p style="color:red;">Aucun slug spécifié.</p>'; return; }
+      var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+      var page = pages.find(function (p) { return p.slug === slug; });
+      if (!page) { document.getElementById('page-content-display').innerHTML = '<p style="color:red;">Page introuvable.</p>'; return; }
+      document.getElementById('page-title-display').textContent = page.title;
+      document.getElementById('page-breadcrumb').textContent = page.title;
+      if (page.meta) document.getElementById('page-meta-display').textContent = page.meta;
+      document.getElementById('page-content-display').innerHTML = page.content;
+      if (page.image && page.image.startsWith('data:')) {
+        document.getElementById('page-header').style.background = 'linear-gradient(135deg, rgba(26,58,92,0.85), rgba(42,90,140,0.85)), url(' + page.image + ') center/cover';
+      }
+      document.title = page.title + ' - Chronique de James Mukeshaba';
+    });
+  </script>
+</body>
+</html>

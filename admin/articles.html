@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des articles - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html" class="active">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px;">
+        <h2 style="color:var(--primary);">Gestion des articles</h2>
+        <button class="btn btn-primary" id="new-article-btn">➕ Nouvel article</button>
+      </div>
+
+      <!-- Formulaire ajout/modification article -->
+      <div id="article-form-container" style="display:none;background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
+        <h3 id="form-title" style="color:var(--primary);margin-bottom:20px;">Nouvel article</h3>
+        <form id="article-form">
+          <input type="hidden" id="article-id">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group">
+              <label>Titre de l'article</label>
+              <input type="text" id="art-title" class="form-input" placeholder="Titre" required>
+            </div>
+            <div class="form-group">
+              <label>Catégorie</label>
+              <input type="text" id="art-category" class="form-input" placeholder="Ex: International, Projets, Sensibilisation" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Photo de couverture</label>
+            <div class="img-upload-wrapper">
+              <div class="img-upload-area" id="img-upload-area" onclick="document.getElementById('art-image-input').click()">
+                <input type="file" id="art-image-input" accept="image/*">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Cliquez pour parcourir et choisir une photo</div>
+                <div class="upload-hint">JPG, PNG, WEBP acceptés</div>
+                <img class="img-preview" id="img-preview" alt="Aperçu">
+              </div>
+              <button type="button" class="img-remove-btn" id="img-remove-btn" onclick="removeImage()">✕ Supprimer l'image</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Extrait (résumé)</label>
+            <textarea id="art-excerpt" class="form-input" placeholder="Court résumé de l'article..." rows="2" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Contenu (HTML)</label>
+            <textarea id="art-content" class="form-input" placeholder="Contenu complet de l'article (HTML autorisé)..." rows="8" required></textarea>
+          </div>
+          <div class="form-group" style="max-width:300px;">
+            <label>Auteur</label>
+            <input type="text" id="art-author" class="form-input" placeholder="Nom de l'auteur" required>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">💾 Publier l'article</button>
+            <button type="button" class="btn btn-outline" id="cancel-article">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Liste des articles -->
+      <div class="admin-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Catégorie</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="articles-table-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
