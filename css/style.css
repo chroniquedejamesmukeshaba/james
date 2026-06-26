@@ -200,21 +200,37 @@ nav ul li a:hover, nav ul li a.active {
 .mission-banner {
   background: var(--primary);
   color: var(--white);
-  text-align: center;
-  padding: 50px 20px;
+  padding: 0;
   border-radius: var(--radius);
   margin: 40px 0;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 250px;
 }
-.mission-banner h2 { font-size: 1.8rem; margin-bottom: 15px; }
-.mission-banner p { max-width: 700px; margin: 0 auto; opacity: 0.9; font-size: 1.1rem; }
-.mission-sign { margin-top: 15px !important; font-size: 0.95rem !important; opacity: 0.8 !important; }
+.mission-photo-wrap {
+  flex: 0 0 auto;
+  width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .mission-photo {
-  width: 120px; height: 120px;
-  border-radius: 50%;
+  width: 100%;
+  height: 90%;
   object-fit: cover;
-  border: 3px solid var(--accent);
-  margin-bottom: 15px;
+  display: block;
 }
+.mission-text {
+  flex: 1;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.mission-text h2 { font-size: 1.8rem; margin-bottom: 15px; }
+.mission-text p { max-width: 700px; opacity: 0.9; font-size: 1.1rem; }
+.mission-sign { margin-top: 15px !important; font-size: 0.95rem !important; opacity: 0.8 !important; }
 
 /* ===== CARDS GRID ===== */
 .cards-grid {
