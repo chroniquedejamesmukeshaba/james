@@ -17,13 +17,19 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  background: #d0d0d0;
+}
 
 body {
   font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
   background: var(--bg);
   line-height: 1.7;
+  width: 80%;
+  margin: 0 auto;
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -201,6 +207,14 @@ nav ul li a:hover, nav ul li a.active {
 }
 .mission-banner h2 { font-size: 1.8rem; margin-bottom: 15px; }
 .mission-banner p { max-width: 700px; margin: 0 auto; opacity: 0.9; font-size: 1.1rem; }
+.mission-sign { margin-top: 15px !important; font-size: 0.95rem !important; opacity: 0.8 !important; }
+.mission-photo {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent);
+  margin-bottom: 15px;
+}
 
 /* ===== CARDS GRID ===== */
 .cards-grid {

@@ -15,8 +15,7 @@
 <body>
   <div class="top-bar">
     <div class="container">
-      <span>📞 RDC : +243 971460415 | Canada : +1 (825) 449-0187</span>
-      <div class="social-links">
+      <div class="social-links" style="margin:0 auto;">
         <a href="#" aria-label="Facebook">f</a>
         <a href="#" aria-label="X (Twitter)">𝕏</a>
       </div>
@@ -59,8 +58,10 @@
   <section class="section">
     <div class="container">
       <div class="mission-banner">
+        <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo">
         <h2>Notre Mission</h2>
         <p>Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
+        <p class="mission-sign">— <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
       </div>
     </div>
   </section>
@@ -172,7 +173,6 @@
         slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
           '<div class="slide-overlay">' +
           '<h2>' + a.title + '</h2>' +
-          '<p>' + (a.excerpt || '') + '</p>' +
           '<a href="article.html?id=' + a.id + '" class="btn btn-accent">Lire l\'article</a>' +
           '</div></div>';
         dotsHtml += '<button class="slider-dot' + (i === 0 ? ' active' : '') + '"></button>';
