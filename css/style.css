@@ -685,6 +685,12 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
   .mission-photo-wrap { width: 100%; max-height: 250px; }
   .mission-photo { height: 250px; width: 100%; }
   .mission-text { padding: 30px 20px; }
+  .admin-header .container { flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .admin-layout { flex-direction: column; }
+  .admin-sidebar { width: 100%; display: flex; flex-wrap: wrap; gap: 0; padding: 10px; overflow-x: auto; }
+  .admin-sidebar a { flex: 0 0 auto; padding: 10px 16px; border-left: none; border-bottom: 3px solid transparent; font-size: 0.85rem; white-space: nowrap; }
+  .admin-sidebar a:hover, .admin-sidebar a.active { border-left: none; border-bottom-color: var(--secondary); }
+  .admin-main { padding: 20px 15px; }
 }
 
 @media (max-width: 480px) {
@@ -693,6 +699,6 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
   .hero-slider { height: 220px; }
   .page-header h1 { font-size: 1.5rem; }
   .footer-grid { grid-template-columns: 1fr; }
-  .admin-layout { flex-direction: column; }
-  .admin-sidebar { width: 100%; }
+  .admin-header .container { flex-direction: column; text-align: center; }
+  .admin-sidebar { justify-content: center; }
 }

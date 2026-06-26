@@ -44,6 +44,12 @@ function apiDel(path) {
       window.location.href = 'login.html';
       return;
     }
+    var adminName = localStorage.getItem('admin_name') || '';
+    var nameDisplay = document.getElementById('admin-name-display');
+    if (nameDisplay && adminName) {
+      nameDisplay.textContent = adminName;
+      nameDisplay.style.display = 'inline';
+    }
     document.getElementById('logout-btn')?.addEventListener('click', function (e) {
       e.preventDefault();
       localStorage.removeItem('admin_logged');
