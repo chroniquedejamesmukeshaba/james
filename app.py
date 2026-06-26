@@ -186,6 +186,33 @@ def auth():
 
 # --- SERVE STATIC FILES ---
 BASE = os.path.dirname(__file__)
+
+@app.route('/article')
+def serve_article_og():
+    aid = request.args.get('id')
+    article = None
+    if aid:
+        for a in read_json('articles'):
+            if str(a['id']) == str(aid):
+                article = a
+                break
+    html = open(os.path.join(BASE, 'article.html'), 'r', encoding='utf-8').read()
+    if article:
+        title = article.get('title', '')
+        desc = article.get('excerpt', '')
+        img = article.get('image', '')
+        if img and img.startswith('data:'):
+            img = ''
+        og = f'''
+<meta property="og:title" content="{title.replace('"','&quot;')}">
+<meta property="og:description" content="{desc.replace('"','&quot;')}">
+<meta property="og:image" content="{img}">
+<meta property="og:url" content="{request.url}">
+<meta name="twitter:card" content="summary_large_image">
+'''
+        html = html.replace('</title>', '</title>' + og)
+    return html
+
 @app.route('/')
 def serve_index():
     return send_from_directory(BASE, 'index.html')

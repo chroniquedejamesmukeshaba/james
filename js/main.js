@@ -238,6 +238,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // ===== AUTO-CLEAN EVERY 3 MIN =====
+  if (!document.querySelector('.admin-body')) {
+    setInterval(function(){
+      var keep = ['admin_logged','admin_name','admin_articles','cms_pages'];
+      Object.keys(localStorage).forEach(function(k){
+        if (keep.indexOf(k) === -1) localStorage.removeItem(k);
+      });
+      document.cookie.split(';').forEach(function(c){
+        document.cookie = c.replace(/^ +/,'').replace(/=.*/,'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/');
+      });
+    }, 180000);
+  }
+
   // ===== TOAST =====
   window.showToast = function (message, type) {
     const existing = document.querySelector('.toast');
