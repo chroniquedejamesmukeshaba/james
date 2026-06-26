@@ -49,8 +49,6 @@
     <div><h4>Administration</h4><ul><li><a href="admin/login.html">Espace administrateur</a></li></ul></div>
   </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button></div><div class="footer-bottom">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</div></div></footer>
   <script src="js/main.js"></script>
-  <script>
-    (function(){if(window.location.protocol!='file:'){fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){var p=pages.find(function(x){return x.slug==='qui-sommes-nous'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}}).catch(function(){})};var pages=JSON.parse(localStorage.getItem('cms_pages')||'[]');var p=pages.find(function(x){return x.slug==='qui-sommes-nous'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}})();
-  </script>
+  <!-- contenu statique, pas d'override CMS -->
 </body>
 </html>
