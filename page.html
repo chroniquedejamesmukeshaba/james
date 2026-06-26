@@ -120,17 +120,29 @@
       var params = new URLSearchParams(window.location.search);
       var slug = params.get('slug');
       if (!slug) { document.getElementById('page-content-display').innerHTML = '<p style="color:red;">Aucun slug spécifié.</p>'; return; }
-      var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
-      var page = pages.find(function (p) { return p.slug === slug; });
-      if (!page) { document.getElementById('page-content-display').innerHTML = '<p style="color:red;">Page introuvable.</p>'; return; }
-      document.getElementById('page-title-display').textContent = page.title;
-      document.getElementById('page-breadcrumb').textContent = page.title;
-      if (page.meta) document.getElementById('page-meta-display').textContent = page.meta;
-      document.getElementById('page-content-display').innerHTML = page.content;
-      if (page.image && page.image.startsWith('data:')) {
-        document.getElementById('page-header').style.background = 'linear-gradient(135deg, rgba(26,58,92,0.85), rgba(42,90,140,0.85)), url(' + page.image + ') center/cover';
+
+      function renderPage(page) {
+        if (!page) { document.getElementById('page-content-display').innerHTML = '<p style="color:red;">Page introuvable.</p>'; return; }
+        document.getElementById('page-title-display').textContent = page.title;
+        document.getElementById('page-breadcrumb').textContent = page.title;
+        if (page.meta) document.getElementById('page-meta-display').textContent = page.meta;
+        document.getElementById('page-content-display').innerHTML = page.content;
+        if (page.image && page.image.startsWith('data:')) {
+          document.getElementById('page-header').style.background = 'linear-gradient(135deg, rgba(26,58,92,0.85), rgba(42,90,140,0.85)), url(' + page.image + ') center/cover';
+        }
+        document.title = page.title + ' - Chronique de James Mukeshaba';
       }
-      document.title = page.title + ' - Chronique de James Mukeshaba';
+
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){
+          renderPage(pages.find(function(p){return p.slug === slug;}));
+        }).catch(function(){loadLocal();});
+      } else { loadLocal(); }
+
+      function loadLocal() {
+        var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+        renderPage(pages.find(function(p){return p.slug === slug;}));
+      }
     });
   </script>
 </body>

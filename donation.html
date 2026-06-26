@@ -112,8 +112,12 @@
       }
       var name = document.getElementById('donor-name').value || 'Anonyme';
       var email = document.getElementById('donor-email').value || 'non renseigné';
+      var data = { amount: amount, name: name, email: email, date: new Date().toISOString() };
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/donations', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+      }
       var donations = JSON.parse(localStorage.getItem('donations') || '[]');
-      donations.push({ amount: amount, name: name, email: email, date: new Date().toISOString() });
+      donations.push(data);
       localStorage.setItem('donations', JSON.stringify(donations));
       showToast('Merci ' + name + ' pour votre don de ' + amount + ' $ ! Votre soutien fait la différence.');
       document.getElementById('donor-name').value = '';

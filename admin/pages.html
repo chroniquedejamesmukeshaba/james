@@ -89,16 +89,18 @@
   </div>
   <script src="../js/main.js"></script>
   <script>
+    var API_BASE = (window.location.protocol === 'file:') ? '' : '';
+
+    function api(method, url, body) {
+      if (window.location.protocol === 'file:') return Promise.reject('file:');
+      return fetch(url, {method:method, headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined}).then(function(r){return r.json()}).catch(function(){return null;});
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       loadPages();
 
       document.getElementById('new-page-btn').addEventListener('click', function () {
-        document.getElementById('page-form-container').style.display = 'block';
-        document.getElementById('page-form').reset();
-        resetPageImage();
-        document.getElementById('page-form-title').textContent = 'Nouvelle page';
-        document.getElementById('page-id').value = '';
-        window.scrollTo({ top: document.getElementById('page-form-container').offsetTop - 100, behavior: 'smooth' });
+        showForm();
       });
 
       document.getElementById('cancel-page').addEventListener('click', function () {
@@ -106,9 +108,9 @@
       });
 
       document.getElementById('page-image-input').addEventListener('change', function (e) {
-        const file = e.target.files[0];
+        var file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onload = function (ev) {
           document.getElementById('page-img-preview').src = ev.target.result;
           document.getElementById('page-img-area').classList.add('has-image');
@@ -119,94 +121,121 @@
 
       window.removePageImage = function () {
         document.getElementById('page-image-input').value = '';
-        resetPageImage();
-      };
-
-      function resetPageImage() {
-        const area = document.getElementById('page-img-area');
+        var area = document.getElementById('page-img-area');
         if (area) area.classList.remove('has-image');
-        const preview = document.getElementById('page-img-preview');
+        var preview = document.getElementById('page-img-preview');
         if (preview) preview.src = '';
         document.getElementById('page-img-remove').style.display = 'none';
-      }
+      };
 
       document.getElementById('page-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        const id = document.getElementById('page-id').value;
-        const preview = document.getElementById('page-img-preview');
-        const page = {
+        var id = document.getElementById('page-id').value;
+        var preview = document.getElementById('page-img-preview');
+        var data = {
           title: document.getElementById('page-title').value,
           slug: document.getElementById('page-slug').value.replace(/\s+/g, '-').toLowerCase(),
           meta: document.getElementById('page-meta').value,
           content: document.getElementById('page-content').value,
           image: preview && preview.src ? preview.src : ''
         };
-        let pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
-        if (id) {
-          const idx = pages.findIndex(p => p.id == id);
-          if (idx >= 0) {
-            const existing = pages[idx];
-            if (!page.image) page.image = existing.image;
-            pages[idx] = { ...existing, ...page };
+        if (window.location.protocol !== 'file:') {
+          if (id) {
+            api('PUT', '/api/pages/' + id, data).then(function(){loadPages();});
+          } else {
+            api('POST', '/api/pages', data).then(function(res){if(res && res.error){showToast(res.error,'error');return;}loadPages();});
           }
-        } else {
-          if (pages.some(p => p.slug === page.slug)) {
-            showToast('Ce slug existe déjà. Choisissez un autre.', 'error');
-            return;
-          }
-          page.id = Date.now();
-          page.date = new Date().toISOString().split('T')[0];
-          pages.push(page);
         }
-        localStorage.setItem('cms_pages', JSON.stringify(pages));
+        saveLocal(data, id);
         document.getElementById('page-form-container').style.display = 'none';
         loadPages();
         showToast(id ? 'Page modifiée avec succès.' : 'Page créée avec succès !');
       });
 
-      function loadPages() {
-        const tbody = document.getElementById('pages-table-body');
-        let pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
-        if (pages.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">Aucune page personnalisée. Créez-en une !</td></tr>';
-          return;
+      function saveLocal(data, id) {
+        var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+        if (id) {
+          var idx = pages.findIndex(function(p){return p.id == id;});
+          if (idx >= 0) {
+            if (!data.image) data.image = pages[idx].image;
+            pages[idx] = Object.assign({}, pages[idx], data);
+          }
+        } else {
+          if (pages.some(function(p){return p.slug === data.slug;})) { return; }
+          data.id = Date.now();
+          data.date = new Date().toISOString().split('T')[0];
+          pages.push(data);
         }
-        tbody.innerHTML = pages.map(function (p) {
-          return '<tr>' +
-            '<td><strong>' + p.title + '</strong></td>' +
-            '<td><code>' + p.slug + '</code></td>' +
-            '<td><span style="color:#27ae60;">Publiée</span></td>' +
-            '<td>' +
-            '<button class="btn btn-sm btn-outline" onclick="editPage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button> ' +
-            '<button class="btn btn-sm btn-secondary" onclick="deletePage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button>' +
-            '<a href="../page.html?slug=' + p.slug + '" class="btn btn-sm btn-primary" style="padding:4px 10px;font-size:0.8rem;margin-left:5px;">👁 Voir</a>' +
-            '</td></tr>';
-        }).join('');
+        localStorage.setItem('cms_pages', JSON.stringify(pages));
+      }
+
+      function showForm(page) {
+        document.getElementById('page-form-container').style.display = 'block';
+        if (page) {
+          document.getElementById('page-form-title').textContent = 'Modifier la page';
+          document.getElementById('page-id').value = page.id;
+          document.getElementById('page-title').value = page.title;
+          document.getElementById('page-slug').value = page.slug;
+          document.getElementById('page-meta').value = page.meta || '';
+          document.getElementById('page-content').value = page.content;
+          if (page.image) {
+            document.getElementById('page-img-preview').src = page.image;
+            document.getElementById('page-img-area').classList.add('has-image');
+            document.getElementById('page-img-remove').style.display = 'inline-block';
+          }
+        } else {
+          document.getElementById('page-form').reset();
+          removePageImage();
+          document.getElementById('page-form-title').textContent = 'Nouvelle page';
+          document.getElementById('page-id').value = '';
+        }
+        window.scrollTo({ top: document.getElementById('page-form-container').offsetTop - 100, behavior: 'smooth' });
+      }
+
+      function loadPages() {
+        var tbody = document.getElementById('pages-table-body');
+        if (window.location.protocol !== 'file:') {
+          api('GET', '/api/pages').then(function(serverPages) {
+            if (serverPages && serverPages.length > 0) {
+              renderTable(serverPages);
+              localStorage.setItem('cms_pages', JSON.stringify(serverPages));
+              return;
+            }
+            renderFromLocal();
+          }).catch(function(){renderFromLocal();});
+        } else { renderFromLocal(); }
+        function renderFromLocal() {
+          var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+          renderTable(pages);
+        }
+        function renderTable(pages) {
+          if (!pages || pages.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">Aucune page personnalisée. Créez-en une !</td></tr>';
+            return;
+          }
+          tbody.innerHTML = pages.map(function(p) {
+            return '<tr><td><strong>' + p.title + '</strong></td><td><code>' + p.slug + '</code></td><td><span style="color:#27ae60;">Publiée</span></td><td>' +
+              '<button class="btn btn-sm btn-outline" onclick="editPage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deletePage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button>' +
+              '<a href="../page.html?slug=' + p.slug + '" class="btn btn-sm btn-primary" style="padding:4px 10px;font-size:0.8rem;margin-left:5px;">👁 Voir</a></td></tr>';
+          }).join('');
+        }
       }
 
       window.editPage = function (id) {
-        let pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
-        const page = pages.find(p => p.id === id);
+        var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+        var page = pages.find(function(p){return p.id === id;});
         if (!page) return;
-        document.getElementById('page-form-container').style.display = 'block';
-        document.getElementById('page-form-title').textContent = 'Modifier la page';
-        document.getElementById('page-id').value = id;
-        document.getElementById('page-title').value = page.title;
-        document.getElementById('page-slug').value = page.slug;
-        document.getElementById('page-meta').value = page.meta || '';
-        document.getElementById('page-content').value = page.content;
-        if (page.image) {
-          document.getElementById('page-img-preview').src = page.image;
-          document.getElementById('page-img-area').classList.add('has-image');
-          document.getElementById('page-img-remove').style.display = 'inline-block';
-        }
-        window.scrollTo({ top: document.getElementById('page-form-container').offsetTop - 100, behavior: 'smooth' });
+        showForm(page);
       };
 
       window.deletePage = function (id) {
         if (!confirm('Supprimer cette page définitivement ?')) return;
-        let pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
-        pages = pages.filter(p => p.id !== id);
+        if (window.location.protocol !== 'file:') {
+          api('DELETE', '/api/pages/' + id);
+        }
+        var pages = JSON.parse(localStorage.getItem('cms_pages') || '[]');
+        pages = pages.filter(function(p){return p.id !== id;});
         localStorage.setItem('cms_pages', JSON.stringify(pages));
         loadPages();
         showToast('Page supprimée.');

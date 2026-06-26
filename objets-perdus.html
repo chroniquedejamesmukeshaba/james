@@ -77,38 +77,54 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var grid = document.getElementById('lf-grid');
+
       function loadAds() {
-        var ads = JSON.parse(localStorage.getItem('lost_found_ads') || '[]');
-        if (ads.length === 0) {
-          ads = [
-            { id: 1, type: 'perdu', item: 'Sac à dos noir', desc: 'Perdu dans le centre-ville de Bukavu, près du marché central. Contenait des documents importants.', contact: '+243 971460415', date: '2026-06-22' },
-            { id: 2, type: 'trouve', item: 'Téléphone portable', desc: 'Trouvé au quartier Ndendere. Téléphone Samsung de couleur bleue.', contact: '+243 970000000', date: '2026-06-20' },
-            { id: 3, type: 'perdu', item: 'Porte-feuille marron', desc: 'Perdu dans un taxi entre Bukavu et Goma. Contenait des papiers d\'identité.', contact: 'contact@chronique.com', date: '2026-06-18' }
-          ];
-          localStorage.setItem('lost_found_ads', JSON.stringify(ads));
+        if (window.location.protocol !== 'file:') {
+          fetch('/api/lost-found').then(function(r){return r.json()}).then(function(ads){
+            if (ads && ads.length > 0) { renderAds(ads); localStorage.setItem('lost_found_ads', JSON.stringify(ads)); return; }
+            renderLocalAds();
+          }).catch(function(){renderLocalAds();});
+        } else { renderLocalAds(); }
+        function renderLocalAds() {
+          var ads = JSON.parse(localStorage.getItem('lost_found_ads') || '[]');
+          if (ads.length === 0) {
+            ads = [
+              { id: 1, type: 'perdu', item: 'Sac à dos noir', desc: 'Perdu dans le centre-ville de Bukavu, près du marché central. Contenait des documents importants.', contact: '+243 971460415', date: '2026-06-22' },
+              { id: 2, type: 'trouve', item: 'Téléphone portable', desc: 'Trouvé au quartier Ndendere. Téléphone Samsung de couleur bleue.', contact: '+243 970000000', date: '2026-06-20' },
+              { id: 3, type: 'perdu', item: 'Porte-feuille marron', desc: 'Perdu dans un taxi entre Bukavu et Goma. Contenait des papiers d\'identité.', contact: 'contact@chronique.com', date: '2026-06-18' }
+            ];
+            localStorage.setItem('lost_found_ads', JSON.stringify(ads));
+          }
+          renderAds(ads);
         }
-        grid.innerHTML = ads.map(function(a) {
-          return '<div class="lf-card ' + a.type + '">' +
-            '<span class="lf-status ' + (a.type === 'perdu' ? 'perdu' : 'trouve') + '">' + (a.type === 'perdu' ? '🔴 Perdu' : '🟢 Trouvé') + '</span>' +
-            '<h3 style="margin:10px 0;color:var(--primary);">' + a.item + '</h3>' +
-            '<p style="color:var(--text-light);font-size:0.9rem;">' + a.desc + '</p>' +
-            '<div style="margin-top:12px;font-size:0.85rem;color:var(--text);border-top:1px solid #eee;padding-top:10px;">' +
-            '📞 ' + a.contact + '<br><small style="color:var(--text-light);">' + a.date + '</small></div></div>';
-        }).join('');
+        function renderAds(ads) {
+          grid.innerHTML = ads.map(function(a) {
+            return '<div class="lf-card ' + a.type + '">' +
+              '<span class="lf-status ' + (a.type === 'perdu' ? 'perdu' : 'trouve') + '">' + (a.type === 'perdu' ? '🔴 Perdu' : '🟢 Trouvé') + '</span>' +
+              '<h3 style="margin:10px 0;color:var(--primary);">' + a.item + '</h3>' +
+              '<p style="color:var(--text-light);font-size:0.9rem;">' + a.desc + '</p>' +
+              '<div style="margin-top:12px;font-size:0.85rem;color:var(--text);border-top:1px solid #eee;padding-top:10px;">' +
+              '📞 ' + a.contact + '<br><small style="color:var(--text-light);">' + a.date + '</small></div></div>';
+          }).join('');
+        }
       }
       loadAds();
 
       document.getElementById('lost-found-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        var ads = JSON.parse(localStorage.getItem('lost_found_ads') || '[]');
-        ads.unshift({
-          id: Date.now(),
+        var data = {
           type: document.getElementById('lf-type').value,
           item: document.getElementById('lf-item').value,
           desc: document.getElementById('lf-desc').value,
           contact: document.getElementById('lf-contact').value,
           date: new Date().toISOString().split('T')[0]
-        });
+        };
+        if (window.location.protocol !== 'file:') {
+          fetch('/api/lost-found', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+        }
+        var ads = JSON.parse(localStorage.getItem('lost_found_ads') || '[]');
+        data.id = Date.now();
+        ads.unshift(data);
         localStorage.setItem('lost_found_ads', JSON.stringify(ads));
         loadAds();
         this.reset();
