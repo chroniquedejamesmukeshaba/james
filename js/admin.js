@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
       const password = document.getElementById('password').value;
       if (username === 'admin' && password === 'chronique2026') {
         localStorage.setItem('admin_logged', 'true');
+        if (window.location.protocol !== 'file:') {
+          fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:username,pass:password})}).catch(function(){});
+        }
         window.location.href = 'index.html';
       } else {
         showToast('Identifiants incorrects.', 'error');
@@ -16,7 +19,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== CHECK AUTH =====
+  // ===== DATA API HELPERS =====
+var useServer = window.location.protocol !== 'file:';
+
+function apiGet(path) {
+  if (!useServer) return null;
+  return fetch('/api' + path).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+}
+function apiPost(path, data) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+}
+function apiDel(path) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'DELETE'}).then(function(r){return r.ok}).catch(function(){return false});
+}
+
+// ===== CHECK AUTH =====
   if (document.querySelector('.admin-body') && !document.querySelector('.login-page')) {
     if (localStorage.getItem('admin_logged') !== 'true') {
       window.location.href = 'login.html';
@@ -85,20 +105,24 @@ document.addEventListener('DOMContentLoaded', function () {
         author: document.getElementById('art-author').value,
         date: new Date().toISOString().split('T')[0]
       };
-      let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-      if (id) {
-        const idx = articles.findIndex(a => a.id == id);
-        if (idx >= 0) {
-          const existing = articles[idx];
-          if (!article.image) article.image = existing.image;
-          articles[idx] = { ...existing, ...article };
+      if (id) article.id = Number(id);
+      apiPost('/articles', article).then(function() { loadArticles(); });
+      if (!useServer) {
+        let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+        if (id) {
+          const idx = articles.findIndex(a => a.id == id);
+          if (idx >= 0) {
+            const existing = articles[idx];
+            if (!article.image) article.image = existing.image;
+            articles[idx] = { ...existing, ...article };
+          }
+        } else {
+          article.id = Date.now();
+          article.featured = false;
+          articles.unshift(article);
         }
-      } else {
-        article.id = Date.now();
-        article.featured = false;
-        articles.unshift(article);
+        localStorage.setItem('admin_articles', JSON.stringify(articles));
       }
-      localStorage.setItem('admin_articles', JSON.stringify(articles));
       document.getElementById('article-form-container').style.display = 'none';
       loadArticles();
       showToast(id ? 'Article modifié avec succès.' : 'Article publié avec succès !');
@@ -108,23 +132,30 @@ document.addEventListener('DOMContentLoaded', function () {
   function loadArticles() {
     const tbody = document.getElementById('articles-table-body');
     if (!tbody) return;
-    let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-    if (articles.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">Aucun article publié. Cliquez sur "Nouvel article" pour commencer.</td></tr>';
-      return;
+    var load = useServer ? apiGet('/articles') : null;
+    if (load) {
+      load.then(function(articles) {
+        if (articles) {
+          localStorage.setItem('admin_articles', JSON.stringify(articles));
+          renderArticles(articles);
+        } else { renderFromLocal(); }
+      });
+    } else { renderFromLocal(); }
+    function renderFromLocal() {
+      var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      renderArticles(a);
     }
-    tbody.innerHTML = articles.map(a => `
-      <tr>
-        <td>${a.id}</td>
-        <td><strong>${a.title}</strong></td>
-        <td>${a.category}</td>
-        <td>${a.date}</td>
-        <td>
-          <button class="btn btn-sm btn-outline" onclick="editArticle(${a.id})" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button>
-          <button class="btn btn-sm btn-secondary" onclick="deleteArticle(${a.id})" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button>
-        </td>
-      </tr>
-    `).join('');
+    function renderArticles(articles) {
+      if (!articles || articles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">Aucun article publié. Cliquez sur "Nouvel article" pour commencer.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = articles.map(function(a) {
+        return '<tr><td>' + a.id + '</td><td><strong>' + a.title + '</strong></td><td>' + a.category + '</td><td>' + a.date + '</td><td>' +
+          '<button class="btn btn-sm btn-outline" onclick="editArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button> ' +
+          '<button class="btn btn-sm btn-secondary" onclick="deleteArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button></td></tr>';
+      }).join('');
+    }
   }
 
   window.editArticle = function (id) {
@@ -149,9 +180,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   window.deleteArticle = function (id) {
     if (!confirm('Supprimer cet article définitivement ?')) return;
-    let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-    articles = articles.filter(a => a.id !== id);
-    localStorage.setItem('admin_articles', JSON.stringify(articles));
+    apiDel('/articles/' + id);
+    if (!useServer) {
+      let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      articles = articles.filter(a => a.id !== id);
+      localStorage.setItem('admin_articles', JSON.stringify(articles));
+    }
     loadArticles();
     showToast('Article supprimé.');
   };
@@ -162,38 +196,57 @@ document.addEventListener('DOMContentLoaded', function () {
     loadPendingComments();
   }
 
-  function loadPendingComments() {
-    const tbody = document.getElementById('comments-table-body');
-    if (!tbody) return;
-    let allComments = [];
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('comments_'));
-    keys.forEach(key => {
-      const articleId = key.replace('comments_', '');
-      const comments = JSON.parse(localStorage.getItem(key) || '[]');
-      comments.forEach(c => { c.articleId = articleId; allComments.push(c); });
-    });
-    allComments.sort((a, b) => b.id - a.id);
-    if (allComments.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">Aucun commentaire pour le moment.</td></tr>';
-      return;
+  function loadAllComments() {
+    if (useServer) {
+      return apiGet('/articles').then(function(arts) {
+        if (!arts) return loadLocalComments();
+        var promises = arts.map(function(a) {
+          return apiGet('/comments/' + a.id).then(function(cs) {
+            if (cs) cs.forEach(function(c){c.articleId=a.id;});
+            return cs || [];
+          });
+        });
+        return Promise.all(promises).then(function(results) {
+          var all = [];
+          results.forEach(function(arr){arr.forEach(function(c){all.push(c);});});
+          all.sort(function(a,b){return b.id - a.id;});
+          return all;
+        });
+      });
     }
-    tbody.innerHTML = allComments.map(c => `
-      <tr style="${c.pending ? 'background:#fff8e1;' : ''}">
-        <td>${c.name}</td>
-        <td>${c.text.substring(0, 60)}${c.text.length > 60 ? '...' : ''}</td>
-        <td>${c.date}</td>
-        <td>Article #${c.articleId}</td>
-        <td>
-          ${c.pending ? `
-            <button class="btn btn-sm btn-primary" onclick="approveComment('${c.articleId}', ${c.id})" style="padding:4px 10px;font-size:0.8rem;">✓ Approuver</button>
-            <button class="btn btn-sm btn-secondary" onclick="rejectComment('${c.articleId}', ${c.id})" style="padding:4px 10px;font-size:0.8rem;">✕ Rejeter</button>
-          ` : '<span style="color:#27ae60;">Approuvé</span>'}
-        </td>
-      </tr>
-    `).join('');
+    return Promise.resolve(loadLocalComments());
+  }
+
+  function loadLocalComments() {
+    var all = [];
+    Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(key){
+      var aid = key.replace('comments_', '');
+      JSON.parse(localStorage.getItem(key) || '[]').forEach(function(c){c.articleId = aid; all.push(c);});
+    });
+    all.sort(function(a,b){return b.id - a.id;});
+    return all;
+  }
+
+  function loadPendingComments() {
+    loadAllComments().then(function(allComments) {
+      var tbody = document.getElementById('comments-table-body');
+      if (!tbody) return;
+      if (!allComments || allComments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">Aucun commentaire pour le moment.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allComments.map(function(c) {
+        var row = c.pending ? ' style="background:#fff8e1;"' : '';
+        var actions = c.pending
+          ? '<button class="btn btn-sm btn-primary" onclick="approveComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✓ Approuver</button> <button class="btn btn-sm btn-secondary" onclick="rejectComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✕ Rejeter</button>'
+          : '<span style="color:#27ae60;">Approuvé</span>';
+        return '<tr' + row + '><td>' + c.name + '</td><td>' + c.text.substring(0, 60) + (c.text.length > 60 ? '...' : '') + '</td><td>' + c.date + '</td><td>Article #' + c.articleId + '</td><td>' + actions + '</td></tr>';
+      }).join('');
+    });
   }
 
   window.approveComment = function (articleId, commentId) {
+    if (useServer) apiPost('/comments/' + articleId + '/' + commentId + '/approve', {});
     const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
     const idx = comments.findIndex(c => c.id === commentId);
     if (idx >= 0) { comments[idx].pending = false; }
@@ -204,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   window.rejectComment = function (articleId, commentId) {
     if (!confirm('Rejeter ce commentaire ?')) return;
+    if (useServer) apiDel('/comments/' + articleId + '/' + commentId);
     let comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
     comments = comments.filter(c => c.id !== commentId);
     localStorage.setItem('comments_' + articleId, JSON.stringify(comments));
@@ -214,19 +268,31 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===== DASHBOARD STATS =====
   const dashboard = document.getElementById('dashboard-stats');
   if (dashboard) {
-    const articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-    let totalComments = 0;
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('comments_'));
-    keys.forEach(key => { totalComments += JSON.parse(localStorage.getItem(key) || '[]').length; });
-    const subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
-    const visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
-
-    document.getElementById('stat-articles').textContent = articles.length;
-    document.getElementById('stat-comments').textContent = totalComments;
-    document.getElementById('stat-subs').textContent = subs.length;
-    document.getElementById('stat-visits').textContent = visits.length;
-
-    updateChart(visits);
+    function loadStats() {
+      var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
+      var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
+      var totalComments = 0;
+      Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(k){
+        totalComments += JSON.parse(localStorage.getItem(k) || '[]').length;
+      });
+      document.getElementById('stat-articles').textContent = a.length;
+      document.getElementById('stat-comments').textContent = totalComments;
+      document.getElementById('stat-subs').textContent = subs.length;
+      document.getElementById('stat-visits').textContent = visits.length;
+      updateChart(visits);
+    }
+    if (useServer) {
+      apiGet('/stats').then(function(s) {
+        if (s) {
+          document.getElementById('stat-articles').textContent = s.articles;
+          document.getElementById('stat-comments').textContent = s.comments;
+          document.getElementById('stat-subs').textContent = s.subs;
+          document.getElementById('stat-visits').textContent = s.visits;
+        }
+      });
+    }
+    loadStats();
   }
 
   function updateChart(visits) {
@@ -263,6 +329,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function trackVisit() {
+    if (window.location.protocol !== 'file:') {
+      fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:new Date().toISOString()})}).catch(function(){});
+    }
     const visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
     visits.push(new Date().toISOString());
     if (visits.length > 10000) visits.splice(0, visits.length - 10000);

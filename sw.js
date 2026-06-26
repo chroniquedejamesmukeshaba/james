@@ -1,64 +1,35 @@
-const CACHE_NAME = 'chronique-cache-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/actualites.html',
-  '/article.html',
-  '/qui-sommes-nous.html',
-  '/projets.html',
-  '/sensibilisation.html',
-  '/objets-perdus.html',
-  '/heritage.html',
-  '/faq.html',
-  '/donation.html',
+const CACHE = 'chronique-v2';
+const STATIC = [
+  '/', '/index.html', '/actualites.html', '/article.html',
+  '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
+  '/objets-perdus.html', '/heritage.html', '/faq.html', '/donation.html',
   '/page.html',
-  '/css/style.css',
-  '/js/main.js',
-  '/js/admin.js',
-  '/manifest.json',
-  '/assets/images/logo.png'
+  '/css/style.css', '/js/main.js', '/js/admin.js', '/js/data.js',
+  '/manifest.json', '/assets/images/logo.png',
+  '/assets/images/icon-192.png', '/assets/images/icon-512.png'
 ];
 
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(urlsToCache);
-    })
-  );
+self.addEventListener('install', function(e) {
+  e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(STATIC); }));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.filter(function(name) {
-          return name !== CACHE_NAME;
-        }).map(function(name) {
-          return caches.delete(name);
-        })
-      );
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.filter(function(k) { return k !== CACHE; }).map(function(k) { return caches.delete(k); }));
     })
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', function(event) {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request).then(function(fetchResponse) {
-        if (event.request.url.startsWith(self.location.origin) &&
-            event.request.url.indexOf('admin') === -1) {
-          return caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, fetchResponse.clone());
-            return fetchResponse;
-          });
-        }
-        return fetchResponse;
-      });
-    }).catch(function() {
-      return caches.match('/index.html');
-    })
+self.addEventListener('fetch', function(e) {
+  if (e.request.url.indexOf('/api/') > -1) {
+    e.respondWith(fetch(e.request).catch(function() { return new Response('[]', {status:200}); }));
+    return;
+  }
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(function(r) { return r || fetch(e.request); })
   );
 });

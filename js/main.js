@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       const email = this.querySelector('input[type="email"]').value;
       if (email) {
+        if (window.location.protocol !== 'file:') {
+          fetch('/api/newsletter', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})}).catch(function(){});
+        }
         let subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
         if (!subs.includes(email)) {
           subs.push(email);
@@ -191,14 +194,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const text = document.getElementById('comment-text').value.trim();
       if (!name || !text) { showToast('Veuillez remplir tous les champs.', 'error'); return; }
       const articleId = this.dataset.articleId || '1';
+      const data = { name: name, text: text, date: new Date().toLocaleDateString('fr-FR') };
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/comments/' + articleId, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+      }
       const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
-      comments.push({
-        id: Date.now(),
-        name: name,
-        text: text,
-        date: new Date().toLocaleDateString('fr-FR'),
-        pending: true
-      });
+      data.id = Date.now(); data.pending = true;
+      comments.push(data);
       localStorage.setItem('comments_' + articleId, JSON.stringify(comments));
       showToast('Commentaire soumis et en attente de modération.');
       this.reset();
@@ -210,21 +212,30 @@ document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('comments-list');
     if (!container) return;
     const articleId = container.dataset.articleId || '1';
-    const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
-    const approved = comments.filter(c => !c.pending);
-    if (approved.length === 0) {
-      container.innerHTML = '<p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
-      return;
+    if (window.location.protocol !== 'file:') {
+      fetch('/api/comments/' + articleId).then(function(r){return r.json()}).then(function(apiComments){
+        if (apiComments) {
+          var approved = apiComments.filter(function(c){return !c.pending});
+          renderComments(approved);
+          return;
+        }
+        loadLocalComments();
+      }).catch(function(){loadLocalComments();});
+    } else { loadLocalComments(); }
+    function loadLocalComments() {
+      const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
+      const approved = comments.filter(c => !c.pending);
+      renderComments(approved);
     }
-    container.innerHTML = approved.map(c => `
-      <div class="comment">
-        <div>
-          <span class="comment-author">${c.name}</span>
-          <span class="comment-date">${c.date}</span>
-        </div>
-        <div class="comment-text">${c.text}</div>
-      </div>
-    `).join('');
+    function renderComments(list) {
+      if (!list || list.length === 0) {
+        container.innerHTML = '<p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
+        return;
+      }
+      container.innerHTML = list.map(c =>
+        '<div class="comment"><div><span class="comment-author">' + c.name + '</span><span class="comment-date">' + c.date + '</span></div><div class="comment-text">' + c.text + '</div></div>'
+      ).join('');
+    }
   }
 
   // ===== TOAST =====

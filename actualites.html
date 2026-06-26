@@ -131,29 +131,41 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var grid = document.getElementById('all-articles-grid');
-      var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-      if (articles.length === 0) {
-        articles = [
-          { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada.', image: '', date: '2026-06-20', author: 'James Mukeshaba' },
-          { id: 2, title: 'Campagne contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une campagne de sensibilisation à Bukavu.', image: '', date: '2026-06-18', author: 'Équipe Sensibilisation' },
-          { id: 3, title: 'Projet Bukavu ville propre', category: 'Projets', excerpt: 'Mobilisation citoyenne pour un cadre de vie sain.', image: '', date: '2026-06-15', author: 'James Mukeshaba' },
-          { id: 4, title: 'Rencontre avec les jeunes entrepreneurs de Goma', category: 'Actualité', excerpt: 'Échanges avec la nouvelle génération d\'entrepreneurs.', image: '', date: '2026-06-12', author: 'Équipe Reportage' },
-          { id: 5, title: 'Les danses traditionnelles du Sud-Kivu', category: 'Héritage', excerpt: 'Plongée au coeur du patrimoine culturel.', image: '', date: '2026-06-08', author: 'James Mukeshaba' }
-        ];
-        localStorage.setItem('admin_articles', JSON.stringify(articles));
+      var articles;
+      function loadFromServer() {
+        if (window.location.protocol === 'file:') { loadLocal(); return; }
+        fetch('/api/articles').then(function(r){return r.json()}).then(function(d){
+          if (d && d.length) { articles = d; render(); }
+          else loadLocal();
+        }).catch(function(){loadLocal();});
       }
-      grid.innerHTML = articles.map(function(a) {
-        var imgHtml = a.image && a.image.startsWith('data:')
-          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
-          : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
-        return '<div class="card">' + imgHtml +
-          '<div class="card-body">' +
-          '<div class="card-category">' + a.category + '</div>' +
-          '<h3 class="card-title"><a href="article.html?id=' + a.id + '">' + a.title + '</a></h3>' +
-          '<p class="card-text">' + a.excerpt + '</p>' +
-          '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
-          '</div></div>';
-      }).join('');
+      function loadLocal() {
+        articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+        if (articles.length === 0) {
+          articles = [
+            { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada.', image: '', date: '2026-06-20', author: 'James Mukeshaba' },
+            { id: 2, title: 'Campagne contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une campagne de sensibilisation à Bukavu.', image: '', date: '2026-06-18', author: 'Équipe Sensibilisation' },
+            { id: 3, title: 'Projet Bukavu ville propre', category: 'Projets', excerpt: 'Mobilisation citoyenne.', image: '', date: '2026-06-15', author: 'James Mukeshaba' }
+          ];
+          localStorage.setItem('admin_articles', JSON.stringify(articles));
+        }
+        render();
+      }
+      function render() {
+        grid.innerHTML = articles.map(function(a) {
+          var imgHtml = a.image && a.image.startsWith('data:')
+            ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
+            : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
+          return '<div class="card">' + imgHtml +
+            '<div class="card-body">' +
+            '<div class="card-category">' + a.category + '</div>' +
+            '<h3 class="card-title"><a href="article.html?id=' + a.id + '">' + a.title + '</a></h3>' +
+            '<p class="card-text">' + a.excerpt + '</p>' +
+            '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
+            '</div></div>';
+        }).join('');
+      }
+      loadFromServer();
     });
   </script>
 </body>
