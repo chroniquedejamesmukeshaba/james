@@ -27,7 +27,7 @@ body {
   color: var(--text);
   background: var(--bg);
   line-height: 1.7;
-  width: 80%;
+  width: 98%;
   margin: 0 auto;
   min-height: 100vh;
 }
