@@ -681,6 +681,10 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
   .newsletter-form input { min-width: 200px; }
   .admin-sidebar { width: 200px; }
   .article-detail { padding: 20px; }
+  .mission-banner { flex-direction: column; min-height: auto; }
+  .mission-photo-wrap { width: 100%; max-height: 250px; }
+  .mission-photo { height: 250px; width: 100%; }
+  .mission-text { padding: 30px 20px; }
 }
 
 @media (max-width: 480px) {
