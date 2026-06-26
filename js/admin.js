@@ -280,33 +280,37 @@ function apiDel(path) {
   };
 
   // ===== DASHBOARD STATS =====
-  const dashboard = document.getElementById('dashboard-stats');
-  if (dashboard) {
-    function loadStats() {
-      var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-      var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
-      var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
-      var totalComments = 0;
-      Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(k){
-        totalComments += JSON.parse(localStorage.getItem(k) || '[]').length;
-      });
-      document.getElementById('stat-articles').textContent = a.length;
-      document.getElementById('stat-comments').textContent = totalComments;
-      document.getElementById('stat-subs').textContent = subs.length;
-      document.getElementById('stat-visits').textContent = visits.length;
-      updateChart(visits);
+  var statEls = {
+    articles: document.getElementById('stat-articles'),
+    comments: document.getElementById('stat-comments'),
+    subs: document.getElementById('stat-subs'),
+    visits: document.getElementById('stat-visits'),
+    chart: document.getElementById('visits-chart')
+  };
+  if (statEls.articles) {
+    function loadStats(data) {
+      if (data) {
+        statEls.articles.textContent = data.articles || 0;
+        statEls.comments.textContent = data.comments || 0;
+        statEls.subs.textContent = data.subs || 0;
+        statEls.visits.textContent = data.visits || 0;
+        updateChart(data.visitsList || []);
+      } else {
+        var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+        var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
+        var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
+        var totalComments = 0;
+        Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(k){
+          totalComments += JSON.parse(localStorage.getItem(k) || '[]').length;
+        });
+        statEls.articles.textContent = a.length;
+        statEls.comments.textContent = totalComments;
+        statEls.subs.textContent = subs.length;
+        statEls.visits.textContent = visits.length;
+        updateChart(visits);
+      }
     }
-    if (useServer) {
-      apiGet('/stats').then(function(s) {
-        if (s) {
-          document.getElementById('stat-articles').textContent = s.articles;
-          document.getElementById('stat-comments').textContent = s.comments;
-          document.getElementById('stat-subs').textContent = s.subs;
-          document.getElementById('stat-visits').textContent = s.visits;
-        }
-      });
-    }
-    loadStats();
+    apiGet('/stats').then(function(s) { loadStats(s); }).catch(function(){ loadStats(null); });
   }
 
   function updateChart(visits) {

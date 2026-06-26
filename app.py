@@ -165,8 +165,9 @@ def get_stats():
     articles = len(read_json('articles'))
     comments = sum(len(read_json(f)) for f in os.listdir(DATA_DIR) if f.startswith('comments_'))
     subs = len(read_json('newsletter'))
-    visits = len(read_json('visits'))
-    return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits})
+    visitsData = read_json('visits')
+    visits = len(visitsData)
+    return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsData})
 
 # --- AUTH ---
 ADMINS = {
