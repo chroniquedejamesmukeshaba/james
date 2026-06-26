@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   // ===== LOGIN =====
+  const ADMINS = { 'Shine2026':'YAGIRWA GEDEON GUIDE', 'Lufumica2026':'LUFUNGULO MICHAEL', 'Sergio2026':'SERGE IRENGE', 'Christvie2026':'MUKESHABA JAMES MPALA' };
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      if (username === 'admin' && password === 'chronique2026') {
+      if (username === 'admin' && ADMINS[password]) {
         localStorage.setItem('admin_logged', 'true');
+        localStorage.setItem('admin_name', ADMINS[password]);
         if (window.location.protocol !== 'file:') {
           fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:username,pass:password})}).catch(function(){});
         }
@@ -45,6 +47,7 @@ function apiDel(path) {
     document.getElementById('logout-btn')?.addEventListener('click', function (e) {
       e.preventDefault();
       localStorage.removeItem('admin_logged');
+      localStorage.removeItem('admin_name');
       window.location.href = 'login.html';
     });
   }
@@ -54,12 +57,17 @@ function apiDel(path) {
   if (articlesTable) {
     loadArticles();
 
+    var adminName = localStorage.getItem('admin_name') || '';
+    var authorField = document.getElementById('art-author');
+    if (authorField && adminName) authorField.value = adminName;
+
     document.getElementById('new-article-btn')?.addEventListener('click', function () {
       document.getElementById('article-form-container').style.display = 'block';
       document.getElementById('article-form').reset();
       resetImageUpload();
       document.getElementById('form-title').textContent = 'Nouvel article';
       document.getElementById('article-id').value = '';
+      if (authorField && adminName) authorField.value = adminName;
       window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
     });
 

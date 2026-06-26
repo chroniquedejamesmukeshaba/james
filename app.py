@@ -169,11 +169,18 @@ def get_stats():
     return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits})
 
 # --- AUTH ---
+ADMINS = {
+    'Shine2026':    'YAGIRWA GEDEON GUIDE',
+    'Lufumica2026': 'LUFUNGULO MICHAEL',
+    'Sergio2026':   'SERGE IRENGE',
+    'Christvie2026':'MUKESHABA JAMES MPALA',
+}
 @app.route('/api/auth', methods=['POST'])
 def auth():
     d = request.json
-    if d.get('user') == 'admin' and d.get('pass') == 'chronique2026':
-        return jsonify({'ok': True, 'token': 'admin-token'})
+    name = ADMINS.get(d.get('pass', ''))
+    if d.get('user') == 'admin' and name:
+        return jsonify({'ok': True, 'name': name})
     return jsonify({'ok': False}), 401
 
 # --- SERVE STATIC FILES ---
