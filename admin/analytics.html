@@ -65,8 +65,12 @@
   <script src="../js/main.js"></script>
   <script src="../js/admin.js"></script>
   <script>
+    var articlesCache = {};
     document.addEventListener('DOMContentLoaded', function() {
-      loadAnalytics('day');
+      fetch('/api/articles').then(function(r){return r.json()}).then(function(arts){
+        if (arts) arts.forEach(function(a){ articlesCache[a.id] = a.title; });
+      }).catch(function(){});
+      loadAnalytics('all');
 
       document.querySelectorAll('.period-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -103,10 +107,11 @@
           var articleIds = Object.keys(articlesMap).sort(function(a,b){return (articlesMap[b]||0) - (articlesMap[a]||0);});
           var tbody = document.getElementById('analytics-articles-body');
           if (articleIds.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article pour cette période.</td></tr>';
           } else {
             tbody.innerHTML = articleIds.map(function(aid) {
-              return '<tr><td>Article #' + aid + '</td><td><strong>' + articlesMap[aid] + '</strong></td></tr>';
+              var title = articlesCache[aid] || 'Article #' + aid;
+              return '<tr><td><strong>' + title + '</strong></td><td>' + articlesMap[aid] + '</td></tr>';
             }).join('');
           }
 
@@ -114,14 +119,18 @@
           var pageNames = Object.keys(pagesMap).sort(function(a,b){return (pagesMap[b]||0) - (pagesMap[a]||0);});
           var pbody = document.getElementById('analytics-pages-body');
           if (pageNames.length === 0) {
-            pbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite.</td></tr>';
+            pbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite pour cette période.</td></tr>';
           } else {
             pbody.innerHTML = pageNames.map(function(p) {
-              return '<tr><td>' + p + '</td><td><strong>' + pagesMap[p] + '</strong></td></tr>';
+              var label = p || '/';
+              if (label.indexOf('/article') === 0) label = '📄 Article';
+              else if (label === '/' || label === '/index.html') label = '🏠 Accueil';
+              else label = '📄 ' + label.replace('.html','').replace('/','');
+              return '<tr><td>' + label + '</td><td>' + pagesMap[p] + '</td></tr>';
             }).join('');
           }
         }).catch(function(){
-          document.getElementById('analytics-total').textContent = 'Erreur';
+          document.getElementById('analytics-total').textContent = '0';
         });
       }
     });
