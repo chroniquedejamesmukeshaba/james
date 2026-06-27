@@ -152,7 +152,7 @@
       }
       function render() {
         grid.innerHTML = articles.map(function(a) {
-          var imgHtml = a.image && a.image.startsWith('data:')
+          var imgHtml = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
             ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
             : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
           return '<div class="card">' + imgHtml +

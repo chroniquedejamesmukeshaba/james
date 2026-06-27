@@ -170,10 +170,10 @@
       var sliderNav = document.getElementById('slider-nav');
       var slidesHtml = '';
       var dotsHtml = '';
-      var sliderArticles = articles.filter(function(a) { return a.image && a.image.startsWith('data:'); });
+      var sliderArticles = articles.filter(function(a) { return a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http')); });
       if (sliderArticles.length === 0) sliderArticles = articles.slice(0, 3);
       sliderArticles.slice(0, 5).forEach(function(a, i) {
-        var bg = a.image && a.image.startsWith('data:') ? a.image : '';
+        var bg = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http')) ? a.image : '';
         slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
           '<div class="slide-overlay">' +
           '<h2>' + a.title + '</h2>' +
@@ -186,7 +186,7 @@
       if (typeof initSlider === 'function') initSlider();
 
       grid.innerHTML = articles.slice(0, 6).map(function(a) {
-        var imgHtml = a.image && a.image.startsWith('data:')
+        var imgHtml = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
           ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
           : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
         return '<div class="card">' + imgHtml +

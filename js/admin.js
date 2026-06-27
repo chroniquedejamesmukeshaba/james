@@ -107,39 +107,53 @@ function apiDel(path) {
 
     document.getElementById('article-form')?.addEventListener('submit', function (e) {
       e.preventDefault();
+      var btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Publication en cours...';
       const id = document.getElementById('article-id').value;
       const preview = document.getElementById('img-preview');
-      const imageData = preview && preview.src ? preview.src : '';
-      const article = {
-        title: document.getElementById('art-title').value,
-        category: document.getElementById('art-category').value,
-        image: imageData,
-        excerpt: document.getElementById('art-excerpt').value,
-        content: document.getElementById('art-content').value,
-        author: document.getElementById('art-author').value,
-        date: new Date().toISOString().split('T')[0]
-      };
-      if (id) article.id = Number(id);
-      apiPost('/articles', article).then(function() { loadArticles(); });
-      if (!useServer) {
-        let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-        if (id) {
-          const idx = articles.findIndex(a => a.id == id);
-          if (idx >= 0) {
-            const existing = articles[idx];
-            if (!article.image) article.image = existing.image;
-            articles[idx] = { ...existing, ...article };
+      var imageData = preview && preview.src ? preview.src : '';
+
+      function saveArticle(imgUrl) {
+        const article = {
+          title: document.getElementById('art-title').value,
+          category: document.getElementById('art-category').value,
+          image: imgUrl || imageData,
+          excerpt: document.getElementById('art-excerpt').value,
+          content: document.getElementById('art-content').value,
+          author: document.getElementById('art-author').value,
+          date: new Date().toISOString().split('T')[0]
+        };
+        if (id) article.id = Number(id);
+        apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Publier l\'article'; loadArticles(); });
+        if (!useServer) {
+          let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+          if (id) {
+            const idx = articles.findIndex(a => a.id == id);
+            if (idx >= 0) {
+              const existing = articles[idx];
+              if (!article.image) article.image = existing.image;
+              articles[idx] = { ...existing, ...article };
+            }
+          } else {
+            article.id = Date.now();
+            article.featured = false;
+            articles.unshift(article);
           }
-        } else {
-          article.id = Date.now();
-          article.featured = false;
-          articles.unshift(article);
+          localStorage.setItem('admin_articles', JSON.stringify(articles));
         }
-        localStorage.setItem('admin_articles', JSON.stringify(articles));
+        document.getElementById('article-form-container').style.display = 'none';
+        loadArticles();
+        showToast(id ? 'Article modifié avec succès.' : 'Article publié avec succès !');
       }
-      document.getElementById('article-form-container').style.display = 'none';
-      loadArticles();
-      showToast(id ? 'Article modifié avec succès.' : 'Article publié avec succès !');
+
+      if (useServer && imageData.startsWith('data:')) {
+        fetch('/api/upload', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:imageData})})
+          .then(function(r){return r.json()})
+          .then(function(res){ saveArticle(res.url || imageData); })
+          .catch(function(){ saveArticle(imageData); });
+      } else {
+        saveArticle(imageData);
+      }
     });
   }
 
@@ -188,6 +202,9 @@ function apiDel(path) {
       const preview = document.getElementById('img-preview');
       preview.src = article.image;
       document.getElementById('img-upload-area').classList.add('has-image');
+      if (!article.image.startsWith('data:') && article.image.startsWith('/')) {
+        preview.style.display = 'block';
+      }
     }
     window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
   };

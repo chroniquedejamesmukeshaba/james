@@ -1,9 +1,11 @@
-import os, json, time
+import os, json, time, uuid, base64
 from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'assets', 'uploads')
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def read_json(name):
     path = os.path.join(DATA_DIR, name + '.json')
@@ -183,6 +185,28 @@ def auth():
     if d.get('user') == 'admin' and name:
         return jsonify({'ok': True, 'name': name})
     return jsonify({'ok': False}), 401
+
+# --- IMAGE UPLOAD ---
+@app.route('/api/upload', methods=['POST'])
+def upload_image():
+    data = request.json
+    if not data or not data.get('image'):
+        return jsonify({'error': 'no image'}), 400
+    raw = data['image']
+    if ',' in raw: raw = raw.split(',', 1)[1]
+    ext = 'jpg'
+    if raw.startswith('/9j/'): ext = 'jpg'
+    elif raw.startswith('iVBOR'): ext = 'png'
+    elif raw.startswith('UklGR'): ext = 'webp'
+    try:
+        img_bytes = base64.b64decode(raw)
+    except Exception:
+        return jsonify({'error': 'invalid base64'}), 400
+    filename = str(uuid.uuid4()) + '.' + ext
+    path = os.path.join(UPLOAD_DIR, filename)
+    with open(path, 'wb') as f:
+        f.write(img_bytes)
+    return jsonify({'url': '/assets/uploads/' + filename})
 
 # --- SERVE STATIC FILES ---
 BASE = os.path.dirname(__file__)
