@@ -235,11 +235,13 @@
 
     function loadCampaignCarousel() {
       var container = document.getElementById('campaign-slides');
-      if (!container) return;
-      function render(list) {
+      if (!container) { console.log('CAMP: container not found'); return; }
+
+      function doRender(list) {
         if (!list || !list.length) {
           container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>';
-          document.getElementById('campaign-dots').innerHTML = '';
+          var d = document.getElementById('campaign-dots');
+          if (d) d.innerHTML = '';
           return;
         }
         var slides = '', dots = '';
@@ -247,7 +249,7 @@
           var bg = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:')) ? c.image : '';
           slides += '<div class="campaign-slide'+(i===0?' active':'')+'">' +
             (bg ? '<div class="campaign-slide-img" style="background-image:url('+bg+');"></div>' : '<div class="campaign-slide-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
-            '<div class="campaign-slide-text"><h4>'+c.title+'</h4><p>'+c.description+'</p></div></div>';
+            '<div class="campaign-slide-text"><h4>'+c.title+'</h4><p>'+(c.description||'')+'</p></div></div>';
           dots += '<button class="campaign-dot'+(i===0?' active':'')+'" data-idx="'+i+'"></button>';
         });
         container.innerHTML = slides;
@@ -257,17 +259,26 @@
         startCampaignLoop(list[0]?.speed || 5000);
       }
 
-      var fromLocal = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-      var localActive = fromLocal.filter(function(c){return c.status==='active'||!c.status;});
-      if (localActive.length) render(localActive);
+      // Try localStorage
+      try {
+        var fromLocal = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        var localActive = fromLocal.filter(function(c){return c.status==='active'||!c.status;});
+        if (localActive.length) { doRender(localActive); }
+      } catch(e) { console.log('CAMP: localStorage error', e); }
 
+      // Try server
       if (window.location.protocol !== 'file:') {
-        fetch('/api/campaigns').then(function(r){return r.json()}).then(function(server){
+        fetch('/api/campaigns?_='+Date.now()).then(function(r){
+          if (!r.ok) throw new Error('HTTP '+r.status);
+          return r.json();
+        }).then(function(server){
           if (server && server.length) {
             var active = server.filter(function(c){return c.status==='active'||!c.status;});
-            if (active.length) { render(active); localStorage.setItem('cms_campaigns', JSON.stringify(server)); }
+            if (active.length) { doRender(active);
+              try { localStorage.setItem('cms_campaigns', JSON.stringify(server)); } catch(e) {}
+            }
           }
-        }).catch(function(){});
+        }).catch(function(err){ console.log('CAMP: fetch error', err); });
       }
     }
 
