@@ -369,8 +369,8 @@ function apiDel(path) {
     var path = window.location.pathname.replace('/index.html','/') || '/';
     var data = {date:new Date().toISOString(), path:path, articleId:articleId};
     if (window.location.protocol !== 'file:') {
-      fetch('https://api.country.is/').then(function(r){return r.json();}).then(function(g){
-        data.country = g.country || '';
+      fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(g){
+        data.country = g.country_name || g.country || '';
       }).catch(function(){}).then(function(){
         fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
       });

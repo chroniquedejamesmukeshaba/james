@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64
+import os, json, time, uuid, base64, urllib.request
 from io import BytesIO
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -165,6 +165,14 @@ def track_visit():
     visits = read_json('visits')
     data = request.json
     country = data.get('country', '')
+    if not country and request.remote_addr:
+        try:
+            ip = request.remote_addr
+            with urllib.request.urlopen('http://ip-api.com/json/'+ip+'?fields=country', timeout=3) as resp:
+                g = json.loads(resp.read())
+                country = g.get('country','')
+        except Exception:
+            pass
     visits.append({'date': data.get('date',''), 'path': data.get('path',''), 'articleId': data.get('articleId',''), 'country': country})
     if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
