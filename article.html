@@ -158,7 +158,11 @@
           '<span style="color:var(--secondary);font-weight:600;">' + article.category + '</span>' +
           ' &bull; <span>' + (article.date || '') + '</span>' +
           ' &bull; <span>Par ' + (article.author || '') + '</span>';
-        document.getElementById('article-content').innerHTML = article.content || '<p>Contenu non disponible.</p>';
+        var content = article.content || '';
+        if (content && !content.match(/<[a-z][\s\S]*>/i)) {
+          content = '<p>' + content.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>') + '</p>';
+        }
+        document.getElementById('article-content').innerHTML = content || '<p>Contenu non disponible.</p>';
         var imgEl = document.getElementById('article-image');
         if (article.image && (article.image.startsWith('data:') || article.image.startsWith('/') || article.image.startsWith('http'))) {
           imgEl.outerHTML = '<img class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
