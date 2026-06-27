@@ -207,81 +207,88 @@
           '</div></div>';
       }).join('');
       }
-      loadFromServer();
+      // Ancien hero slider initiation
+      if (typeof initSlider === 'function') setTimeout(initSlider, 100);
       loadCampaignCarousel();
     });
 
+    // ===== Campagne Carrousel =====
+    var campaignTimer = null, campaignIdx = 0, campaignItems = [];
+
+    function startCampaignLoop(speed) {
+      if (campaignTimer) clearInterval(campaignTimer);
+      if (campaignItems.length < 2) return;
+      campaignTimer = setInterval(function(){
+        campaignIdx = (campaignIdx + 1) % campaignItems.length;
+        showCampaign(campaignIdx);
+      }, speed);
+    }
+
+    function showCampaign(idx) {
+      var s = document.getElementById('campaign-slides');
+      var d = document.getElementById('campaign-dots');
+      if (!s || !d) return;
+      s.querySelectorAll('.campaign-slide').forEach(function(el,i){el.classList.toggle('active',i===idx);});
+      d.querySelectorAll('.campaign-dot').forEach(function(el,i){el.classList.toggle('active',i===idx);});
+      campaignIdx = idx;
+    }
+
     function loadCampaignCarousel() {
       var container = document.getElementById('campaign-slides');
-      var dotsEl = document.getElementById('campaign-dots');
       if (!container) return;
-      var campaignTimer = null, currentSlide = 0, campaignList = [];
-
-      function startAuto(speed) {
-        if (campaignTimer) clearInterval(campaignTimer);
-        if (campaignList.length < 2) return;
-        campaignTimer = setInterval(function(){
-          currentSlide = (currentSlide + 1) % campaignList.length;
-          updateSlide();
-        }, speed);
-      }
-
-      function updateSlide() {
-        container.querySelectorAll('.campaign-slide').forEach(function(s,i){s.classList.toggle('active',i===currentSlide);});
-        dotsEl.querySelectorAll('.campaign-dot').forEach(function(d,i){d.classList.toggle('active',i===currentSlide);});
-      }
-
-      function goTo(idx) {
-        if (campaignTimer) clearInterval(campaignTimer);
-        currentSlide = idx;
-        updateSlide();
-        startAuto(campaignList[0]?.speed || 5000);
-      }
-
-      function render() {
-        if (!campaignList.length) { container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>'; dotsEl.innerHTML = ''; return; }
-        var html = '', dhtml = '';
-        campaignList.forEach(function(c,i){
+      function render(list) {
+        if (!list || !list.length) {
+          container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>';
+          document.getElementById('campaign-dots').innerHTML = '';
+          return;
+        }
+        var slides = '', dots = '';
+        list.forEach(function(c,i){
           var bg = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:')) ? c.image : '';
-          html += '<div class="campaign-slide'+(i===0?' active':'')+'">' +
+          slides += '<div class="campaign-slide'+(i===0?' active':'')+'">' +
             (bg ? '<div class="campaign-slide-img" style="background-image:url('+bg+');"></div>' : '<div class="campaign-slide-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
-            '<div class="campaign-slide-text">' +
-            '<h4>'+c.title+'</h4>' +
-            '<p>'+c.description+'</p>' +
-            '</div></div>';
-          dhtml += '<button class="campaign-dot'+(i===0?' active':'')+'" data-idx="'+i+'"></button>';
+            '<div class="campaign-slide-text"><h4>'+c.title+'</h4><p>'+c.description+'</p></div></div>';
+          dots += '<button class="campaign-dot'+(i===0?' active':'')+'" data-idx="'+i+'"></button>';
         });
-        container.innerHTML = html;
-        dotsEl.innerHTML = dhtml;
-        currentSlide = 0;
-        startAuto(campaignList[0]?.speed || 5000);
-
-        dotsEl.addEventListener('click', function(e){
-          var idx = e.target.dataset.idx;
-          if (idx !== undefined) goTo(parseInt(idx));
-        });
-        var prevBtn = document.querySelector('.campaign-prev');
-        var nextBtn = document.querySelector('.campaign-next');
-        if (prevBtn) prevBtn.onclick = function(){ goTo((currentSlide - 1 + campaignList.length) % campaignList.length); };
-        if (nextBtn) nextBtn.onclick = function(){ goTo((currentSlide + 1) % campaignList.length); };
+        container.innerHTML = slides;
+        document.getElementById('campaign-dots').innerHTML = dots;
+        campaignItems = list;
+        campaignIdx = 0;
+        startCampaignLoop(list[0]?.speed || 5000);
       }
 
-      function loadFromLocal() {
-        var loc = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-        campaignList = loc.filter(function(c){return c.status==='active'||!c.status;});
-        if (campaignList.length) render();
-      }
+      var fromLocal = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+      var localActive = fromLocal.filter(function(c){return c.status==='active'||!c.status;});
+      if (localActive.length) render(localActive);
 
-      loadFromLocal();
       if (window.location.protocol !== 'file:') {
-        fetch('/api/campaigns').then(function(r){return r.json()}).then(function(d){
-          if (d) {
-            campaignList = d.filter(function(c){return c.status==='active'||!c.status;});
-            if (campaignList.length) { localStorage.setItem('cms_campaigns', JSON.stringify(d)); render(); }
+        fetch('/api/campaigns').then(function(r){return r.json()}).then(function(server){
+          if (server && server.length) {
+            var active = server.filter(function(c){return c.status==='active'||!c.status;});
+            if (active.length) { render(active); localStorage.setItem('cms_campaigns', JSON.stringify(server)); }
           }
         }).catch(function(){});
       }
     }
+
+    document.addEventListener('click', function(e) {
+      var dot = e.target.closest('.campaign-dot');
+      if (dot && dot.dataset.idx !== undefined) {
+        if (campaignTimer) clearInterval(campaignTimer);
+        showCampaign(parseInt(dot.dataset.idx));
+        startCampaignLoop(campaignItems[0]?.speed || 5000);
+      }
+      if (e.target.closest('.campaign-prev')) {
+        if (campaignTimer) clearInterval(campaignTimer);
+        showCampaign((campaignIdx - 1 + campaignItems.length) % campaignItems.length);
+        startCampaignLoop(campaignItems[0]?.speed || 5000);
+      }
+      if (e.target.closest('.campaign-next')) {
+        if (campaignTimer) clearInterval(campaignTimer);
+        showCampaign((campaignIdx + 1) % campaignItems.length);
+        startCampaignLoop(campaignItems[0]?.speed || 5000);
+      }
+    });
   </script>
 </body>
 </html>
