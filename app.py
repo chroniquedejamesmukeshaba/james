@@ -172,21 +172,27 @@ def track_visit():
 @app.route('/api/visits/analytics', methods=['GET'])
 def visit_analytics():
     period = request.args.get('period', 'all')
-    visits = read_json('visits')
+    raw = read_json('visits')
+    # Normalize: old visits are plain strings, new ones are dicts
+    visits = []
+    for v in raw:
+        if isinstance(v, str):
+            visits.append({'date': v, 'path': '', 'articleId': ''})
+        else:
+            visits.append(v)
     now = time.time()
+    cutoff_time = None
     if period == 'day':
-        cutoff = now - 86400
+        cutoff_time = now - 86400
     elif period == 'week':
-        cutoff = now - 7 * 86400
+        cutoff_time = now - 7 * 86400
     elif period == 'month':
-        cutoff = now - 30 * 86400
+        cutoff_time = now - 30 * 86400
     elif period == 'year':
-        cutoff = now - 365 * 86400
-    else:
-        cutoff = 0
-    if cutoff:
-        visits = [v for v in visits if v.get('date','')[:19] >= time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff))]
-    # Count per article
+        cutoff_time = now - 365 * 86400
+    if cutoff_time:
+        cutoff_str = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff_time))
+        visits = [v for v in visits if v.get('date','')[:19] >= cutoff_str]
     article_counts = {}
     page_counts = {}
     for v in visits:
@@ -195,7 +201,6 @@ def visit_analytics():
         if aid:
             article_counts[aid] = article_counts.get(aid, 0) + 1
         page_counts[path] = page_counts.get(path, 0) + 1
-    # Day-by-day for chart
     days = {}
     for v in visits:
         d = v.get('date','')[:10]
@@ -217,7 +222,8 @@ def get_stats():
     subs = len(read_json('newsletter'))
     visitsData = read_json('visits')
     visits = len(visitsData)
-    return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsData})
+    visitsList = [v if isinstance(v, str) else v.get('date','') for v in visitsData]
+    return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsList})
 
 # --- AUTH ---
 ADMINS = {
