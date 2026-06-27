@@ -82,112 +82,59 @@
         });
       });
 
-      function normDate(v) {
-        if (typeof v === 'string') return v;
-        return v.date || '';
-      }
-      function normPath(v) {
-        if (typeof v === 'string') return '';
-        return v.path || '';
-      }
-      function normArticleId(v) {
-        if (typeof v === 'string') return '';
-        return v.articleId || '';
-      }
-
       function loadAnalytics(period) {
         if (window.location.protocol === 'file:') return;
-        var now = new Date();
-        var cutoff = new Date(0);
-        if (period === 'day') cutoff = new Date(now - 86400000);
-        else if (period === 'week') cutoff = new Date(now - 7 * 86400000);
-        else if (period === 'month') cutoff = new Date(now - 30 * 86400000);
-        else if (period === 'year') cutoff = new Date(now - 365 * 86400000);
-
         Promise.all([
-          fetch('/api/visits', {cache:'no-store'}).then(function(r){
-            if (!r.ok) throw new Error('HTTP '+r.status);
-            return r.json();
-          }),
-          fetch('/api/articles', {cache:'no-store'}).then(function(r){
+          fetch('/api/visits/analytics?period='+period, {cache:'no-store'}).then(function(r){
             if (!r.ok) throw new Error('HTTP '+r.status);
             return r.json();
           })
         ]).then(function(results){
-          var rawVisits = results[0] || [];
-          var articles = results[1] || [];
-          var artTitles = {};
-          articles.forEach(function(a){ artTitles[a.id] = a.title; });
-          if (rawVisits.length === 0) {
-            document.getElementById('analytics-total').innerHTML = '0 <small style="font-size:0.7rem;color:#8b949e;">(pas de donn\u00e9es)</small>';
-          }
+          var data = results[0] || {};
+          document.getElementById('analytics-total').textContent = data.total || 0;
 
-          var visits = rawVisits.filter(function(v){
-            var d = normDate(v);
-            return d >= cutoff.toISOString().slice(0,19);
-          });
-
-          document.getElementById('analytics-total').textContent = visits.length;
-
-          var artCount = {};
-          var pageCount = {};
-          var dayCount = {};
-          visits.forEach(function(v){
-            var aid = normArticleId(v);
-            var p = normPath(v);
-            var d = normDate(v).slice(0,10);
-            if (aid) artCount[aid] = (artCount[aid]||0) + 1;
-            if (p) pageCount[p] = (pageCount[p]||0) + 1;
-            if (d) dayCount[d] = (dayCount[d]||0) + 1;
-          });
-
-          var dayLabels = Object.keys(dayCount).sort();
           var chart = document.getElementById('analytics-chart');
-          if (dayLabels.length) {
+          if (data.chart && data.chart.labels.length) {
             var maxVal = 1;
-            var dayData = dayLabels.map(function(l){ return dayCount[l]; });
-            dayData.forEach(function(v){ if(v>maxVal) maxVal=v; });
+            data.chart.data.forEach(function(v){ if(v>maxVal) maxVal=v; });
             var bars = '';
-            dayLabels.forEach(function(label, i) {
-              var h = Math.max(4, (dayData[i]/maxVal)*150);
+            data.chart.labels.forEach(function(label, i) {
+              var h = Math.max(4, (data.chart.data[i]/maxVal)*150);
               bars += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">' +
-                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+dayData[i]+' visites"></div>' +
+                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+data.chart.data[i]+' visites"></div>' +
                 '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">'+label.slice(5)+'</span>' +
-                '<span style="font-size:0.7rem;font-weight:600;">'+dayData[i]+'</span></div>';
+                '<span style="font-size:0.7rem;font-weight:600;">'+data.chart.data[i]+'</span></div>';
             });
             chart.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;overflow-x:auto;">'+bars+'</div>';
           } else {
             chart.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Aucune visite.</p>';
           }
 
-          var sortedArts = Object.keys(artCount).sort(function(a,b){ return artCount[b]-artCount[a]; });
-          var tbody = document.getElementById('analytics-articles-body');
-          if (sortedArts.length) {
-            tbody.innerHTML = sortedArts.map(function(aid){
-              return '<tr><td><strong>'+(artTitles[aid]||'Article #'+aid)+'</strong></td><td>'+artCount[aid]+'</td></tr>';
+          var artTbody = document.getElementById('analytics-articles-body');
+          if (data.articles && data.articles.length) {
+            artTbody.innerHTML = data.articles.map(function(a){
+              return '<tr><td><strong>'+a.title+'</strong></td><td>'+a.visits+'</td></tr>';
             }).join('');
           } else {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article.</td></tr>';
+            artTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article.</td></tr>';
           }
 
-          var sortedPages = Object.keys(pageCount).sort(function(a,b){ return pageCount[b]-pageCount[a]; });
           var pbody = document.getElementById('analytics-pages-body');
-          if (sortedPages.length) {
-            pbody.innerHTML = sortedPages.map(function(p){
-              var label = p;
-              if (label==='/'||label==='/index.html') label='Accueil';
-              else label = label.replace('.html','');
-              return '<tr><td>'+label+'</td><td>'+pageCount[p]+'</td></tr>';
+          if (data.pages && data.pages.length) {
+            pbody.innerHTML = data.pages.map(function(p){
+              return '<tr><td>'+p.page+'</td><td>'+p.visits+'</td></tr>';
             }).join('');
           } else {
             pbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite.</td></tr>';
           }
+
           // Countries pie chart
-          var countries = d.countries || [];
+          var countries = data.countries || [];
           var pie = document.getElementById('countries-pie');
           var list = document.getElementById('countries-list');
           if (countries.length) {
-            var totalVisits = countries.reduce(function(s,c){return s+c.visits;},0);
+            var totalVisits = 0;
+            countries.forEach(function(c){ totalVisits += c.visits; });
             var colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#2980b9','#27ae60','#d35400','#8e44ad'];
             var conicGrad = '';
             var legendHtml = '';
