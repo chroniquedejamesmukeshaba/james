@@ -369,7 +369,11 @@ function apiDel(path) {
     var path = window.location.pathname.replace('/index.html','/') || '/';
     var data = {date:new Date().toISOString(), path:path, articleId:articleId};
     if (window.location.protocol !== 'file:') {
-      fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+      fetch('https://api.country.is/').then(function(r){return r.json();}).then(function(g){
+        data.country = g.country || '';
+      }).catch(function(){}).then(function(){
+        fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+      });
     }
     var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
     visits.push(data);
