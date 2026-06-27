@@ -76,51 +76,100 @@
         });
       });
 
+      function normDate(v) {
+        if (typeof v === 'string') return v;
+        return v.date || '';
+      }
+      function normPath(v) {
+        if (typeof v === 'string') return '';
+        return v.path || '';
+      }
+      function normArticleId(v) {
+        if (typeof v === 'string') return '';
+        return v.articleId || '';
+      }
+
       function loadAnalytics(period) {
         if (window.location.protocol === 'file:') return;
-        var url = '/api/visits/analytics?period=' + period;
-        fetch(url).then(function(r){ return r.json(); }).then(function(d){
-          if (!d) return;
-          document.getElementById('analytics-total').textContent = d.total || 0;
+        var now = new Date();
+        var cutoff = new Date(0);
+        if (period === 'day') cutoff = new Date(now - 86400000);
+        else if (period === 'week') cutoff = new Date(now - 7 * 86400000);
+        else if (period === 'month') cutoff = new Date(now - 30 * 86400000);
+        else if (period === 'year') cutoff = new Date(now - 365 * 86400000);
 
+        Promise.all([
+          fetch('/api/visits').then(function(r){return r.json();}),
+          fetch('/api/articles').then(function(r){return r.json();})
+        ]).then(function(results){
+          var rawVisits = results[0] || [];
+          var articles = results[1] || [];
+          var artTitles = {};
+          articles.forEach(function(a){ artTitles[a.id] = a.title; });
+
+          var visits = rawVisits.filter(function(v){
+            var d = normDate(v);
+            return d >= cutoff.toISOString().slice(0,19);
+          });
+
+          document.getElementById('analytics-total').textContent = visits.length;
+
+          var artCount = {};
+          var pageCount = {};
+          var dayCount = {};
+          visits.forEach(function(v){
+            var aid = normArticleId(v);
+            var p = normPath(v);
+            var d = normDate(v).slice(0,10);
+            if (aid) artCount[aid] = (artCount[aid]||0) + 1;
+            if (p) pageCount[p] = (pageCount[p]||0) + 1;
+            if (d) dayCount[d] = (dayCount[d]||0) + 1;
+          });
+
+          var dayLabels = Object.keys(dayCount).sort();
           var chart = document.getElementById('analytics-chart');
-          if (d.chart && d.chart.labels && d.chart.labels.length) {
+          if (dayLabels.length) {
             var maxVal = 1;
-            d.chart.data.forEach(function(v){ if(v > maxVal) maxVal = v; });
+            var dayData = dayLabels.map(function(l){ return dayCount[l]; });
+            dayData.forEach(function(v){ if(v>maxVal) maxVal=v; });
             var bars = '';
-            d.chart.labels.forEach(function(label, i) {
-              var h = Math.max(4, (d.chart.data[i] / maxVal) * 150);
-              var shortLabel = label.slice(5);
+            dayLabels.forEach(function(label, i) {
+              var h = Math.max(4, (dayData[i]/maxVal)*150);
               bars += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">' +
-                '<div style="width:24px;height:' + h + 'px;background:var(--primary);border-radius:4px 4px 0 0;" title="' + d.chart.data[i] + ' visites"></div>' +
-                '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">' + shortLabel + '</span>' +
-                '<span style="font-size:0.7rem;font-weight:600;">' + d.chart.data[i] + '</span></div>';
+                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+dayData[i]+' visites"></div>' +
+                '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">'+label.slice(5)+'</span>' +
+                '<span style="font-size:0.7rem;font-weight:600;">'+dayData[i]+'</span></div>';
             });
-            chart.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;overflow-x:auto;">' + bars + '</div>';
+            chart.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;overflow-x:auto;">'+bars+'</div>';
           } else {
-            chart.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Aucune visite pour cette p\u00e9riode.</p>';
+            chart.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Aucune visite.</p>';
           }
 
+          var sortedArts = Object.keys(artCount).sort(function(a,b){ return artCount[b]-artCount[a]; });
           var tbody = document.getElementById('analytics-articles-body');
-          if (d.articles && d.articles.length) {
-            tbody.innerHTML = d.articles.map(function(a){
-              return '<tr><td><strong>' + a.title + '</strong></td><td>' + a.visits + '</td></tr>';
+          if (sortedArts.length) {
+            tbody.innerHTML = sortedArts.map(function(aid){
+              return '<tr><td><strong>'+(artTitles[aid]||'Article #'+aid)+'</strong></td><td>'+artCount[aid]+'</td></tr>';
             }).join('');
           } else {
             tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article.</td></tr>';
           }
 
+          var sortedPages = Object.keys(pageCount).sort(function(a,b){ return pageCount[b]-pageCount[a]; });
           var pbody = document.getElementById('analytics-pages-body');
-          if (d.pages && d.pages.length) {
-            pbody.innerHTML = d.pages.map(function(p){
-              return '<tr><td>' + p.page + '</td><td>' + p.visits + '</td></tr>';
+          if (sortedPages.length) {
+            pbody.innerHTML = sortedPages.map(function(p){
+              var label = p;
+              if (label==='/'||label==='/index.html') label='Accueil';
+              else label = label.replace('.html','');
+              return '<tr><td>'+label+'</td><td>'+pageCount[p]+'</td></tr>';
             }).join('');
           } else {
             pbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite.</td></tr>';
           }
-        }).catch(function(){
+        }).catch(function(err){
           document.getElementById('analytics-total').textContent = 'Erreur';
-          document.getElementById('analytics-chart').innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Erreur de chargement.</p>';
+          document.getElementById('analytics-chart').innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Erreur : '+err.message+'</p>';
         });
       }
     });
