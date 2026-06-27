@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64
+import os, json, time, uuid, base64, urllib.request
 from io import BytesIO
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -164,7 +164,8 @@ def get_visits():
 def track_visit():
     visits = read_json('visits')
     data = request.json
-    visits.append({'date': data.get('date',''), 'path': data.get('path',''), 'articleId': data.get('articleId','')})
+    ip = request.remote_addr or ''
+    visits.append({'date': data.get('date',''), 'path': data.get('path',''), 'articleId': data.get('articleId',''), 'ip': ip})
     if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
     return jsonify({'ok': True})
@@ -178,7 +179,7 @@ def visit_analytics():
     visits = []
     for v in raw:
         if isinstance(v, str):
-            visits.append({'date': v, 'path': '', 'articleId': ''})
+            visits.append({'date': v, 'path': '', 'articleId': '', 'ip': ''})
         else:
             visits.append(v)
     now = time.time()
@@ -196,12 +197,35 @@ def visit_analytics():
         visits = [v for v in visits if v.get('date','')[:19] >= cutoff_str]
     article_data = {}
     page_data = {}
+    country_data = {}
+    ips = set()
     for v in visits:
         aid = v.get('articleId','')
         path = v.get('path','')
+        ip = v.get('ip','')
         if aid:
             article_data[aid] = article_data.get(aid, 0) + 1
         page_data[path] = page_data.get(path, 0) + 1
+        if ip:
+            ips.add(ip)
+    # Batch resolve countries
+    ip_country = {}
+    if ips:
+        try:
+            batch = list(ips)[:100]
+            data = json.dumps(batch).encode()
+            req = urllib.request.Request('http://ip-api.com/batch?fields=query,country', data=data, headers={'Content-Type':'application/json'})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                results = json.loads(resp.read())
+                for r in results:
+                    if r.get('country'):
+                        ip_country[r['query']] = r['country']
+        except Exception:
+            pass
+    for v in visits:
+        ip = v.get('ip','')
+        country = ip_country.get(ip, 'Inconnu')
+        country_data[country] = country_data.get(country, 0) + 1
     articles_out = []
     for aid, cnt in sorted(article_data.items(), key=lambda x:-x[1]):
         articles_out.append({'id': aid, 'title': art_map.get(aid, 'Article #'+aid), 'visits': cnt})
@@ -212,6 +236,9 @@ def visit_analytics():
         elif label in ('/', '/index.html'): label = 'Accueil'
         else: label = label.replace('.html','').replace('/','')
         pages_out.append({'page': label, 'visits': cnt})
+    countries_out = []
+    for c, cnt in sorted(country_data.items(), key=lambda x:-x[1]):
+        countries_out.append({'country': c, 'visits': cnt})
     days = {}
     for v in visits:
         d = v.get('date','')[:10]
@@ -222,6 +249,7 @@ def visit_analytics():
         'total': len(visits),
         'articles': articles_out,
         'pages': pages_out,
+        'countries': countries_out,
         'chart': {'labels': day_labels, 'data': day_data}
     })
 

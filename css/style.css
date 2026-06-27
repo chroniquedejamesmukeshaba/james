@@ -706,6 +706,8 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
 .admin-body #article-form-container { background: #161b22; border: 1px solid #30363d; }
 .admin-body #analytics-chart { background: #161b22 !important; border: 1px solid #30363d; }
 .admin-body #visits-chart { background: #161b22 !important; border: 1px solid #30363d; }
+.admin-body #countries-container { background: #161b22 !important; border: 1px solid #30363d; }
+.admin-body #countries-pie div { background: #0d1117 !important; color: #c9d1d9 !important; }
 .admin-body .admin-sidebar a:first-child { border-top: none; }
 .admin-body .toast { background: #238636 !important; color: #fff !important; }
 .admin-body small, .admin-body .text-muted { color: #8b949e !important; }
