@@ -99,13 +99,22 @@
         else if (period === 'year') cutoff = new Date(now - 365 * 86400000);
 
         Promise.all([
-          fetch('/api/visits').then(function(r){return r.json();}),
-          fetch('/api/articles').then(function(r){return r.json();})
+          fetch('/api/visits', {cache:'no-store'}).then(function(r){
+            if (!r.ok) throw new Error('HTTP '+r.status);
+            return r.json();
+          }),
+          fetch('/api/articles', {cache:'no-store'}).then(function(r){
+            if (!r.ok) throw new Error('HTTP '+r.status);
+            return r.json();
+          })
         ]).then(function(results){
           var rawVisits = results[0] || [];
           var articles = results[1] || [];
           var artTitles = {};
           articles.forEach(function(a){ artTitles[a.id] = a.title; });
+          if (rawVisits.length === 0) {
+            document.getElementById('analytics-total').innerHTML = '0 <small style="font-size:0.7rem;color:#8b949e;">(pas de donn\u00e9es)</small>';
+          }
 
           var visits = rawVisits.filter(function(v){
             var d = normDate(v);
