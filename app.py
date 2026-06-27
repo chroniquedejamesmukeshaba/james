@@ -202,7 +202,6 @@ def visit_analytics():
         aid = v.get('articleId','')
         path = v.get('path','')
         country = v.get('country', '')
-        if not country: country = v.get('ip', '')
         if not country: country = 'Inconnu'
         if aid:
             article_data[aid] = article_data.get(aid, 0) + 1
