@@ -141,6 +141,17 @@
               loadCampaigns();
             });
           }
+          var all = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+          if (id) {
+            var idx = all.findIndex(function(x){return x.id === id;});
+            if (idx >= 0) { all[idx] = Object.assign({}, all[idx], data); }
+          } else {
+            data.id = Date.now();
+            data.status = 'active';
+            data.createdAt = new Date().toISOString();
+            all.unshift(data);
+          }
+          localStorage.setItem('cms_campaigns', JSON.stringify(all));
           document.getElementById('campaign-form-container').style.display = 'none';
           loadCampaigns();
           showToast(id ? 'Campagne modifiée.' : 'Campagne créée !');
@@ -240,8 +251,9 @@
         if (!confirm('Arrêter cette campagne ? Elle sera archivée et visible sur la page Sensibilisation.')) return;
         if (API) api('POST', '/api/campaigns/'+id+'/stop', {});
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-        list.forEach(function(c){ if(c.id===id) { c.status='archived'; c.archivedAt=new Date().toISOString(); } });
-        localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        var found = false;
+        list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='archived'; c.archivedAt=new Date().toISOString(); found=true; } });
+        if (found) localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
         showToast('Campagne arrêtée et archivée.');
       };
@@ -250,8 +262,9 @@
         if (!confirm('Supprimer définitivement ?')) return;
         if (API) api('DELETE', '/api/campaigns/'+id);
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        var before = list.length;
         list = list.filter(function(c){return c.id !== id;});
-        localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        if (list.length !== before) localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
         showToast('Campagne supprimée.');
       };
