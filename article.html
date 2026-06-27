@@ -163,7 +163,8 @@
         if (article.image && (article.image.startsWith('data:') || article.image.startsWith('/') || article.image.startsWith('http'))) {
           imgEl.outerHTML = '<img class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
         }
-        setOG(article.title, article.excerpt || '', article.image && !article.image.startsWith('data:') ? article.image : '');
+        var ogImg = article.image && !article.image.startsWith('data:') ? article.image : '';
+        setOG(article.title, article.excerpt || '', ogImg);
         document.getElementById('comments-list').dataset.articleId = articleId;
         document.getElementById('comment-form').dataset.articleId = articleId;
         loadComments();
