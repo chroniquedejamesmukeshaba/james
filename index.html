@@ -265,9 +265,19 @@
         if (nextBtn) nextBtn.onclick = function(){ goTo((currentSlide + 1) % campaignList.length); };
       }
 
+      function loadFromLocal() {
+        var loc = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        campaignList = loc.filter(function(c){return c.status==='active'||!c.status;});
+        if (campaignList.length) render();
+      }
+
+      loadFromLocal();
       if (window.location.protocol !== 'file:') {
         fetch('/api/campaigns').then(function(r){return r.json()}).then(function(d){
-          if (d && d.length) { campaignList = d.filter(function(c){return c.status==='active'||!c.status;}); render(); }
+          if (d) {
+            campaignList = d.filter(function(c){return c.status==='active'||!c.status;});
+            if (campaignList.length) { localStorage.setItem('cms_campaigns', JSON.stringify(d)); render(); }
+          }
         }).catch(function(){});
       }
     }
