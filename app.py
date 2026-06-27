@@ -1,4 +1,5 @@
 import os, json, time, uuid, base64
+from io import BytesIO
 from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__)
@@ -6,6 +7,12 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'assets', 'uploads')
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
 
 def read_json(name):
     path = os.path.join(DATA_DIR, name + '.json')
@@ -187,6 +194,30 @@ def auth():
     return jsonify({'ok': False}), 401
 
 # --- IMAGE UPLOAD ---
+def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
+    if not HAS_PIL:
+        return img_bytes
+    try:
+        img = Image.open(BytesIO(img_bytes))
+        if img.mode in ('RGBA', 'P'): img = img.convert('RGB')
+        w, h = img.size
+        if w > max_dim or h > max_dim:
+            ratio = min(max_dim / w, max_dim / h)
+            w, h = int(w * ratio), int(h * ratio)
+            img = img.resize((w, h), Image.LANCZOS)
+        quality = 85
+        output = BytesIO()
+        while quality > 10:
+            output.seek(0)
+            output.truncate()
+            img.save(output, 'JPEG', quality=quality, optimize=True)
+            if output.tell() <= target_bytes:
+                break
+            quality -= 5
+        return output.getvalue()
+    except Exception:
+        return img_bytes
+
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
     data = request.json
@@ -195,13 +226,11 @@ def upload_image():
     raw = data['image']
     if ',' in raw: raw = raw.split(',', 1)[1]
     ext = 'jpg'
-    if raw.startswith('/9j/'): ext = 'jpg'
-    elif raw.startswith('iVBOR'): ext = 'png'
-    elif raw.startswith('UklGR'): ext = 'webp'
     try:
         img_bytes = base64.b64decode(raw)
     except Exception:
         return jsonify({'error': 'invalid base64'}), 400
+    img_bytes = compress_image(img_bytes, 70000)
     filename = str(uuid.uuid4()) + '.' + ext
     path = os.path.join(UPLOAD_DIR, filename)
     with open(path, 'wb') as f:
