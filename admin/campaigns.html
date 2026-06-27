@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Campagnes - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html" class="active">📢 Gestion des campagnes</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px;">
+        <h2 style="color:var(--primary);">Gestion des Campagnes</h2>
+        <button class="btn btn-primary" id="new-campaign-btn">➕ Nouvelle campagne</button>
+      </div>
+
+      <div id="campaign-form-container" style="display:none;background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
+        <h3 id="campaign-form-title" style="color:var(--primary);margin-bottom:20px;">Nouvelle campagne</h3>
+        <form id="campaign-form">
+          <input type="hidden" id="campaign-id">
+          <div class="form-group">
+            <label>Titre de la campagne</label>
+            <input type="text" id="cmp-title" class="form-input" placeholder="Ex: Respect des mesures de sécurité contre Ebola" required>
+          </div>
+          <div class="form-group">
+            <label>Image illustrative</label>
+            <div class="img-upload-wrapper">
+              <div class="img-upload-area" id="cmp-img-area" onclick="document.getElementById('cmp-image-input').click()">
+                <input type="file" id="cmp-image-input" accept="image/*">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Cliquez pour choisir une image</div>
+                <div class="upload-hint">Requis</div>
+                <img class="img-preview" id="cmp-img-preview" alt="Aperçu">
+              </div>
+              <button type="button" class="img-remove-btn" id="cmp-img-remove" onclick="removeCmpImage()" style="display:none;">✕ Supprimer l'image</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="cmp-description" class="form-input" placeholder="Texte d'explication de la campagne..." rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Vitesse d'affichage (secondes)</label>
+            <input type="number" id="cmp-speed" class="form-input" value="5" min="2" max="30" style="width:120px;">
+            <small style="color:var(--text-light);display:block;">Temps d'affichage de chaque campagne dans le carrousel.</small>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+            <button type="button" class="btn btn-outline" id="cancel-campaign">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes actives</h3>
+      <div class="admin-table" style="margin-bottom:30px;">
+        <table>
+          <thead><tr><th>Titre</th><th>Créée le</th><th>Image</th><th>Vitesse</th><th>Actions</th></tr></thead>
+          <tbody id="campaigns-active-body"></tbody>
+        </table>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes archivées</h3>
+      <div class="admin-table">
+        <table>
+          <thead><tr><th>Titre</th><th>Créée le</th><th>Archivée le</th><th>Actions</th></tr></thead>
+          <tbody id="campaigns-archived-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script>
+    var API = (window.location.protocol === 'file:') ? null : '';
+
+    function api(method, url, body) {
+      if (!API) return Promise.reject('file:');
+      return fetch(url, {method:method, headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined})
+        .then(function(r){return r.json()}).catch(function(){return null;});
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadCampaigns();
+
+      document.getElementById('new-campaign-btn').addEventListener('click', function () {
+        showForm();
+      });
+      document.getElementById('cancel-campaign').addEventListener('click', function () {
+        document.getElementById('campaign-form-container').style.display = 'none';
+      });
+
+      document.getElementById('cmp-image-input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          document.getElementById('cmp-img-preview').src = ev.target.result;
+          document.getElementById('cmp-img-area').classList.add('has-image');
+          document.getElementById('cmp-img-remove').style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+      });
+
+      window.removeCmpImage = function () {
+        document.getElementById('cmp-image-input').value = '';
+        document.getElementById('cmp-img-area').classList.remove('has-image');
+        document.getElementById('cmp-img-preview').src = '';
+        document.getElementById('cmp-img-remove').style.display = 'none';
+      };
+
+      document.getElementById('campaign-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var id = document.getElementById('campaign-id').value;
+        var preview = document.getElementById('cmp-img-preview');
+        var imageData = preview && preview.src ? preview.src : '';
+        var speed = parseInt(document.getElementById('cmp-speed').value) * 1000 || 5000;
+
+        function save(data) {
+          if (API) {
+            var p = id ? api('POST', '/api/campaigns', data) : api('POST', '/api/campaigns', data);
+            p.then(function(){
+              if (speed !== 5000 && id) {
+                api('POST', '/api/campaigns/' + id + '/speed', {speed: speed});
+              }
+              loadCampaigns();
+            });
+          }
+          document.getElementById('campaign-form-container').style.display = 'none';
+          loadCampaigns();
+          showToast(id ? 'Campagne modifiée.' : 'Campagne créée !');
+        }
+
+        var data = {
+          title: document.getElementById('cmp-title').value,
+          description: document.getElementById('cmp-description').value,
+          image: imageData,
+          speed: speed
+        };
+        if (id) data.id = Number(id);
+
+        if (API && imageData.startsWith('data:')) {
+          fetch('/api/upload', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({image:imageData})})
+            .then(function(r){return r.json()})
+            .then(function(res){ data.image = res.url || imageData; save(data); })
+            .catch(function(){ save(data); });
+        } else {
+          save(data);
+        }
+      });
+
+      function showForm(campaign) {
+        document.getElementById('campaign-form-container').style.display = 'block';
+        if (campaign) {
+          document.getElementById('campaign-form-title').textContent = 'Modifier la campagne';
+          document.getElementById('campaign-id').value = campaign.id;
+          document.getElementById('cmp-title').value = campaign.title;
+          document.getElementById('cmp-description').value = campaign.description;
+          document.getElementById('cmp-speed').value = (campaign.speed || 5000) / 1000;
+          if (campaign.image) {
+            document.getElementById('cmp-img-preview').src = campaign.image;
+            document.getElementById('cmp-img-area').classList.add('has-image');
+            document.getElementById('cmp-img-remove').style.display = 'inline-block';
+          }
+        } else {
+          document.getElementById('campaign-form').reset();
+          removeCmpImage();
+          document.getElementById('campaign-form-title').textContent = 'Nouvelle campagne';
+          document.getElementById('campaign-id').value = '';
+          document.getElementById('cmp-speed').value = 5;
+        }
+        window.scrollTo({ top: document.getElementById('campaign-form-container').offsetTop - 100, behavior: 'smooth' });
+      }
+
+      function loadCampaigns() {
+        if (!API) return renderFromLocal();
+        api('GET', '/api/campaigns').then(function(list) {
+          if (list) { renderTable(list); localStorage.setItem('cms_campaigns', JSON.stringify(list)); }
+          else renderFromLocal();
+        }).catch(function(){renderFromLocal();});
+        function renderFromLocal() {
+          var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+          renderTable(list);
+        }
+      }
+
+      function renderTable(list) {
+        if (!list) list = [];
+        var activeBody = document.getElementById('campaigns-active-body');
+        var archivedBody = document.getElementById('campaigns-archived-body');
+        var active = list.filter(function(c){return c.status === 'active' || !c.status;});
+        var archived = list.filter(function(c){return c.status === 'archived';});
+
+        if (active.length === 0) {
+          activeBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">Aucune campagne active.</td></tr>';
+        } else {
+          activeBody.innerHTML = active.map(function(c) {
+            var img = c.image && (c.image.startsWith('/') || c.image.startsWith('data:') || c.image.startsWith('http'))
+              ? '<img src="'+c.image+'" style="width:60px;height:40px;object-fit:cover;border-radius:4px;">' : '<span style="color:#999;">—</span>';
+            return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+img+'</td><td>'+(c.speed?c.speed/1000+'s':'5s')+'</td><td>' +
+              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Arrêter</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
+          }).join('');
+        }
+
+        if (archived.length === 0) {
+          archivedBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Aucune campagne archivée.</td></tr>';
+        } else {
+          archivedBody.innerHTML = archived.map(function(c) {
+            return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+(c.archivedAt||'—').slice(0,10)+'</td><td>' +
+              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
+          }).join('');
+        }
+      }
+
+      window.editCampaign = function (id) {
+        var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        var c = list.find(function(x){return x.id === id;});
+        if (c) showForm(c);
+      };
+
+      window.stopCampaign = function (id) {
+        if (!confirm('Arrêter cette campagne ? Elle sera archivée et visible sur la page Sensibilisation.')) return;
+        if (API) api('POST', '/api/campaigns/'+id+'/stop', {});
+        var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        list.forEach(function(c){ if(c.id===id) { c.status='archived'; c.archivedAt=new Date().toISOString(); } });
+        localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        loadCampaigns();
+        showToast('Campagne arrêtée et archivée.');
+      };
+
+      window.deleteCampaign = function (id) {
+        if (!confirm('Supprimer définitivement ?')) return;
+        if (API) api('DELETE', '/api/campaigns/'+id);
+        var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        list = list.filter(function(c){return c.id !== id;});
+        localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        loadCampaigns();
+        showToast('Campagne supprimée.');
+      };
+    });
+  </script>
+</body>
+</html>

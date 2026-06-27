@@ -143,6 +143,56 @@ def delete_lost_found(lid):
     write_json('lost_found', ads)
     return jsonify({'ok': True})
 
+# --- CAMPAIGNS ---
+@app.route('/api/campaigns', methods=['GET'])
+def get_campaigns():
+    return jsonify(read_json('campaigns'))
+
+@app.route('/api/campaigns', methods=['POST'])
+def save_campaign():
+    campaigns = read_json('campaigns')
+    data = request.json
+    if data.get('id'):
+        for i, c in enumerate(campaigns):
+            if c['id'] == data['id']:
+                campaigns[i] = {**c, **data}
+                break
+    else:
+        data['id'] = int(time.time() * 1000)
+        data['status'] = 'active'
+        data['createdAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+        campaigns.insert(0, data)
+    write_json('campaigns', campaigns)
+    return jsonify({'ok': True, 'id': data['id']})
+
+@app.route('/api/campaigns/<int:cid>', methods=['DELETE'])
+def delete_campaign(cid):
+    campaigns = [c for c in read_json('campaigns') if c['id'] != cid]
+    write_json('campaigns', campaigns)
+    return jsonify({'ok': True})
+
+@app.route('/api/campaigns/<int:cid>/stop', methods=['POST'])
+def stop_campaign(cid):
+    campaigns = read_json('campaigns')
+    for c in campaigns:
+        if c['id'] == cid:
+            c['status'] = 'archived'
+            c['archivedAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+            break
+    write_json('campaigns', campaigns)
+    return jsonify({'ok': True})
+
+@app.route('/api/campaigns/<int:cid>/speed', methods=['POST'])
+def set_campaign_speed(cid):
+    campaigns = read_json('campaigns')
+    speed = request.json.get('speed', 5000)
+    for c in campaigns:
+        if c['id'] == cid:
+            c['speed'] = speed
+            break
+    write_json('campaigns', campaigns)
+    return jsonify({'ok': True})
+
 # --- DONATIONS ---
 @app.route('/api/donations', methods=['GET'])
 def get_donations():

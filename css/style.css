@@ -196,17 +196,71 @@ nav ul li a:hover, nav ul li a.active {
   margin: 12px auto 0;
 }
 
-/* ===== MISSION BANNER ===== */
+/* ===== MISSION + CAMPAIGN LAYOUT ===== */
+.mission-campaign-layout {
+  display: flex; gap: 30px; align-items: stretch;
+}
 .mission-banner {
-  background: var(--primary);
-  color: var(--white);
-  padding: 0;
+  flex: 2; background: var(--primary); color: var(--white);
+  padding: 0; border-radius: var(--radius);
+  display: flex; align-items: stretch;
+  overflow: hidden; min-height: 250px;
+}
+.campaign-carousel-block {
+  flex: 1; min-width: 280px;
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+}
+.campaign-carousel-title {
+  font-family: 'Montserrat', sans-serif; font-size: 1.1rem;
+  color: var(--primary); margin-bottom: 15px;
+}
+.campaign-carousel {
+  position: relative; flex: 1; min-height: 200px; overflow: hidden;
   border-radius: var(--radius);
-  margin: 40px 0;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  min-height: 250px;
+}
+.campaign-slides { width: 100%; height: 100%; position: relative; }
+.campaign-slide {
+  position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease;
+  background-size: cover; background-position: center; border-radius: var(--radius);
+  display: flex; align-items: flex-end;
+}
+.campaign-slide.active { opacity: 1; z-index: 1; }
+.campaign-slide-overlay {
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  padding: 20px; width: 100%; border-radius: 0 0 var(--radius) var(--radius);
+  color: #fff;
+}
+.campaign-slide-overlay h4 { font-family: 'Montserrat', sans-serif; font-size: 1rem; margin-bottom: 5px; }
+.campaign-slide-overlay p { font-size: 0.85rem; opacity: 0.9; margin: 0; }
+.campaign-prev, .campaign-next {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  background: rgba(255,255,255,0.8); border: none; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: 0.2s; color: var(--text);
+}
+.campaign-prev { left: 8px; }
+.campaign-next { right: 8px; }
+.campaign-prev:hover, .campaign-next:hover { background: #fff; }
+.campaign-dots {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 2;
+  display: flex; gap: 6px;
+}
+.campaign-dot {
+  width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff;
+  background: transparent; cursor: pointer; transition: 0.2s;
+}
+.campaign-dot.active { background: #fff; }
+.campaign-empty {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; color: var(--text-light); font-size: 0.9rem;
+}
+@media (max-width: 768px) {
+  .mission-campaign-layout { flex-direction: column; }
+  .campaign-carousel-block { min-width: auto; }
+  .campaign-carousel { min-height: 180px; }
 }
 .mission-photo-wrap {
   flex: 0 0 auto;

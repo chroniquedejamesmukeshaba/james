@@ -55,8 +55,8 @@
     <div class="slider-nav" id="slider-nav"></div>
   </section>
 
-  <section class="section">
-    <div class="container">
+  <section class="section mission-section">
+    <div class="container mission-campaign-layout">
       <div class="mission-banner">
         <div class="mission-photo-wrap">
           <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo">
@@ -65,6 +65,15 @@
           <h2>Notre Mission</h2>
           <p>Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
           <p class="mission-sign">— <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
+        </div>
+      </div>
+      <div class="campaign-carousel-block">
+        <h3 class="campaign-carousel-title">Campagnes en cours</h3>
+        <div class="campaign-carousel" id="campaign-carousel">
+          <div class="campaign-slides" id="campaign-slides"></div>
+          <button class="campaign-prev">❮</button>
+          <button class="campaign-next">❯</button>
+          <div class="campaign-dots" id="campaign-dots"></div>
         </div>
       </div>
     </div>
@@ -199,7 +208,69 @@
       }).join('');
       }
       loadFromServer();
+      loadCampaignCarousel();
     });
+
+    function loadCampaignCarousel() {
+      var container = document.getElementById('campaign-slides');
+      var dotsEl = document.getElementById('campaign-dots');
+      if (!container) return;
+      var campaignTimer = null, currentSlide = 0, campaignList = [];
+
+      function startAuto(speed) {
+        if (campaignTimer) clearInterval(campaignTimer);
+        if (campaignList.length < 2) return;
+        campaignTimer = setInterval(function(){
+          currentSlide = (currentSlide + 1) % campaignList.length;
+          updateSlide();
+        }, speed);
+      }
+
+      function updateSlide() {
+        container.querySelectorAll('.campaign-slide').forEach(function(s,i){s.classList.toggle('active',i===currentSlide);});
+        dotsEl.querySelectorAll('.campaign-dot').forEach(function(d,i){d.classList.toggle('active',i===currentSlide);});
+      }
+
+      function goTo(idx) {
+        if (campaignTimer) clearInterval(campaignTimer);
+        currentSlide = idx;
+        updateSlide();
+        startAuto(campaignList[0]?.speed || 5000);
+      }
+
+      function render() {
+        if (!campaignList.length) { container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>'; dotsEl.innerHTML = ''; return; }
+        var html = '', dhtml = '';
+        campaignList.forEach(function(c,i){
+          var bg = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:')) ? 'url('+c.image+')' : 'linear-gradient(135deg,var(--primary),var(--primary-light))';
+          html += '<div class="campaign-slide'+(i===0?' active':'')+'" style="background-image:'+bg+';">' +
+            '<div class="campaign-slide-overlay">' +
+            '<h4>'+c.title+'</h4>' +
+            '<p>'+c.description+'</p>' +
+            '</div></div>';
+          dhtml += '<button class="campaign-dot'+(i===0?' active':'')+'" data-idx="'+i+'"></button>';
+        });
+        container.innerHTML = html;
+        dotsEl.innerHTML = dhtml;
+        currentSlide = 0;
+        startAuto(campaignList[0]?.speed || 5000);
+
+        dotsEl.addEventListener('click', function(e){
+          var idx = e.target.dataset.idx;
+          if (idx !== undefined) goTo(parseInt(idx));
+        });
+        var prevBtn = document.querySelector('.campaign-prev');
+        var nextBtn = document.querySelector('.campaign-next');
+        if (prevBtn) prevBtn.onclick = function(){ goTo((currentSlide - 1 + campaignList.length) % campaignList.length); };
+        if (nextBtn) nextBtn.onclick = function(){ goTo((currentSlide + 1) % campaignList.length); };
+      }
+
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/campaigns').then(function(r){return r.json()}).then(function(d){
+          if (d && d.length) { campaignList = d.filter(function(c){return c.status==='active'||!c.status;}); render(); }
+        }).catch(function(){});
+      }
+    }
   </script>
 </body>
 </html>
