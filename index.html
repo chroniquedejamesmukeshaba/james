@@ -242,9 +242,10 @@
         if (!campaignList.length) { container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>'; dotsEl.innerHTML = ''; return; }
         var html = '', dhtml = '';
         campaignList.forEach(function(c,i){
-          var bg = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:')) ? 'url('+c.image+')' : 'linear-gradient(135deg,var(--primary),var(--primary-light))';
-          html += '<div class="campaign-slide'+(i===0?' active':'')+'" style="background-image:'+bg+';">' +
-            '<div class="campaign-slide-overlay">' +
+          var bg = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:')) ? c.image : '';
+          html += '<div class="campaign-slide'+(i===0?' active':'')+'">' +
+            (bg ? '<div class="campaign-slide-img" style="background-image:url('+bg+');"></div>' : '<div class="campaign-slide-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
+            '<div class="campaign-slide-text">' +
             '<h4>'+c.title+'</h4>' +
             '<p>'+c.description+'</p>' +
             '</div></div>';
