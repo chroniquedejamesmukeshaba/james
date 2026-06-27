@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytiques - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">&#11013; Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">&#128202; Tableau de bord</a>
+      <a href="articles.html">&#128221; Gestion des articles</a>
+      <a href="pages.html">&#128196; Gestion des pages</a>
+      <a href="comments.html">&#128172; Modération des commentaires</a>
+      <a href="analytics.html" class="active">&#128200; Analytiques</a>
+      <a href="../index.html">&#127968; Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <h2 style="color:var(--primary);margin-bottom:25px;">&#128200; Analytiques des visites</h2>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:25px;">
+        <button class="btn btn-sm period-btn active" data-period="day" style="padding:8px 18px;">Aujourd'hui</button>
+        <button class="btn btn-sm period-btn" data-period="week" style="padding:8px 18px;">Cette semaine</button>
+        <button class="btn btn-sm period-btn" data-period="month" style="padding:8px 18px;">Ce mois</button>
+        <button class="btn btn-sm period-btn" data-period="year" style="padding:8px 18px;">Cette année</button>
+        <button class="btn btn-sm period-btn" data-period="all" style="padding:8px 18px;">Tout</button>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:25px;">
+        <div class="stat-card">
+          <div class="number" id="analytics-total">0</div>
+          <div class="label">Visites (période)</div>
+        </div>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Fréquence des visites</h3>
+      <div id="analytics-chart" style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:30px;"></div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Classement des articles</h3>
+      <div class="admin-table" style="margin-bottom:30px;">
+        <table>
+          <thead><tr><th>Article</th><th>Visites</th></tr></thead>
+          <tbody id="analytics-articles-body"></tbody>
+        </table>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Visites par page</h3>
+      <div class="admin-table">
+        <table>
+          <thead><tr><th>Page</th><th>Visites</th></tr></thead>
+          <tbody id="analytics-pages-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAnalytics('day');
+
+      document.querySelectorAll('.period-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.period-btn').forEach(function(b){b.classList.remove('active');});
+          this.classList.add('active');
+          loadAnalytics(this.dataset.period);
+        });
+      });
+
+      function loadAnalytics(period) {
+        if (window.location.protocol === 'file:') return;
+        fetch('/api/visits/analytics?period=' + period).then(function(r){return r.json()}).then(function(d){
+          if (!d) return;
+          document.getElementById('analytics-total').textContent = d.total;
+
+          var chart = document.getElementById('analytics-chart');
+          if (d.chart && d.chart.labels && d.chart.labels.length) {
+            var maxVal = Math.max.apply(Math, d.chart.data) || 1;
+            var bars = '';
+            d.chart.labels.forEach(function(label, i) {
+              var h = Math.max(4, (d.chart.data[i] / maxVal) * 150);
+              var shortLabel = label.slice(5);
+              bars += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">' +
+                '<div style="width:24px;height:' + h + 'px;background:var(--primary);border-radius:4px 4px 0 0;" title="' + d.chart.data[i] + ' visites"></div>' +
+                '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">' + shortLabel + '</span>' +
+                '<span style="font-size:0.7rem;font-weight:600;">' + d.chart.data[i] + '</span></div>';
+            });
+            chart.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;overflow-x:auto;">' + bars + '</div>';
+          } else {
+            chart.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:30px;">Aucune visite pour cette période.</p>';
+          }
+
+          var articlesMap = d.articles || {};
+          var articleIds = Object.keys(articlesMap).sort(function(a,b){return (articlesMap[b]||0) - (articlesMap[a]||0);});
+          var tbody = document.getElementById('analytics-articles-body');
+          if (articleIds.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite d\'article.</td></tr>';
+          } else {
+            tbody.innerHTML = articleIds.map(function(aid) {
+              return '<tr><td>Article #' + aid + '</td><td><strong>' + articlesMap[aid] + '</strong></td></tr>';
+            }).join('');
+          }
+
+          var pagesMap = d.pages || {};
+          var pageNames = Object.keys(pagesMap).sort(function(a,b){return (pagesMap[b]||0) - (pagesMap[a]||0);});
+          var pbody = document.getElementById('analytics-pages-body');
+          if (pageNames.length === 0) {
+            pbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:#999;">Aucune visite.</td></tr>';
+          } else {
+            pbody.innerHTML = pageNames.map(function(p) {
+              return '<tr><td>' + p + '</td><td><strong>' + pagesMap[p] + '</strong></td></tr>';
+            }).join('');
+          }
+        }).catch(function(){
+          document.getElementById('analytics-total').textContent = 'Erreur';
+        });
+      }
+    });
+  </script>
+  <style>
+    .period-btn { background:var(--white);color:var(--text);border:1px solid #ddd;cursor:pointer;border-radius:var(--radius);transition:var(--transition);}
+    .period-btn:hover { border-color:var(--primary); }
+    .period-btn.active { background:var(--primary);color:var(--white);border-color:var(--primary); }
+  </style>
+</body>
+</html>

@@ -315,7 +315,7 @@ function apiDel(path) {
       } else {
         var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
         var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
-        var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
+        var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]').map(function(v){return typeof v === 'string' ? v : (v.date||'');});
         var totalComments = 0;
         Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(k){
           totalComments += JSON.parse(localStorage.getItem(k) || '[]').length;
@@ -341,7 +341,7 @@ function apiDel(path) {
       d.setDate(d.getDate() - i);
       const key = d.toISOString().split('T')[0];
       labels.push(d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
-      data.push(visits.filter(v => v.startsWith(key)).length);
+      data.push(visits.filter(function(v){return typeof v === 'string' ? v.startsWith(key) : (v.date && v.date.startsWith(key));}).length);
     }
     const maxVal = Math.max(...data, 1);
     let bars = '';
@@ -364,11 +364,15 @@ function apiDel(path) {
   }
 
   function trackVisit() {
+    var params = new URLSearchParams(window.location.search);
+    var articleId = params.get('id') || '';
+    var path = window.location.pathname.replace('/index.html','/') || '/';
+    var data = {date:new Date().toISOString(), path:path, articleId:articleId};
     if (window.location.protocol !== 'file:') {
-      fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:new Date().toISOString()})}).catch(function(){});
+      fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
     }
-    const visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
-    visits.push(new Date().toISOString());
+    var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
+    visits.push(data);
     if (visits.length > 10000) visits.splice(0, visits.length - 10000);
     localStorage.setItem('visit_stats', JSON.stringify(visits));
   }

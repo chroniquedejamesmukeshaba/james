@@ -163,10 +163,51 @@ def get_visits():
 @app.route('/api/visits', methods=['POST'])
 def track_visit():
     visits = read_json('visits')
-    visits.append(request.json.get('date', ''))
-    if len(visits) > 10000: visits = visits[-10000:]
+    data = request.json
+    visits.append({'date': data.get('date',''), 'path': data.get('path',''), 'articleId': data.get('articleId','')})
+    if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
     return jsonify({'ok': True})
+
+@app.route('/api/visits/analytics', methods=['GET'])
+def visit_analytics():
+    period = request.args.get('period', 'all')
+    visits = read_json('visits')
+    now = time.time()
+    if period == 'day':
+        cutoff = now - 86400
+    elif period == 'week':
+        cutoff = now - 7 * 86400
+    elif period == 'month':
+        cutoff = now - 30 * 86400
+    elif period == 'year':
+        cutoff = now - 365 * 86400
+    else:
+        cutoff = 0
+    if cutoff:
+        visits = [v for v in visits if v.get('date','')[:19] >= time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff))]
+    # Count per article
+    article_counts = {}
+    page_counts = {}
+    for v in visits:
+        aid = v.get('articleId','')
+        path = v.get('path','')
+        if aid:
+            article_counts[aid] = article_counts.get(aid, 0) + 1
+        page_counts[path] = page_counts.get(path, 0) + 1
+    # Day-by-day for chart
+    days = {}
+    for v in visits:
+        d = v.get('date','')[:10]
+        if d: days[d] = days.get(d, 0) + 1
+    day_labels = sorted(days.keys())
+    day_data = [days[d] for d in day_labels]
+    return jsonify({
+        'total': len(visits),
+        'articles': article_counts,
+        'pages': page_counts,
+        'chart': {'labels': day_labels, 'data': day_data}
+    })
 
 # --- STATS ---
 @app.route('/api/stats', methods=['GET'])
