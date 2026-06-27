@@ -173,7 +173,8 @@ def track_visit():
 def visit_analytics():
     period = request.args.get('period', 'all')
     raw = read_json('visits')
-    # Normalize: old visits are plain strings, new ones are dicts
+    art_list = read_json('articles')
+    art_map = {str(a['id']): a['title'] for a in art_list}
     visits = []
     for v in raw:
         if isinstance(v, str):
@@ -193,14 +194,24 @@ def visit_analytics():
     if cutoff_time:
         cutoff_str = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff_time))
         visits = [v for v in visits if v.get('date','')[:19] >= cutoff_str]
-    article_counts = {}
-    page_counts = {}
+    article_data = {}
+    page_data = {}
     for v in visits:
         aid = v.get('articleId','')
         path = v.get('path','')
         if aid:
-            article_counts[aid] = article_counts.get(aid, 0) + 1
-        page_counts[path] = page_counts.get(path, 0) + 1
+            article_data[aid] = article_data.get(aid, 0) + 1
+        page_data[path] = page_data.get(path, 0) + 1
+    articles_out = []
+    for aid, cnt in sorted(article_data.items(), key=lambda x:-x[1]):
+        articles_out.append({'id': aid, 'title': art_map.get(aid, 'Article #'+aid), 'visits': cnt})
+    pages_out = []
+    for p, cnt in sorted(page_data.items(), key=lambda x:-x[1]):
+        label = p or '/'
+        if '/article' in label: label = 'Article (' + p + ')'
+        elif label in ('/', '/index.html'): label = 'Accueil'
+        else: label = label.replace('.html','').replace('/','')
+        pages_out.append({'page': label, 'visits': cnt})
     days = {}
     for v in visits:
         d = v.get('date','')[:10]
@@ -209,8 +220,8 @@ def visit_analytics():
     day_data = [days[d] for d in day_labels]
     return jsonify({
         'total': len(visits),
-        'articles': article_counts,
-        'pages': page_counts,
+        'articles': articles_out,
+        'pages': pages_out,
         'chart': {'labels': day_labels, 'data': day_data}
     })
 
