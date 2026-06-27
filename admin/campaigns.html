@@ -87,10 +87,8 @@
   </div>
   <script src="../js/main.js"></script>
   <script>
-    var API = (window.location.protocol === 'file:') ? null : '';
-
     function api(method, url, body) {
-      if (!API) return Promise.reject('file:');
+      if (window.location.protocol === 'file:') return Promise.reject('file:');
       return fetch(url, {method:method, headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined})
         .then(function(r){return r.json()}).catch(function(){return null;});
     }
@@ -132,7 +130,7 @@
         var speed = parseInt(document.getElementById('cmp-speed').value) * 1000 || 5000;
 
         function save(data) {
-          if (API) {
+          if (window.location.protocol !== 'file:') {
             var p = id ? api('POST', '/api/campaigns', data) : api('POST', '/api/campaigns', data);
             p.then(function(){
               if (speed !== 5000 && id) {
@@ -165,7 +163,7 @@
         };
         if (id) data.id = Number(id);
 
-        if (API && imageData.startsWith('data:')) {
+        if (window.location.protocol !== 'file:' && imageData.startsWith('data:')) {
           fetch('/api/upload', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({image:imageData})})
             .then(function(r){return r.json()})
             .then(function(res){ data.image = res.url || imageData; save(data); })
@@ -199,7 +197,7 @@
       }
 
       function loadCampaigns() {
-        if (!API) return renderFromLocal();
+        if (window.location.protocol === 'file:') return renderFromLocal();
         api('GET', '/api/campaigns').then(function(list) {
           if (list) { renderTable(list); localStorage.setItem('cms_campaigns', JSON.stringify(list)); }
           else renderFromLocal();
@@ -249,7 +247,7 @@
 
       window.stopCampaign = function (id) {
         if (!confirm('Arrêter cette campagne ? Elle sera archivée et visible sur la page Sensibilisation.')) return;
-        if (API) api('POST', '/api/campaigns/'+id+'/stop', {});
+        if (window.location.protocol !== 'file:') api('POST', '/api/campaigns/'+id+'/stop', {});
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
         var found = false;
         list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='archived'; c.archivedAt=new Date().toISOString(); found=true; } });
@@ -260,7 +258,7 @@
 
       window.deleteCampaign = function (id) {
         if (!confirm('Supprimer définitivement ?')) return;
-        if (API) api('DELETE', '/api/campaigns/'+id);
+        if (window.location.protocol !== 'file:') api('DELETE', '/api/campaigns/'+id);
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
         var before = list.length;
         list = list.filter(function(c){return c.id !== id;});
