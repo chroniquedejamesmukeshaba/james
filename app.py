@@ -26,7 +26,15 @@ def write_json(name, data):
 # --- ARTICLES ---
 @app.route('/api/articles', methods=['GET'])
 def get_articles():
-    return jsonify(read_json('articles'))
+    lang = request.args.get('lang', 'fr')
+    articles = read_json('articles')
+    if lang and lang != 'fr':
+        for a in articles:
+            for f in ('title', 'content', 'excerpt'):
+                k = f + '_' + lang
+                if k in a and a[k]:
+                    a[f] = a[k]
+    return jsonify(articles)
 
 @app.route('/api/articles', methods=['POST'])
 def save_article():
@@ -368,11 +376,17 @@ BASE = os.path.dirname(__file__)
 @app.route('/article')
 def serve_article_og():
     aid = request.args.get('id')
+    lang = request.args.get('lang', 'fr')
     article = None
     if aid:
         for a in read_json('articles'):
             if str(a['id']) == str(aid):
-                article = a
+                article = dict(a)
+                if lang and lang != 'fr':
+                    for f in ('title', 'content', 'excerpt'):
+                        k = f + '_' + lang
+                        if k in a and a[k]:
+                            article[f] = a[k]
                 break
     html = open(os.path.join(BASE, 'article.html'), 'r', encoding='utf-8').read()
     if article:

@@ -77,6 +77,17 @@ function apiDel(path) {
       window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
     });
 
+    // Language tabs
+    document.querySelectorAll('.lang-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.lang-tab').forEach(function(t){ t.style.background = '#ddd'; t.style.color = '#333'; });
+        this.style.background = 'var(--primary)'; this.style.color = '#fff';
+        var lang = this.dataset.lang;
+        document.querySelectorAll('.lang-field').forEach(function(f){ f.style.display = f.dataset.lang === lang ? '' : 'none'; });
+        document.querySelectorAll('.lang-label').forEach(function(l){ l.textContent = '(' + (lang ? {_en:'English',_sw:'Kiswahili',_es:'Espa\u00f1ol'}[lang]||lang.substring(1) : 'Fran\u00e7ais') + ')'; });
+      });
+    });
+
     document.getElementById('cancel-article')?.addEventListener('click', function () {
       document.getElementById('article-form-container').style.display = 'none';
     });
@@ -123,6 +134,12 @@ function apiDel(path) {
           author: document.getElementById('art-author').value,
           date: new Date().toISOString().split('T')[0]
         };
+        // Include translations
+        ['_en','_sw','_es'].forEach(function(sfx){
+          var t = document.getElementById('art-title'+sfx); if (t && t.value) article['title'+sfx] = t.value;
+          var e = document.getElementById('art-excerpt'+sfx); if (e && e.value) article['excerpt'+sfx] = e.value;
+          var c = document.getElementById('art-content'+sfx); if (c && c.value) article['content'+sfx] = c.value;
+        });
         if (id) article.id = Number(id);
         apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Publier l\'article'; loadArticles(); });
         if (!useServer) {
@@ -198,6 +215,12 @@ function apiDel(path) {
     document.getElementById('art-excerpt').value = article.excerpt;
     document.getElementById('art-content').value = article.content;
     document.getElementById('art-author').value = article.author;
+    // Load translations
+    ['_en','_sw','_es'].forEach(function(sfx){
+      var t = document.getElementById('art-title'+sfx); if (t) t.value = article['title'+sfx] || '';
+      var e = document.getElementById('art-excerpt'+sfx); if (e) e.value = article['excerpt'+sfx] || '';
+      var c = document.getElementById('art-content'+sfx); if (c) c.value = article['content'+sfx] || '';
+    });
     if (article.image) {
       const preview = document.getElementById('img-preview');
       preview.src = article.image;

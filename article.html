@@ -143,6 +143,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
       var articleId = params.get('id') || '1';
+      var siteLang = (typeof localStorage!=='undefined'?localStorage.getItem('cms_lang'):null) || 'fr';
 
       function setOG(title, desc, img) {
         var tags = {'og:title':title,'og:description':desc,'og:image':img,'og:url':window.location.href};
@@ -175,22 +176,39 @@
         loadComments();
       }
 
-      if (window.location.protocol !== 'file:') {
-        fetch('/api/articles').then(function(r){return r.json()}).then(function(articles){
-          var a = articles.find(function(x){return x.id == articleId});
-          if (a) displayArticle(a);
-          else loadLocalArticle();
-        }).catch(function(){loadLocalArticle();});
-      } else { loadLocalArticle(); }
+      function loadArticle() {
+        if (window.location.protocol !== 'file:') {
+          fetch('/api/articles?lang='+siteLang).then(function(r){return r.json()}).then(function(articles){
+            var a = articles.find(function(x){return x.id == articleId});
+            if (a) displayArticle(a);
+            else loadLocalArticle();
+          }).catch(function(){loadLocalArticle();});
+        } else { loadLocalArticle(); }
+      }
+      loadArticle();
 
       function loadLocalArticle() {
         var articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+        if (siteLang !== 'fr') {
+          articles.forEach(function(a){
+            ['title','content','excerpt'].forEach(function(f){
+              var k = f+'_'+siteLang;
+              if (a[k]) a[f] = a[k];
+            });
+          });
+        }
         var article = articles.find(function(a) { return a.id == articleId; });
         if (!article) {
           article = { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Test', content: '<p>Article par défaut.</p>', date: '2026-06-20', author: 'James Mukeshaba' };
         }
         displayArticle(article);
       }
+
+      // Reload article on language change
+      document.addEventListener('langchange', function(){
+        siteLang = (typeof localStorage!=='undefined'?localStorage.getItem('cms_lang'):null) || 'fr';
+        loadArticle();
+      });
     });
   </script>
 </body>

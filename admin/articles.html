@@ -37,10 +37,23 @@
         <h3 id="form-title" style="color:var(--primary);margin-bottom:20px;">Nouvel article</h3>
         <form id="article-form">
           <input type="hidden" id="article-id">
+
+          <!-- Language tabs -->
+          <div style="display:flex;gap:2px;margin-bottom:15px;border-bottom:2px solid #eee;padding-bottom:8px;">
+            <button type="button" class="lang-tab active" data-lang="" style="background:var(--primary);color:#fff;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Français</button>
+            <button type="button" class="lang-tab" data-lang="_en" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">English</button>
+            <button type="button" class="lang-tab" data-lang="_sw" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Kiswahili</button>
+            <button type="button" class="lang-tab" data-lang="_es" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Español</button>
+            <span style="margin-left:auto;font-size:0.8rem;color:#999;align-self:center;">Seul le Français est obligatoire</span>
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
             <div class="form-group">
-              <label>Titre de l'article</label>
-              <input type="text" id="art-title" class="form-input" placeholder="Titre" required>
+              <label>Titre <span class="lang-label">(Français)</span></label>
+              <input type="text" id="art-title" class="form-input" placeholder="Titre en français" required>
+              <input type="text" id="art-title_en" class="form-input lang-field" data-lang="_en" placeholder="Titre en anglais" style="display:none;">
+              <input type="text" id="art-title_sw" class="form-input lang-field" data-lang="_sw" placeholder="Titre en swahili" style="display:none;">
+              <input type="text" id="art-title_es" class="form-input lang-field" data-lang="_es" placeholder="Titre en espagnol" style="display:none;">
             </div>
             <div class="form-group">
               <label>Catégorie</label>
@@ -61,12 +74,18 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Extrait (résumé)</label>
-            <textarea id="art-excerpt" class="form-input" placeholder="Court résumé de l'article..." rows="2" required></textarea>
+            <label>Extrait <span class="lang-label">(Français)</span></label>
+            <textarea id="art-excerpt" class="form-input" placeholder="Court résumé en français..." rows="2" required></textarea>
+            <textarea id="art-excerpt_en" class="form-input lang-field" data-lang="_en" placeholder="Résumé en anglais" rows="2" style="display:none;"></textarea>
+            <textarea id="art-excerpt_sw" class="form-input lang-field" data-lang="_sw" placeholder="Résumé en swahili" rows="2" style="display:none;"></textarea>
+            <textarea id="art-excerpt_es" class="form-input lang-field" data-lang="_es" placeholder="Résumé en espagnol" rows="2" style="display:none;"></textarea>
           </div>
           <div class="form-group">
-            <label>Contenu (HTML)</label>
-            <textarea id="art-content" class="form-input" placeholder="Contenu complet de l'article (sauter une ligne entre les paragraphes)..." rows="8" required></textarea>
+            <label>Contenu <span class="lang-label">(Français)</span></label>
+            <textarea id="art-content" class="form-input" placeholder="Contenu complet en français..." rows="8" required></textarea>
+            <textarea id="art-content_en" class="form-input lang-field" data-lang="_en" placeholder="Contenu complet en anglais" rows="8" style="display:none;"></textarea>
+            <textarea id="art-content_sw" class="form-input lang-field" data-lang="_sw" placeholder="Contenu complet en swahili" rows="8" style="display:none;"></textarea>
+            <textarea id="art-content_es" class="form-input lang-field" data-lang="_es" placeholder="Contenu complet en espagnol" rows="8" style="display:none;"></textarea>
           </div>
           <div class="form-group" style="max-width:300px;">
             <label>Auteur</label>
