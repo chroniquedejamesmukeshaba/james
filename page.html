@@ -28,22 +28,22 @@
       <a href="index.html" class="logo">
         <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
         <div class="logo-text">
-          <h1>Chronique de James Mukeshaba</h1>
-          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+          <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
+          <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
         </div>
       </a>
       <button class="menu-toggle" aria-label="Menu">☰</button>
       <nav>
         <ul>
-          <li><a href="index.html">Accueil</a></li>
-          <li><a href="actualites.html">Actualités</a></li>
-          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
-          <li><a href="projets.html">Projets</a></li>
-          <li><a href="sensibilisation.html">Sensibilisation</a></li>
-          <li><a href="objets-perdus.html">Objets perdus</a></li>
-          <li><a href="heritage.html">Héritage</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="donation.html">Donation</a></li>
+          <li><a href="index.html" data-i18n="nav_accueil">Accueil</a></li>
+          <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
+          <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+          <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+          <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
+          <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+          <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
         </ul>
       </nav>
     </div>
@@ -51,13 +51,13 @@
 
   <section class="breadcrumb">
     <div class="container">
-      <a href="index.html">Accueil</a> / <span id="page-breadcrumb">Page</span>
+      <a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <span id="page-breadcrumb" data-i18n="breadcrumb_home">Page</span>
     </div>
   </section>
 
   <section class="page-header" id="page-header">
     <div class="container">
-      <h1 id="page-title-display">Page</h1>
+      <h1 id="page-title-display" data-i18n="breadcrumb_home">Page</h1>
       <p id="page-meta-display"></p>
     </div>
   </section>
@@ -65,7 +65,7 @@
   <section class="section">
     <div class="container">
       <div class="article-detail" id="page-content-display">
-        <p>Contenu non disponible.</p>
+        <p data-i18n="content_unavailable">Contenu non disponible.</p>
       </div>
     </div>
   </section>
@@ -74,46 +74,47 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>Chronique de James Mukeshaba</h4>
-          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p>
+          <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne, sensibilisation et projets communautaires.</p>
           <div class="footer-social">
             <a href="#" aria-label="Facebook">f</a>
             <a href="#" aria-label="X (Twitter)">𝕏</a>
           </div>
         </div>
         <div>
-          <h4>Pages</h4>
+          <h4 data-i18n="footer_pages">Pages</h4>
           <ul>
-            <li><a href="actualites.html">Actualités</a></li>
-            <li><a href="projets.html">Projets</a></li>
-            <li><a href="objets-perdus.html">Objets perdus</a></li>
+          <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+          <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+          <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
+          <h4 data-i18n="footer_contact">Contact</h4>
           <ul>
-            <li>Bukavu, Sud-Kivu, RDC</li>
-            <li>+243 971460415</li>
-            <li>+1 (825) 449-0187 (Canada)</li>
+            <li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li>
+            <li data-i18n="footer_phone_rdc">+243 971460415</li>
+            <li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li>
           </ul>
         </div>
         <div>
-          <h4>Administration</h4>
+          <h4 data-i18n="footer_admin">Administration</h4>
           <ul>
-            <li><a href="admin/login.html">Espace administrateur</a></li>
+            <li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li>
           </ul>
         </div>
       </div>
       <div style="text-align:center;margin-bottom:10px;">
-        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</span>
       </div>
     </div>
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/i18n.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var params = new URLSearchParams(window.location.search);

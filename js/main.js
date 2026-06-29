@@ -237,7 +237,7 @@ window._renderComments = function(list) {
   const container = document.getElementById('comments-list');
   if (!container) return;
   if (!list || list.length === 0) {
-    container.innerHTML = '<p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
+    container.innerHTML = '<p class="text-muted">'+(typeof t==='function'?t('no_comments'):'Aucun commentaire pour le moment. Soyez le premier à commenter !')+'</p>';
     return;
   }
   container.innerHTML = list.map(c =>

@@ -15,54 +15,54 @@
 <body>
   <div class="top-bar"><div class="container"><div class="social-links" style="margin:0 auto;"><a href="#">f</a><a href="#">𝕏</a></div></div></div>
   <header><div class="container header-inner">
-    <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img"><div class="logo-text"><h1>Chronique de James Mukeshaba</h1><span>Informations &bull; Sensibilisation &bull; Projets</span></div></a>
+    <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img"><div class="logo-text"><h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1><span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span></div></a>
     <button class="menu-toggle">☰</button>
     <nav><ul>
-      <li><a href="index.html">Accueil</a></li><li><a href="actualites.html">Actualités</a></li>
-      <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li><li><a href="projets.html">Projets</a></li>
-      <li><a href="sensibilisation.html">Sensibilisation</a></li><li><a href="objets-perdus.html">Objets perdus</a></li>
-      <li><a href="heritage.html">Héritage</a></li><li><a href="faq.html">FAQ</a></li>
-      <li><a href="donation.html" class="active">Donation</a></li>
+      <li><a href="index.html" data-i18n="nav_accueil">Accueil</a></li><li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+      <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li><li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+      <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li><li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+      <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li><li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+      <li><a href="donation.html" class="active" data-i18n="nav_donation">Donation</a></li>
     </ul></nav>
   </div></header>
 
-  <section class="breadcrumb"><div class="container"><a href="index.html">Accueil</a> / <span>Donation</span></div></section>
-  <section class="page-header"><div class="container"><h1>Soutenez notre Média</h1><p>Votre don finance nos projets et notre indépendance</p></div></section>
+  <section class="breadcrumb"><div class="container"><a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <span data-i18n="nav_donation">Donation</span></div></section>
+  <section class="page-header"><div class="container"><h1 data-i18n="donation_title">Soutenez notre Média</h1><p data-i18n="donation_subtitle">Votre don finance nos projets et notre indépendance</p></div></section>
 
   <section class="section">
     <div class="container">
       <div class="donation-card">
         <div style="font-size:3rem;margin-bottom:15px;">❤️</div>
-        <h2 style="color:var(--primary);margin-bottom:15px;">Faire un Don</h2>
-        <p style="color:var(--text-light);margin-bottom:20px;">Chaque contribution, grande ou petite, nous aide à continuer notre mission d'information et de sensibilisation.</p>
+        <h2 style="color:var(--primary);margin-bottom:15px;" data-i18n="donation_make">Faire un Don</h2>
+        <p style="color:var(--text-light);margin-bottom:20px;" data-i18n="donation_desc">Chaque contribution, grande ou petite, nous aide à continuer notre mission d'information et de sensibilisation.</p>
 
         <div class="donation-amounts">
           <button class="donation-amount" data-amount="10">10 $</button>
           <button class="donation-amount" data-amount="25">25 $</button>
           <button class="donation-amount selected" data-amount="50">50 $</button>
           <button class="donation-amount" data-amount="100">100 $</button>
-          <button class="donation-amount" data-amount="custom">Libre</button>
+          <button class="donation-amount" data-amount="custom" data-i18n="donation_custom">Libre</button>
         </div>
 
         <div id="custom-amount" style="display:none;margin-bottom:20px;">
-          <input type="number" class="form-input" placeholder="Montant personnalisé" min="1">
+          <input type="number" class="form-input" placeholder="Montant personnalisé" min="1" data-i18n="donation_amount_ph">
         </div>
 
         <div style="margin:20px 0;">
           <div class="form-group">
-            <label>Nom complet</label>
-            <input type="text" class="form-input" placeholder="Votre nom" id="donor-name">
+            <label data-i18n="donation_name_label">Nom complet</label>
+            <input type="text" class="form-input" placeholder="Votre nom" id="donor-name" data-i18n="donation_name_ph">
           </div>
           <div class="form-group">
-            <label>Email</label>
-            <input type="email" class="form-input" placeholder="Votre email" id="donor-email">
+            <label data-i18n="donation_email_label">Email</label>
+            <input type="email" class="form-input" placeholder="Votre email" id="donor-email" data-i18n="donation_email_ph">
           </div>
         </div>
 
-        <button class="btn btn-accent" style="width:100%;padding:15px;font-size:1.1rem;" onclick="processDonation()">
+        <button class="btn btn-accent" style="width:100%;padding:15px;font-size:1.1rem;" onclick="processDonation()" data-i18n="donation_submit">
           Faire un don sécurisé
         </button>
-        <p style="font-size:0.8rem;color:var(--text-light);margin-top:15px;">🔒 Paiement sécurisé. Votre don sera traité en toute sécurité.</p>
+        <p style="font-size:0.8rem;color:var(--text-light);margin-top:15px;" data-i18n="donation_secure">🔒 Paiement sécurisé. Votre don sera traité en toute sécurité.</p>
       </div>
 
       <div style="max-width:600px;margin:40px auto;text-align:center;">
@@ -89,12 +89,13 @@
   </section>
 
   <footer><div class="container"><div class="footer-grid">
-    <div><h4>Chronique de James Mukeshaba</h4><p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne.</p><div class="footer-social"><a href="#">f</a><a href="#">𝕏</a></div></div>
-    <div><h4>Pages</h4><ul><li><a href="actualites.html">Actualités</a></li><li><a href="projets.html">Projets</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
-    <div><h4>Contact</h4><ul><li>Bukavu, Sud-Kivu, RDC</li><li>+243 971460415</li><li>+1 (825) 449-0187 (Canada)</li></ul></div>
-    <div><h4>Administration</h4><ul><li><a href="admin/login.html">Espace administrateur</a></li></ul></div>
-  </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button></div><div class="footer-bottom">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</div></div></footer>
+    <div><h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4><p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne.</p><div class="footer-social"><a href="#">f</a><a href="#">𝕏</a></div></div>
+    <div><h4 data-i18n="footer_pages">Pages</h4><ul><li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li><li><a href="projets.html" data-i18n="nav_projets">Projets</a></li><li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li></ul></div>
+    <div><h4 data-i18n="footer_contact">Contact</h4><ul><li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li><li data-i18n="footer_phone_rdc">+243 971460415</li><li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li></ul></div>
+    <div><h4 data-i18n="footer_admin">Administration</h4><ul><li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li></ul></div>
+  </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button></div><div class="footer-bottom"><span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</span></div></div></footer>
   <script src="js/main.js"></script>
+  <script src="js/i18n.js"></script>
   <script>
     document.querySelectorAll('.donation-amount').forEach(function(btn) {
       btn.addEventListener('click', function() {

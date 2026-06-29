@@ -31,22 +31,22 @@
       <a href="index.html" class="logo">
         <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
         <div class="logo-text">
-          <h1>Chronique de James Mukeshaba</h1>
-          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+          <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
+          <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
         </div>
       </a>
       <button class="menu-toggle" aria-label="Menu">☰</button>
       <nav>
         <ul>
-          <li><a href="index.html">Accueil</a></li>
-          <li><a href="actualites.html">Actualités</a></li>
-          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
-          <li><a href="projets.html">Projets</a></li>
-          <li><a href="sensibilisation.html">Sensibilisation</a></li>
-          <li><a href="objets-perdus.html">Objets perdus</a></li>
-          <li><a href="heritage.html">Héritage</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="donation.html">Donation</a></li>
+          <li><a href="index.html" data-i18n="nav_accueil">Accueil</a></li>
+          <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
+          <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+          <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+          <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
+          <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+          <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
         </ul>
       </nav>
     </div>
@@ -54,7 +54,7 @@
 
   <section class="breadcrumb">
     <div class="container" id="breadcrumb-article">
-      <a href="index.html">Accueil</a> / <a href="actualites.html">Actualités</a> / <span id="article-breadcrumb-title">Article</span>
+      <a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <a href="actualites.html" data-i18n="breadcrumb_actualites">Actualités</a> / <span id="article-breadcrumb-title" data-i18n="breadcrumb_article">Article</span>
     </div>
   </section>
 
@@ -69,24 +69,24 @@
 
       <!-- BOUTONS DE PARTAGE (correction erreur #4 : vrais boutons de partage) -->
       <div style="text-align:center;margin:-20px 0 30px;">
-        <p style="margin-bottom:10px;color:var(--text-light);font-size:0.9rem;">Partager cet article :</p>
-        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href),'_blank');return false;">📘 Partager sur Facebook</a>
-        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(document.title)+'&url='+encodeURIComponent(window.location.href),'_blank');return false;">𝕏 Partager sur X</a>
+        <p style="margin-bottom:10px;color:var(--text-light);font-size:0.9rem;" data-i18n="share_title">Partager cet article :</p>
+        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href),'_blank');return false;" data-i18n="share_facebook">📘 Partager sur Facebook</a>
+        <a href="#" class="btn btn-outline" style="margin:0 5px;" onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(document.title)+'&url='+encodeURIComponent(window.location.href),'_blank');return false;" data-i18n="share_x">𝕏 Partager sur X</a>
       </div>
 
       <!-- COMMENTAIRES -->
       <div class="comments-section">
-        <h3>Commentaires</h3>
+        <h3 data-i18n="comments_title">Commentaires</h3>
         <div id="comments-list" data-article-id=""></div>
         <form id="comment-form" style="margin-top:20px;padding-top:20px;border-top:1px solid #eee;">
-          <h4 style="margin-bottom:15px;">Laisser un commentaire</h4>
+          <h4 style="margin-bottom:15px;" data-i18n="comment_form_title">Laisser un commentaire</h4>
           <div class="form-group">
-            <input type="text" id="comment-name" class="form-input" placeholder="Votre nom" required>
+            <input type="text" id="comment-name" class="form-input" placeholder="Votre nom" required data-i18n="comment_name_placeholder">
           </div>
           <div class="form-group">
-            <textarea id="comment-text" class="form-input" placeholder="Votre commentaire..." required></textarea>
+            <textarea id="comment-text" class="form-input" placeholder="Votre commentaire..." required data-i18n="comment_text_placeholder"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+          <button type="submit" class="btn btn-primary" data-i18n="comment_submit">Publier le commentaire</button>
         </form>
       </div>
     </div>
@@ -96,48 +96,49 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>Chronique de James Mukeshaba</h4>
-          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p>
+          <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne, sensibilisation et projets communautaires.</p>
           <div class="footer-social">
             <a href="#" aria-label="Facebook">f</a>
             <a href="#" aria-label="X (Twitter)">𝕏</a>
           </div>
         </div>
         <div>
-          <h4>Pages</h4>
+          <h4 data-i18n="footer_pages">Pages</h4>
           <ul>
-            <li><a href="actualites.html">Actualités</a></li>
-            <li><a href="projets.html">Projets</a></li>
-            <li><a href="objets-perdus.html">Objets perdus</a></li>
-            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+            <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+            <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+            <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
+          <h4 data-i18n="footer_contact">Contact</h4>
           <ul>
-            <li>Bukavu, Sud-Kivu, RDC</li>
-            <li>+243 971460415</li>
-            <li>+1 (825) 449-0187 (Canada)</li>
+            <li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li>
+            <li data-i18n="footer_phone_rdc">+243 971460415</li>
+            <li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li>
           </ul>
         </div>
         <div>
-          <h4>Administration</h4>
+          <h4 data-i18n="footer_admin">Administration</h4>
           <ul>
-            <li><a href="admin/login.html">Espace administrateur</a></li>
+            <li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li>
           </ul>
         </div>
       </div>
       <div style="text-align:center;margin-bottom:10px;">
-        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</span>
       </div>
     </div>
   </footer>
 
   <script src="js/main.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/i18n.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
@@ -157,12 +158,12 @@
         document.getElementById('article-meta').innerHTML =
           '<span style="color:var(--secondary);font-weight:600;">' + article.category + '</span>' +
           ' &bull; <span>' + (article.date || '') + '</span>' +
-          ' &bull; <span>Par ' + (article.author || '') + '</span>';
+          ' &bull; <span>'+(typeof t==='function'?t('article_by'):'Par')+' ' + (article.author || '') + '</span>';
         var content = article.content || '';
         if (content && !content.match(/<[a-z][\s\S]*>/i)) {
           content = '<p>' + content.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>') + '</p>';
         }
-        document.getElementById('article-content').innerHTML = content || '<p>Contenu non disponible.</p>';
+        document.getElementById('article-content').innerHTML = content || '<p>'+(typeof t==='function'?t('content_unavailable'):'Contenu non disponible.')+'</p>';
         var imgEl = document.getElementById('article-image');
         if (article.image && (article.image.startsWith('data:') || article.image.startsWith('/') || article.image.startsWith('http'))) {
           imgEl.outerHTML = '<img class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';

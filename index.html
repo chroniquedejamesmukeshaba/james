@@ -27,22 +27,22 @@
       <a href="index.html" class="logo">
         <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
         <div class="logo-text">
-          <h1>Chronique de James Mukeshaba</h1>
-          <span>Informations &bull; Sensibilisation &bull; Projets</span>
+          <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
+          <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
         </div>
       </a>
       <button class="menu-toggle" aria-label="Menu">☰</button>
       <nav>
         <ul>
-          <li><a href="index.html" class="active">Accueil</a></li>
-          <li><a href="actualites.html">Actualités</a></li>
-          <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li>
-          <li><a href="projets.html">Projets</a></li>
-          <li><a href="sensibilisation.html">Sensibilisation</a></li>
-          <li><a href="objets-perdus.html">Objets perdus</a></li>
-          <li><a href="heritage.html">Héritage</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="donation.html">Donation</a></li>
+          <li><a href="index.html" class="active" data-i18n="nav_accueil">Accueil</a></li>
+          <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+          <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
+          <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+          <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+          <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+          <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
+          <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+          <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
         </ul>
       </nav>
     </div>
@@ -62,13 +62,13 @@
           <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo">
         </div>
         <div class="mission-text">
-          <h2>Notre Mission</h2>
-          <p>Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
-          <p class="mission-sign">— <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
+          <h2 data-i18n="mission_title">Notre Mission</h2>
+          <p data-i18n="mission_text">Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
+          <p class="mission-sign" data-i18n="mission_sign">— <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
         </div>
       </div>
       <div class="campaign-carousel-block">
-        <h3 class="campaign-carousel-title">Campagnes en cours</h3>
+        <h3 class="campaign-carousel-title" data-i18n="campaign_title">Campagnes en cours</h3>
         <div class="campaign-carousel" id="campaign-carousel">
           <div class="campaign-slides" id="campaign-slides"></div>
           <button class="campaign-prev">❮</button>
@@ -81,10 +81,10 @@
 
   <section class="section">
     <div class="container">
-      <h2 class="section-title">Dernières Actualités</h2>
+      <h2 class="section-title" data-i18n="latest_news">Dernières Actualités</h2>
       <div class="cards-grid" id="home-articles-grid"></div>
       <div style="text-align:center;margin-top:30px;">
-        <a href="actualites.html" class="btn btn-outline">Voir toutes les actualités</a>
+        <a href="actualites.html" class="btn btn-outline" data-i18n="view_all_news">Voir toutes les actualités</a>
       </div>
     </div>
   </section>
@@ -92,12 +92,12 @@
   <section class="newsletter-section">
     <div class="container newsletter-inner">
       <div class="newsletter-text">
-        <h3>Restez informé</h3>
-        <p>Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
+        <h3 data-i18n="newsletter_title">Restez informé</h3>
+        <p data-i18n="newsletter_desc">Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
       </div>
       <form class="newsletter-form" id="newsletter-form">
-        <input type="email" placeholder="Votre adresse email" required>
-        <button type="submit" class="btn btn-accent">S'abonner</button>
+        <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
+        <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
       </form>
     </div>
   </section>
@@ -106,50 +106,51 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>Chronique de James Mukeshaba</h4>
-          <p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires. Basé à Bukavu avec une présence internationale.</p>
+          <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne, sensibilisation et projets communautaires. Basé à Bukavu avec une présence internationale.</p>
           <div class="footer-social">
             <a href="#" aria-label="Facebook">f</a>
             <a href="#" aria-label="X (Twitter)">𝕏</a>
           </div>
         </div>
         <div>
-          <h4>Pages</h4>
+          <h4 data-i18n="footer_pages">Pages</h4>
           <ul>
-            <li><a href="actualites.html">Actualités</a></li>
-            <li><a href="projets.html">Projets</a></li>
-            <li><a href="sensibilisation.html">Sensibilisation</a></li>
-            <li><a href="objets-perdus.html">Objets perdus</a></li>
-            <li><a href="heritage.html">Héritage</a></li>
-            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+            <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+            <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+            <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
+            <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
+          <h4 data-i18n="footer_contact">Contact</h4>
           <ul>
-            <li>Bukavu, Sud-Kivu, RDC</li>
-            <li>+243 971460415</li>
-            <li>+1 (825) 449-0187 (Canada)</li>
+            <li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li>
+            <li data-i18n="footer_phone_rdc">+243 971460415</li>
+            <li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li>
           </ul>
         </div>
         <div>
-          <h4>Administration</h4>
+          <h4 data-i18n="footer_admin">Administration</h4>
           <ul>
-            <li><a href="admin/login.html">Espace administrateur</a></li>
+            <li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li>
           </ul>
         </div>
       </div>
       <div style="text-align:center;margin-bottom:10px;">
-        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button>
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.
+        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</span>
       </div>
     </div>
   </footer>
 
   <script src="js/main.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/i18n.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var grid = document.getElementById('home-articles-grid');
@@ -186,7 +187,7 @@
         slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
           '<div class="slide-overlay">' +
           '<h2>' + a.title + '</h2>' +
-          '<a href="article.html?id=' + a.id + '" class="btn btn-accent">Lire l\'article</a>' +
+          '<a href="article.html?id=' + a.id + '" class="btn btn-accent">'+(typeof t==='function'?t('hero_read_article'):'Lire l\'article')+'</a>' +
           '</div></div>';
         dotsHtml += '<button class="slider-dot' + (i === 0 ? ' active' : '') + '"></button>';
       });
@@ -233,7 +234,7 @@
       function goTo(i) { if (timer) clearInterval(timer); idx = i; updateView(); startLoop(items[0]&&items[0].speed||5000); }
 
       function render(list) {
-        if (!list||!list.length) { container.innerHTML = '<div class="campaign-empty">Aucune campagne en cours.</div>'; var dd=document.getElementById('campaign-dots'); if(dd) dd.innerHTML=''; return; }
+        if (!list||!list.length) { container.innerHTML = '<div class="campaign-empty">'+(typeof t==='function'?t('campaign_empty'):'Aucune campagne en cours.')+'</div>'; var dd=document.getElementById('campaign-dots'); if(dd) dd.innerHTML=''; return; }
         var slides='', dots='';
         list.forEach(function(c,i){
           var bg = c.image&&(c.image[0]==='/'||c.image.startsWith('http')||c.image.startsWith('data:')) ? c.image : '';

@@ -15,51 +15,51 @@
 <body>
   <div class="top-bar"><div class="container"><div class="social-links" style="margin:0 auto;"><a href="#">f</a><a href="#">𝕏</a></div></div></div>
   <header><div class="container header-inner">
-    <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img"><div class="logo-text"><h1>Chronique de James Mukeshaba</h1><span>Informations &bull; Sensibilisation &bull; Projets</span></div></a>
+    <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img"><div class="logo-text"><h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1><span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span></div></a>
     <button class="menu-toggle">☰</button>
     <nav><ul>
-      <li><a href="index.html">Accueil</a></li><li><a href="actualites.html">Actualités</a></li>
-      <li><a href="qui-sommes-nous.html">Qui sommes-nous</a></li><li><a href="projets.html">Projets</a></li>
-      <li><a href="sensibilisation.html">Sensibilisation</a></li>
-      <li><a href="objets-perdus.html" class="active">Objets perdus</a></li>
-      <li><a href="heritage.html">Héritage</a></li><li><a href="faq.html">FAQ</a></li><li><a href="donation.html">Donation</a></li>
+      <li><a href="index.html" data-i18n="nav_accueil">Accueil</a></li><li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+      <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li><li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+      <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+      <li><a href="objets-perdus.html" class="active" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+      <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li><li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li><li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
     </ul></nav>
   </div></header>
 
-  <section class="breadcrumb"><div class="container"><a href="index.html">Accueil</a> / <span>Objets perdus et trouvés</span></div></section>
-  <section class="page-header"><div class="container"><h1>Objets Perdus et Trouvés</h1><p>Espace communautaire d'entraide</p></div></section>
+  <section class="breadcrumb"><div class="container"><a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <span data-i18n="nav_objets_perdus">Objets perdus et trouvés</span></div></section>
+  <section class="page-header"><div class="container"><h1 data-i18n="lf_title">Objets Perdus et Trouvés</h1><p data-i18n="lf_subtitle">Espace communautaire d'entraide</p></div></section>
 
   <section class="section">
     <div class="container">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;margin-bottom:30px;">
-        <p>Déclarez un objet perdu ou trouvé pour aider la communauté.</p>
-        <button class="btn btn-primary" onclick="document.getElementById('lf-form').style.display='block'">+ Publier une annonce</button>
+        <p data-i18n="lf_intro">Déclarez un objet perdu ou trouvé pour aider la communauté.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('lf-form').style.display='block'" data-i18n="lf_publish">+ Publier une annonce</button>
       </div>
 
       <div id="lf-form" style="display:none;background:var(--white);padding:30px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:30px;">
-        <h3 style="margin-bottom:20px;color:var(--primary);">Nouvelle annonce</h3>
+        <h3 style="margin-bottom:20px;color:var(--primary);" data-i18n="lf_form_title">Nouvelle annonce</h3>
         <form id="lost-found-form">
           <div class="form-group">
-            <label>Type d'annonce</label>
+            <label data-i18n="lf_type_label">Type d'annonce</label>
             <select id="lf-type" class="form-input">
-              <option value="perdu">Objet perdu</option>
-              <option value="trouve">Objet trouvé</option>
+              <option value="perdu" data-i18n="lf_type_lost">Objet perdu</option>
+              <option value="trouve" data-i18n="lf_type_found">Objet trouvé</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Objet</label>
-            <input type="text" id="lf-item" class="form-input" placeholder="Nom de l'objet" required>
+            <label data-i18n="lf_item_label">Objet</label>
+            <input type="text" id="lf-item" class="form-input" placeholder="Nom de l'objet" data-i18n="lf_item_ph" required>
           </div>
           <div class="form-group">
-            <label>Description</label>
-            <textarea id="lf-desc" class="form-input" placeholder="Description détaillée, lieu, date..." required></textarea>
+            <label data-i18n="lf_desc_label">Description</label>
+            <textarea id="lf-desc" class="form-input" placeholder="Description détaillée, lieu, date..." data-i18n="lf_desc_ph" required></textarea>
           </div>
           <div class="form-group">
-            <label>Contact</label>
-            <input type="text" id="lf-contact" class="form-input" placeholder="Téléphone ou email" required>
+            <label data-i18n="lf_contact_label">Contact</label>
+            <input type="text" id="lf-contact" class="form-input" placeholder="Téléphone ou email" data-i18n="lf_contact_ph" required>
           </div>
-          <button type="submit" class="btn btn-primary">Publier l'annonce</button>
-          <button type="button" class="btn btn-outline" onclick="document.getElementById('lf-form').style.display='none'">Annuler</button>
+          <button type="submit" class="btn btn-primary" data-i18n="lf_submit_btn">Publier l'annonce</button>
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('lf-form').style.display='none'" data-i18n="lf_cancel_btn">Annuler</button>
         </form>
       </div>
 
@@ -68,12 +68,13 @@
   </section>
 
   <footer><div class="container"><div class="footer-grid">
-    <div><h4>Chronique de James Mukeshaba</h4><p style="opacity:0.8;font-size:0.9rem;">Média d'information en ligne, sensibilisation et projets communautaires.</p><div class="footer-social"><a href="#">f</a><a href="#">𝕏</a></div></div>
-    <div><h4>Pages</h4><ul><li><a href="actualites.html">Actualités</a></li><li><a href="projets.html">Projets</a></li><li><a href="sensibilisation.html">Sensibilisation</a></li></ul></div>
-    <div><h4>Contact</h4><ul><li>Bukavu, Sud-Kivu, RDC</li><li>+243 971460415</li><li>+1 (825) 449-0187 (Canada)</li></ul></div>
-    <div><h4>Administration</h4><ul><li><a href="admin/login.html">Espace administrateur</a></li></ul></div>
-  </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;">📲 Installer l'application</button></div><div class="footer-bottom">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</div></div></footer>
+    <div><h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4><p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne, sensibilisation et projets communautaires.</p><div class="footer-social"><a href="#">f</a><a href="#">𝕏</a></div></div>
+    <div><h4 data-i18n="footer_pages">Pages</h4><ul><li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li><li><a href="projets.html" data-i18n="nav_projets">Projets</a></li><li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li></ul></div>
+    <div><h4 data-i18n="footer_contact">Contact</h4><ul><li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li><li data-i18n="footer_phone_rdc">+243 971460415</li><li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li></ul></div>
+    <div><h4 data-i18n="footer_admin">Administration</h4><ul><li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li></ul></div>
+  </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button></div><div class="footer-bottom" data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</div></div></footer>
   <script src="js/main.js"></script>
+  <script src="js/i18n.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var grid = document.getElementById('lf-grid');
