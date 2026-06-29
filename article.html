@@ -167,7 +167,7 @@
         document.getElementById('article-content').innerHTML = content || '<p>'+(typeof t==='function'?t('content_unavailable'):'Contenu non disponible.')+'</p>';
         var imgEl = document.getElementById('article-image');
         if (article.image && (article.image.startsWith('data:') || article.image.startsWith('/') || article.image.startsWith('http'))) {
-          imgEl.outerHTML = '<img class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
+          imgEl.outerHTML = '<img id="article-image" class="article-image" src="' + article.image + '" alt="' + article.title + '" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
         }
         var ogImg = article.image && !article.image.startsWith('data:') ? article.image : '';
         setOG(article.title, article.excerpt || '', ogImg);
