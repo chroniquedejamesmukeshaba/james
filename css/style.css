@@ -828,10 +828,16 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
   .newsletter-form input { min-width: 200px; }
   .admin-sidebar { width: 200px; }
   .article-detail { padding: 20px; }
-  .mission-banner { flex-direction: column; min-height: auto; }
-  .mission-photo-wrap { width: 100%; max-height: 250px; }
-  .mission-photo { height: 250px; width: 100%; }
-  .mission-text { padding: 30px 20px; }
+    .mission-banner { flex-direction: column; min-height: auto; }
+    .mission-photo-wrap { width: 100%; max-height: 250px; }
+    .mission-photo { height: 250px; width: 100%; }
+    .mission-text { padding: 30px 20px; }
+    .campaign-carousel { min-height: 220px; height: 220px; }
+    .campaign-slide { flex-direction: column; }
+    .campaign-slide-img { flex: 0 0 130px; min-height: 130px; width: 100%; }
+    .campaign-slide-text { padding: 12px 15px; }
+    .campaign-slide-text h4 { font-size: 0.9rem; }
+    .campaign-slide-text p { font-size: 0.8rem; }
   .admin-header .container { flex-wrap: wrap; gap: 8px; justify-content: center; }
   .admin-layout { flex-direction: column; }
   .admin-sidebar { width: 100%; display: flex; flex-wrap: wrap; gap: 0; padding: 10px; overflow-x: auto; }

@@ -205,77 +205,83 @@ document.addEventListener('DOMContentLoaded', function () {
       showToast('Commentaire soumis et en attente de modération.');
       this.reset();
     });
-    loadComments();
   }
+});
 
-  function loadComments() {
-    const container = document.getElementById('comments-list');
-    if (!container) return;
-    const articleId = container.dataset.articleId || '1';
-    if (window.location.protocol !== 'file:') {
-      fetch('/api/comments/' + articleId).then(function(r){return r.json()}).then(function(apiComments){
-        if (apiComments) {
-          var approved = apiComments.filter(function(c){return !c.pending});
-          renderComments(approved);
-          return;
-        }
-        loadLocalComments();
-      }).catch(function(){loadLocalComments();});
-    } else { loadLocalComments(); }
-    function loadLocalComments() {
-      const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
-      const approved = comments.filter(c => !c.pending);
-      renderComments(approved);
-    }
-    function renderComments(list) {
-      if (!list || list.length === 0) {
-        container.innerHTML = '<p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
+// ===== COMMENTS LOADER (global) =====
+window.loadComments = function() {
+  const container = document.getElementById('comments-list');
+  if (!container) return;
+  const articleId = container.dataset.articleId || '1';
+  if (window.location.protocol !== 'file:') {
+    fetch('/api/comments/' + articleId).then(function(r){return r.json()}).then(function(apiComments){
+      if (apiComments) {
+        var approved = apiComments.filter(function(c){return !c.pending});
+        window._renderComments(approved);
         return;
       }
-      container.innerHTML = list.map(c =>
-        '<div class="comment"><div><span class="comment-author">' + c.name + '</span><span class="comment-date">' + c.date + '</span></div><div class="comment-text">' + c.text + '</div></div>'
-      ).join('');
-    }
-  }
+      window._loadLocalComments(articleId);
+    }).catch(function(){window._loadLocalComments(articleId);});
+  } else { window._loadLocalComments(articleId); }
+};
 
-  // ===== AUTO-CLEAN EVERY 3 MIN =====
-  if (!document.querySelector('.admin-body')) {
-    setInterval(function(){
-      var keep = ['admin_logged','admin_name','admin_articles','cms_pages'];
-      Object.keys(localStorage).forEach(function(k){
-        if (keep.indexOf(k) === -1) localStorage.removeItem(k);
-      });
-      document.cookie.split(';').forEach(function(c){
-        document.cookie = c.replace(/^ +/,'').replace(/=.*/,'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/');
-      });
-    }, 180000);
-  }
+window._loadLocalComments = function(articleId) {
+  const container = document.getElementById('comments-list');
+  if (!container) return;
+  const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
+  const approved = comments.filter(c => !c.pending);
+  window._renderComments(approved);
+};
 
-  // ===== TOAST =====
-  window.showToast = function (message, type) {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    if (type === 'error') toast.style.background = 'var(--secondary)';
-    toast.textContent = message;
-    Object.assign(toast.style, {
-      position: 'fixed', bottom: '20px', right: '20px', zIndex: '9999',
-      background: '#27ae60', color: '#fff', padding: '14px 24px',
-      borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-      fontSize: '0.95rem', maxWidth: '360px',
-      transform: 'translateY(100px)', opacity: '0',
-      transition: 'all 0.4s ease'
+window._renderComments = function(list) {
+  const container = document.getElementById('comments-list');
+  if (!container) return;
+  if (!list || list.length === 0) {
+    container.innerHTML = '<p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
+    return;
+  }
+  container.innerHTML = list.map(c =>
+    '<div class="comment"><div><span class="comment-author">' + c.name + '</span><span class="comment-date">' + c.date + '</span></div><div class="comment-text">' + c.text + '</div></div>'
+  ).join('');
+};
+
+// ===== AUTO-CLEAN EVERY 3 MIN =====
+if (!document.querySelector('.admin-body')) {
+  setInterval(function(){
+    var keep = ['admin_logged','admin_name','admin_articles','cms_pages','cms_campaigns'];
+    Object.keys(localStorage).forEach(function(k){
+      if (keep.indexOf(k) === -1) localStorage.removeItem(k);
     });
-    document.body.appendChild(toast);
-    requestAnimationFrame(() => {
-      toast.style.transform = 'translateY(0)';
-      toast.style.opacity = '1';
+    document.cookie.split(';').forEach(function(c){
+      document.cookie = c.replace(/^ +/,'').replace(/=.*/,'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/');
     });
-    setTimeout(() => {
-      toast.style.transform = 'translateY(100px)';
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 400);
-    }, 3500);
-  };
-});
+  }, 180000);
+}
+
+// ===== TOAST =====
+window.showToast = function (message, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  if (type === 'error') toast.style.background = 'var(--secondary)';
+  toast.textContent = message;
+  Object.assign(toast.style, {
+    position: 'fixed', bottom: '20px', right: '20px', zIndex: '9999',
+    background: '#27ae60', color: '#fff', padding: '14px 24px',
+    borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+    fontSize: '0.95rem', maxWidth: '360px',
+    transform: 'translateY(100px)', opacity: '0',
+    transition: 'all 0.4s ease'
+  });
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+  });
+  setTimeout(() => {
+    toast.style.transform = 'translateY(100px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+};
