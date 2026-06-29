@@ -404,17 +404,22 @@ def serve_article_og():
         img = article.get('image', '')
         if img and img.startswith('data:'):
             img = ''
-        if img and not img.startswith(('http://', 'https://')):
+        if not img:
+            img = request.host_url.rstrip('/') + '/assets/images/logo.png'
+        if not img.startswith(('http://', 'https://')):
             img = request.host_url.rstrip('/') + '/' + img.lstrip('/')
+        safe = lambda s: s.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;')
+        stitle = safe(title)
+        sdesc = safe(desc or "Chronique de James Mukeshaba - Média d'information")
         og = f'''
-<meta property="og:title" content="{title.replace('"','&quot;')}">
-<meta property="og:description" content="{desc.replace('"','&quot;')}">
+<meta property="og:title" content="{stitle}">
+<meta property="og:description" content="{sdesc}">
 <meta property="og:image" content="{img}">
 <meta property="og:url" content="{request.host_url.rstrip('/')}/article?id={aid}">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
 '''
-        html = html.replace('</title>', '</title>' + og)
+        html = html.replace('<title>Article - Chronique de James Mukeshaba</title>', '<title>' + stitle + ' - Chronique de James Mukeshaba</title>' + og)
     return html
 
 @app.route('/')

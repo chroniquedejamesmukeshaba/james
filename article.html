@@ -4,11 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Article - Chronique de James Mukeshaba</title>
-  <meta property="og:title" content="Chronique de James Mukeshaba">
-  <meta property="og:description" content="Article">
-  <meta property="og:image" content="">
-  <meta property="og:url" content="">
-  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#1a3a5c">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -173,7 +168,7 @@
         if (article.image && (article.image.startsWith('data:') || article.image.startsWith('/') || article.image.startsWith('http'))) {
           imgEl.outerHTML = '<img id="article-image" class="article-image" src="' + article.image + '" alt="' + article.title + '" loading="lazy" decoding="async" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius);margin-bottom:25px;">';
         }
-        var ogImg = article.image && !article.image.startsWith('data:') ? article.image : '';
+        var ogImg = article.image && !article.image.startsWith('data:') ? article.image : window.location.origin + '/assets/images/logo.png';
         setOG(article.title, article.excerpt || '', ogImg);
         document.getElementById('comments-list').dataset.articleId = articleId;
         document.getElementById('comment-form').dataset.articleId = articleId;
