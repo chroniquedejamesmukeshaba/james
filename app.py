@@ -1,6 +1,6 @@
 import os, json, time, uuid, base64, urllib.request
 from io import BytesIO
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 
 app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
@@ -372,6 +372,15 @@ def upload_image():
 
 # --- SERVE STATIC FILES ---
 BASE = os.path.dirname(__file__)
+
+@app.route('/article.html')
+def redirect_article():
+    aid = request.args.get('id')
+    lang = request.args.get('lang')
+    url = '/article?id=' + (aid or '')
+    if lang:
+        url += '&lang=' + lang
+    return redirect(url)
 
 @app.route('/article')
 def serve_article_og():

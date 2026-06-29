@@ -210,7 +210,7 @@
         slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
           '<div class="slide-overlay">' +
           '<h2>' + a.title + '</h2>' +
-          '<a href="article.html?id=' + a.id + '" class="btn btn-accent">'+(typeof t==='function'?t('hero_read_article'):'Lire l\'article')+'</a>' +
+          '<a href="/article?id=' + a.id + '" class="btn btn-accent">'+(typeof t==='function'?t('hero_read_article'):'Lire l\'article')+'</a>' +
           '</div></div>';
         dotsHtml += '<button class="slider-dot' + (i === 0 ? ' active' : '') + '"></button>';
       });
@@ -225,7 +225,7 @@
         return '<div class="card">' + imgHtml +
           '<div class="card-body">' +
           '<div class="card-category">' + a.category + '</div>' +
-          '<h3 class="card-title"><a href="article.html?id=' + a.id + '">' + a.title + '</a></h3>' +
+          '<h3 class="card-title"><a href="/article?id=' + a.id + '">' + a.title + '</a></h3>' +
           '<p class="card-text">' + a.excerpt + '</p>' +
           '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
           '</div></div>';
