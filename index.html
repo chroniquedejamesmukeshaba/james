@@ -224,10 +224,9 @@
       }
 
       function updateView() {
-        var s = container.querySelectorAll('.campaign-slide');
+        container.style.transform = 'translateX(-'+(idx*100)+'%)';
         var d = document.getElementById('campaign-dots');
         if (!d) return;
-        s.forEach(function(el,i){ el.classList.toggle('active', i===idx); });
         d.querySelectorAll('.campaign-dot').forEach(function(el,i){ el.classList.toggle('active', i===idx); });
       }
 
@@ -238,12 +237,13 @@
         var slides='', dots='';
         list.forEach(function(c,i){
           var bg = c.image&&(c.image[0]==='/'||c.image.startsWith('http')||c.image.startsWith('data:')) ? c.image : '';
-          slides += '<div class="campaign-slide'+(i===0?' active':'')+'">' +
+          slides += '<div class="campaign-slide">' +
             (bg ? '<div class="campaign-slide-img" style="background-image:url('+bg+');"></div>' : '<div class="campaign-slide-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
             '<div class="campaign-slide-text"><h4>'+c.title+'</h4><p>'+(c.description||'')+'</p></div></div>';
           dots += '<button class="campaign-dot'+(i===0?' active':'')+'" data-idx="'+i+'"></button>';
         });
         container.innerHTML = slides;
+        container.style.transform = 'translateX(0)';
         document.getElementById('campaign-dots').innerHTML = dots;
         items = list; idx = 0;
         startLoop(list[0]&&list[0].speed||5000);

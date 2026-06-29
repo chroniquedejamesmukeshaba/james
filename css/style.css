@@ -220,14 +220,15 @@ nav ul li a:hover, nav ul li a.active {
   position: relative; flex: 1; min-height: 200px; overflow: hidden;
   border-radius: var(--radius);
 }
-.campaign-slides { width: 100%; height: 100%; position: relative; }
+.campaign-slides {
+  display: flex; transition: transform 0.5s ease; height: 100%;
+}
 .campaign-slide {
-  position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease;
+  flex: 0 0 100%; min-width: 0;
   border-radius: var(--radius); overflow: hidden;
   display: flex; align-items: stretch;
   background: var(--bg);
 }
-.campaign-slide.active { opacity: 1; z-index: 1; }
 .campaign-slide-img {
   flex: 0 0 45%; background-size: cover; background-position: center;
   min-height: 180px;
@@ -264,7 +265,6 @@ nav ul li a:hover, nav ul li a.active {
 @media (max-width: 768px) {
   .mission-campaign-layout { flex-direction: column; }
   .campaign-carousel-block { min-width: auto; }
-  .campaign-carousel { min-height: 180px; }
 }
 .mission-photo-wrap {
   flex: 0 0 auto;
@@ -832,9 +832,9 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
     .mission-photo-wrap { width: 100%; max-height: 250px; }
     .mission-photo { height: 250px; width: 100%; }
     .mission-text { padding: 30px 20px; }
-    .campaign-carousel { min-height: 220px; height: 220px; }
+    .campaign-carousel { min-height: unset; }
     .campaign-slide { flex-direction: column; }
-    .campaign-slide-img { flex: 0 0 130px; min-height: 130px; width: 100%; }
+    .campaign-slide-img { flex: 0 0 140px; min-height: 140px; width: 100%; }
     .campaign-slide-text { padding: 12px 15px; }
     .campaign-slide-text h4 { font-size: 0.9rem; }
     .campaign-slide-text p { font-size: 0.8rem; }
