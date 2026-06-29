@@ -149,6 +149,7 @@
       var siteLang = (typeof localStorage!=='undefined'?localStorage.getItem('cms_lang'):null) || 'fr';
 
       function setOG(title, desc, img) {
+        if (img && !img.startsWith('http://') && !img.startsWith('https://')) img = window.location.origin + '/' + img.replace(/^\/+/,'');
         var tags = {'og:title':title,'og:description':desc,'og:image':img,'og:url':window.location.href};
         for (var k in tags) {
           var el = document.querySelector('meta[property="' + k + '"]');

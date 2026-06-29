@@ -395,11 +395,14 @@ def serve_article_og():
         img = article.get('image', '')
         if img and img.startswith('data:'):
             img = ''
+        if img and not img.startswith(('http://', 'https://')):
+            img = request.host_url.rstrip('/') + '/' + img.lstrip('/')
         og = f'''
 <meta property="og:title" content="{title.replace('"','&quot;')}">
 <meta property="og:description" content="{desc.replace('"','&quot;')}">
 <meta property="og:image" content="{img}">
-<meta property="og:url" content="{request.url}">
+<meta property="og:url" content="{request.host_url.rstrip('/')}/article?id={aid}">
+<meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
 '''
         html = html.replace('</title>', '</title>' + og)
