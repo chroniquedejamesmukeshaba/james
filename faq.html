@@ -10,7 +10,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="assets/images/logo.png">
-  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="top-bar"><div class="container"><div class="social-links" style="margin:0 auto;"><a href="#">f</a><a href="#">𝕏</a></div></div></div>
@@ -73,7 +76,7 @@
     <div><h4 data-i18n="footer_contact">Contact</h4><ul><li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li><li data-i18n="footer_phone_rdc">+243 971460415</li><li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li></ul></div>
     <div><h4 data-i18n="footer_admin">Administration</h4><ul><li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li></ul></div>
   </div><div style="text-align:center;margin-bottom:10px;"><button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button></div><div class="footer-bottom" data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</div></div></footer>
-  <script src="js/main.js"></script>
-  <script src="js/i18n.js"></script>
+  <script src="js/main.js" defer></script>
+  <script src="js/i18n.js" defer></script>
 </body>
 </html>

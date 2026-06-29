@@ -10,7 +10,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="assets/images/logo.png">
-  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="top-bar"><div class="container"><div class="social-links" style="margin:0 auto;"><a href="#">f</a><a href="#">𝕏</a></div></div></div>
@@ -57,7 +60,7 @@
           }
           grid.innerHTML = archived.map(function(c){
             var img = c.image && (c.image.startsWith('/')||c.image.startsWith('http')||c.image.startsWith('data:'))
-              ? '<img class="card-img" src="'+c.image+'" alt="'+c.title+'" style="object-fit:cover;">'
+              ? '<img class="card-img" src="'+c.image+'" alt="'+c.title+'" loading="lazy" decoding="async" style="object-fit:cover;">'
               : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📢</div>';
             return '<div class="card">'+img+
               '<div class="card-body">'+

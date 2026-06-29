@@ -10,7 +10,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="assets/images/logo.png">
-  <link rel="icon" type="image/png" href="assets/images/icon-192.png"><link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="top-bar">
@@ -59,7 +62,7 @@
     <div class="container mission-campaign-layout">
       <div class="mission-banner">
         <div class="mission-photo-wrap">
-          <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo">
+          <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo" loading="lazy" decoding="async">
         </div>
         <div class="mission-text">
           <h2 data-i18n="mission_title">Notre Mission</h2>
@@ -212,7 +215,7 @@
 
       grid.innerHTML = articles.slice(0, 6).map(function(a) {
         var imgHtml = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
-          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" style="object-fit:cover;">'
+          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" loading="lazy" decoding="async" style="object-fit:cover;">'
           : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
         return '<div class="card">' + imgHtml +
           '<div class="card-body">' +
