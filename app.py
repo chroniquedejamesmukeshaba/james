@@ -270,11 +270,67 @@ def article_lite(a, lang='fr'):
                 cp[f] = cp[k]
     return cp
 
+# --- STATUTS ARTICLES (publie / brouillon / programme / corbeille) ---
+def _norm_status(a):
+    st = str(a.get('status') or 'publie').strip().lower()
+    return st if st in ('publie', 'brouillon', 'programme', 'corbeille') else 'publie'
+
+def promote_scheduled():
+    """Public automatiquement les articles programmes dont l'echeance est passee."""
+    arts = read_json('articles')
+    changed = False
+    now = time.time()
+    for a in arts:
+        if _norm_status(a) == 'programme':
+            try:
+                st = float(a.get('scheduledAt') or 0)
+            except (TypeError, ValueError):
+                st = 0
+            if st and st <= now:
+                a['status'] = 'publie'
+                a['scheduledAt'] = ''
+                changed = True
+    if changed:
+        write_json('articles', arts)
+
+def _public_articles():
+    """Articles visibles du public (apres promotion des programmes echus)."""
+    promote_scheduled()
+    arts = read_json('articles')
+    out = []
+    for a in arts:
+        if _norm_status(a) not in ('brouillon', 'programme', 'corbeille'):
+            out.append(a)
+    return out
+
+def _sanitize_article(data):
+    st = str(data.get('status') or 'publie').strip().lower()
+    if st not in ('publie', 'brouillon', 'programme', 'corbeille'):
+        st = 'publie'
+    data['status'] = st
+    scheduled = data.get('scheduledAt') or ''
+    try:
+        data['scheduledAt'] = float(scheduled) if str(scheduled).strip() else ''
+    except (TypeError, ValueError):
+        data['scheduledAt'] = ''
+    tags = data.get('tags') or []
+    if isinstance(tags, str):
+        tags = [t.strip() for t in tags.split(',') if t.strip()]
+    data['tags'] = [str(t)[:40] for t in tags[:20]]
+    data['seoTitle'] = str(data.get('seoTitle') or '')[:200]
+    data['seoDescription'] = str(data.get('seoDescription') or '')[:300]
+    gal = data.get('gallery') or []
+    if isinstance(gal, str):
+        gal = [g.strip() for g in gal.splitlines() if g.strip()]
+    data['gallery'] = [str(g)[:300] for g in gal[:20]]
+    data['videoUrl'] = str(data.get('videoUrl') or '')[:300]
+    return data
+
 # --- ARTICLES ---
 @app.route('/api/articles', methods=['GET'])
 def get_articles():
     lang = request.args.get('lang', 'fr')
-    articles = read_json('articles')
+    articles = _public_articles()
     if lang and lang != 'fr':
         for a in articles:
             apply_lang(a, lang)
@@ -284,7 +340,7 @@ def get_articles():
 def get_articles_lite():
     lang = request.args.get('lang', 'fr')
     out = []
-    for a in read_json('articles'):
+    for a in _public_articles():
         cp = dict(a)
         cp.pop('content', None)
         for k in list(cp):
@@ -302,7 +358,7 @@ def get_articles_lite():
 @app.route('/api/articles/<int:aid>')
 def get_article(aid):
     lang = request.args.get('lang', 'fr')
-    for a in read_json('articles'):
+    for a in _public_articles():
         if str(a.get('id')) == str(aid):
             cp = dict(a)
             apply_lang(cp, lang)
@@ -313,7 +369,7 @@ def get_article(aid):
 @admin_required
 def save_article():
     articles = read_json('articles')
-    data = request.json or {}
+    data = _sanitize_article(request.json or {})
     if data.get('id'):
         for i, a in enumerate(articles):
             if a['id'] == data['id']:
@@ -330,7 +386,7 @@ def save_article():
 @admin_required
 def update_article(aid):
     articles = read_json('articles')
-    data = request.json or {}
+    data = _sanitize_article(request.json or {})
     data['id'] = aid
     data['modified'] = time.strftime('%Y-%m-%dT%H:%M:%S')
     for i, a in enumerate(articles):
@@ -350,16 +406,77 @@ def delete_article(aid):
     write_json('articles', articles)
     return jsonify({'ok': True})
 
+@app.route('/api/admin/articles', methods=['GET'])
+@admin_required
+def admin_articles():
+    promote_scheduled()
+    return jsonify(read_json('articles'))
+
+@app.route('/api/articles/<int:aid>/duplicate', methods=['POST'])
+@admin_required
+def duplicate_article(aid):
+    arts = read_json('articles')
+    for i, a in enumerate(arts):
+        if a.get('id') == aid:
+            cp = dict(a)
+            cp['id'] = int(time.time() * 1000)
+            cp['title'] = (a.get('title') or 'Article') + ' (copie)'
+            cp['status'] = 'brouillon'
+            cp['scheduledAt'] = ''
+            cp['featured'] = False
+            cp.pop('modified', None)
+            arts.insert(i + 1, cp)
+            write_json('articles', arts)
+            return jsonify({'ok': True, 'id': cp['id']})
+    return jsonify({'ok': False, 'error': 'article introuvable'}), 404
+
+@app.route('/api/articles/<int:aid>/trash', methods=['POST'])
+@admin_required
+def trash_article(aid):
+    arts = read_json('articles')
+    for a in arts:
+        if a.get('id') == aid:
+            a['status'] = 'corbeille'
+            a['scheduledAt'] = ''
+            write_json('articles', arts)
+            return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'article introuvable'}), 404
+
+@app.route('/api/articles/<int:aid>/restore', methods=['POST'])
+@admin_required
+def restore_article(aid):
+    arts = read_json('articles')
+    for a in arts:
+        if a.get('id') == aid:
+            a['status'] = 'publie'
+            a['scheduledAt'] = ''
+            write_json('articles', arts)
+            return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'article introuvable'}), 404
+
+@app.route('/api/articles/<int:aid>/publish', methods=['POST'])
+@admin_required
+def publish_article_now(aid):
+    arts = read_json('articles')
+    for a in arts:
+        if a.get('id') == aid:
+            a['status'] = 'publie'
+            a['scheduledAt'] = ''
+            write_json('articles', arts)
+            return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'article introuvable'}), 404
+
 @app.route('/api/categories')
 def list_categories():
     cats = {}
-    for a in read_json('articles'):
+    public_articles = _public_articles()
+    for a in public_articles:
         slug = cat_slug(a.get('category'))
         cats[slug] = cats.get(slug, 0) + 1
     out = []
     for slug, count in sorted(cats.items(), key=lambda x: (-x[1], x[0])):
         raw = ''
-        for a in read_json('articles'):
+        for a in public_articles:
             if cat_slug(a.get('category')) == slug:
                 raw = a.get('category') or ''
                 break
@@ -370,7 +487,7 @@ def list_categories():
 @app.route('/api/category/<slug>')
 def get_category(slug):
     lang = request.args.get('lang', 'fr')
-    articles = read_json('articles')
+    articles = _public_articles()
     members = []
     for a in articles:
         if cat_slug(a.get('category')) == slug:
@@ -421,7 +538,7 @@ def search_articles():
     q = (request.args.get('q') or '').strip()
     limit = int(request.args.get('limit', 20))
     fq = fold(q)
-    articles = read_json('articles')
+    articles = _public_articles()
     pop = popularities()
     results = []
     cat_hits = {}
@@ -743,7 +860,7 @@ def get_popular():
                 continue
             comments_n[aid] = comments_n.get(aid, 0) + 1
     scored = []
-    for a in read_json('articles'):
+    for a in _public_articles():
         aid = str(a.get('id'))
         v = views.get(aid, 0)
         rd = read_secs.get(aid, 0)
@@ -757,7 +874,7 @@ def get_popular():
     scored.sort(key=lambda x: -x[0])
     top = [aid for _, aid in scored[:limit]]
     out = []
-    for a in read_json('articles'):
+    for a in _public_articles():
         aid = str(a.get('id'))
         if aid not in top:
             continue
@@ -785,12 +902,12 @@ def get_settings():
     out.update(s)
     out['breaking_article_id'] = out.get('breaking_article_id') or None
     if not out['breaking_article_id']:
-        for a in read_json('articles'):
+        for a in _public_articles():
             if str(a.get('priority', '')).lower() == 'breaking':
                 out['breaking_article_id'] = a.get('id')
                 break
     if out['breaking_article_id']:
-        for a in read_json('articles'):
+        for a in _public_articles():
             if a.get('id') == out['breaking_article_id']:
                 out['breaking_title'] = a.get('title')
                 break
@@ -1772,12 +1889,12 @@ def sitemap():
         lines.append('<url><loc>' + base + p + '</loc></url>')
     lines.append('<url><loc>' + base + '/recherche</loc></url>')
     seen_cats = set()
-    for a in read_json('articles'):
+    for a in _public_articles():
         slug = cat_slug(a.get('category'))
         if slug and slug not in seen_cats:
             seen_cats.add(slug)
             lines.append('<url><loc>' + base + '/categorie/' + slug + '</loc></url>')
-    for a in read_json('articles'):
+    for a in _public_articles():
         aid = a.get('id')
         d = a.get('date', '') or ''
         lines.append('<url><loc>' + base + '/article?id=' + str(aid) + '</loc>' + (('<lastmod>' + d + '</lastmod>') if d else '') + '</url>')
@@ -1802,7 +1919,7 @@ def serve_article_og():
     lang = request.args.get('lang', 'fr')
     article = None
     if aid:
-        for a in read_json('articles'):
+        for a in _public_articles():
             if str(a['id']) == str(aid):
                 article = dict(a)
                 apply_lang(article, lang)

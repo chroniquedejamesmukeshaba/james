@@ -123,8 +123,20 @@ function forceLogin() {
       resetImageUpload();
       document.getElementById('form-title').textContent = 'Nouvel article';
       document.getElementById('article-id').value = '';
+      var st = document.getElementById('art-status'); if (st) st.value = 'publie';
+      window.toggleArticleStatusFields ? toggleArticleStatusFields() : null;
       if (authorField && adminName) authorField.value = adminName;
       window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
+    });
+
+    // Tabs de filtres par statut
+    document.querySelectorAll('.art-filter-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.art-filter-tab').forEach(function(t){ t.classList.remove('active'); });
+        this.classList.add('active');
+        currentFilter = this.dataset.filter || 'all';
+        renderArticles();
+      });
     });
 
     // Language tabs
@@ -166,15 +178,30 @@ function forceLogin() {
       if (preview) preview.src = '';
     }
 
+    // Champ de programmation : affiché uniquement en statut "programme"
+    window.toggleArticleStatusFields = function () {
+      var st = (document.getElementById('art-status') || {}).value || 'publie';
+      var wrap = document.getElementById('art-sched-wrap');
+      if (wrap) wrap.style.display = (st === 'programme') ? 'block' : 'none';
+    };
+    var toggleArticleFieldEl = document.getElementById('art-status');
+    if (toggleArticleFieldEl) toggleArticleFieldEl.addEventListener('change', window.toggleArticleStatusFields);
+
     document.getElementById('article-form')?.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = this.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent = 'Publication en cours...';
+      btn.disabled = true; btn.textContent = 'Enregistrement en cours...';
       const id = document.getElementById('article-id').value;
       const preview = document.getElementById('img-preview');
       var imageData = preview && preview.src ? preview.src : '';
 
       function saveArticle(imgUrl) {
+        var status = (document.getElementById('art-status') || {}).value || 'publie';
+        var schedEl = document.getElementById('art-scheduled-at');
+        var scheduledAt = '';
+        if (status === 'programme' && schedEl && schedEl.value) {
+          scheduledAt = new Date(schedEl.value).getTime();
+        }
         const article = {
           title: document.getElementById('art-title').value,
           category: document.getElementById('art-category').value,
@@ -183,6 +210,13 @@ function forceLogin() {
           content: document.getElementById('art-content').value,
           author: document.getElementById('art-author').value,
           priority: (document.getElementById('art-priority') || {}).value || 'normal',
+          status: status,
+          scheduledAt: scheduledAt,
+          tags: (document.getElementById('art-tags') || {}).value ? document.getElementById('art-tags').value.split(',').map(function(t){return t.trim();}).filter(Boolean) : [],
+          seoTitle: (document.getElementById('art-seo-title') || {}).value || '',
+          seoDescription: (document.getElementById('art-seo-desc') || {}).value || '',
+          videoUrl: (document.getElementById('art-video') || {}).value || '',
+          gallery: (document.getElementById('art-gallery') || {}).value ? document.getElementById('art-gallery').value.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean) : [],
           date: new Date().toISOString().split('T')[0]
         };
         // Include translations
@@ -192,7 +226,7 @@ function forceLogin() {
           var c = document.getElementById('art-content'+sfx); if (c && c.value) article['content'+sfx] = c.value;
         });
         if (id) article.id = Number(id);
-        apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Publier l\'article'; loadArticles(); });
+        apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Enregistrer et publier'; loadArticles(); });
         if (!useServer) {
           let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
           if (id) {
@@ -211,7 +245,7 @@ function forceLogin() {
         }
         document.getElementById('article-form-container').style.display = 'none';
         loadArticles();
-        showToast(id ? 'Article modifié avec succès.' : 'Article publié avec succès !');
+        showToast(id ? 'Article modifié avec succès.' : 'Article enregistré !');
       }
 
       if (useServer && imageData.startsWith('data:')) {
@@ -225,37 +259,82 @@ function forceLogin() {
     });
   }
 
+  var currentFilter = 'all';
+
   function loadArticles() {
     const tbody = document.getElementById('articles-table-body');
     if (!tbody) return;
-    var load = useServer ? apiGet('/articles') : null;
+    localStorage.removeItem('admin_articles');
+    var load = useServer ? apiGet('/admin/articles') : null;
     if (load) {
       load.then(function(articles) {
         if (articles) {
           localStorage.setItem('admin_articles', JSON.stringify(articles));
-          renderArticles(articles);
+          renderArticles();
         } else { renderFromLocal(); }
       });
     } else { renderFromLocal(); }
     function renderFromLocal() {
       var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-      renderArticles(a);
+      allArticles = a;
+      renderArticles();
     }
-    function renderArticles(articles) {
-      if (!articles || articles.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">Aucun article publié. Cliquez sur "Nouvel article" pour commencer.</td></tr>';
-        return;
+  }
+
+  var allArticles = [];
+
+  function renderArticles() {
+    const tbody = document.getElementById('articles-table-body');
+    if (!tbody) return;
+    var stored = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+    if (stored.length) allArticles = stored;
+    var articles = allArticles;
+    var filter = currentFilter || 'all';
+    var counts = { all: articles.length, publie: 0, brouillon: 0, programme: 0, corbeille: 0 };
+    articles.forEach(function(a){
+      var s = a.status || 'publie';
+      if (counts[s] !== undefined) counts[s]++;
+    });
+    document.querySelectorAll('.art-filter-tab').forEach(function(tab){
+      var k = tab.dataset.filter;
+      var badge = tab.querySelector('.art-filter-count');
+      if (badge) badge.textContent = counts[k] || 0;
+    });
+    var visible = filter === 'all' ? articles : articles.filter(function(a){ return (a.status || 'publie') === filter; });
+    if (!visible || visible.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">Aucun article dans cette catégorie.</td></tr>';
+      return;
+    }
+    var statusLabels = { publie: '✅ Publié', brouillon: '📝 Brouillon', programme: '⏰ Programmé', corbeille: '🗑️ Corbeille' };
+    tbody.innerHTML = visible.map(function(a) {
+      var st = a.status || 'publie';
+      var badge = '<span style="font-size:0.75rem;padding:2px 8px;border-radius:12px;background:' +
+        (st === 'publie' ? '#e6f6e6;color:#2e7d32' : st === 'brouillon' ? '#fff3e0;color:#e65100' : st === 'programme' ? '#e3f2fd;color:#1565c0' : '#fbe9e7;color:#bf360c') + ';">' + (statusLabels[st] || st) + '</span>';
+      var btns = '✏ <button class="btn btn-sm btn-outline" onclick="editArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">Modifier</button>';
+      if (st === 'corbeille') {
+        btns += ' <button class="btn btn-sm btn-outline" onclick="restoreArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#2e7d32;">♻️ Restaurer</button>' +
+                ' <button class="btn btn-sm btn-secondary" onclick="deleteArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑️ Suppr. définitivement</button>';
+      } else {
+        btns += ' <button class="btn btn-sm btn-outline" onclick="duplicateArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">📄 Dupliquer</button>';
+        if (st !== 'publie') {
+          btns += ' <button class="btn btn-sm btn-outline" onclick="publishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#2e7d32;">✅ Publier</button>';
+        } else {
+          btns += ' <button class="btn btn-sm btn-outline" onclick="unpublishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#e65100;">⏸️ Dépublier</button>';
+        }
+        btns += ' <button class="btn btn-sm btn-secondary" onclick="trashArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑️ Corbeille</button>';
       }
-      tbody.innerHTML = articles.map(function(a) {
-        return '<tr><td>' + a.id + '</td><td><strong>' + a.title + '</strong></td><td>' + a.category + '</td><td>' + a.date + '</td><td>' +
-          '<button class="btn btn-sm btn-outline" onclick="editArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button> ' +
-          '<button class="btn btn-sm btn-secondary" onclick="deleteArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button></td></tr>';
-      }).join('');
-    }
+      var sch = '';
+      if (st === 'programme' && a.scheduledAt) {
+        var d = new Date(a.scheduledAt);
+        sch = '<div style="font-size:0.72rem;color:#1565c0;margin-top:2px;">📅 ' + d.toLocaleString('fr-FR') + '</div>';
+      }
+      return '<tr><td>' + a.id + '</td><td><strong>' + a.title + '</strong>' + sch + '</td><td>' + (a.category || '') + '</td><td>' + (a.date || '') + '</td><td>' + badge + '</td><td>' + btns + '</td></tr>';
+    }).join('');
   }
 
   window.editArticle = function (id) {
     let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+    if (!articles.length) articles = allArticles;
     const article = articles.find(a => a.id === id);
     if (!article) return;
     document.getElementById('article-form-container').style.display = 'block';
@@ -268,6 +347,18 @@ function forceLogin() {
     document.getElementById('art-author').value = article.author;
     var prioEl = document.getElementById('art-priority');
     if (prioEl) prioEl.value = ['breaking','important','normal'].indexOf(article.priority) !== -1 ? article.priority : 'normal';
+    var stEl = document.getElementById('art-status');
+    if (stEl) stEl.value = ['publie','brouillon','programme','corbeille'].indexOf(article.status) !== -1 ? article.status : 'publie';
+    var schEl = document.getElementById('art-scheduled-at');
+    if (schEl) {
+      schEl.value = article.scheduledAt ? new Date(Number(article.scheduledAt)).toISOString().slice(0,16) : '';
+    }
+    window.toggleArticleStatusFields ? toggleArticleStatusFields() : null;
+    var tagsEl = document.getElementById('art-tags'); if (tagsEl) tagsEl.value = (article.tags || []).join(', ');
+    var seoT = document.getElementById('art-seo-title'); if (seoT) seoT.value = article.seoTitle || '';
+    var seoD = document.getElementById('art-seo-desc'); if (seoD) seoD.value = article.seoDescription || '';
+    var vid = document.getElementById('art-video'); if (vid) vid.value = article.videoUrl || '';
+    var gal = document.getElementById('art-gallery'); if (gal) gal.value = (article.gallery || []).join('\n');
     // Load translations
     ['_en','_sw','_es'].forEach(function(sfx){
       var t = document.getElementById('art-title'+sfx); if (t) t.value = article['title'+sfx] || '';
@@ -285,8 +376,75 @@ function forceLogin() {
     window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
   };
 
+  // Actions rapides sur les articles
+  function postArticleAction(path, id, msg) {
+    if (useServer) {
+      apiPost(path + id, {}).then(function(res){
+        if (res) { loadArticles(); showToast(msg); }
+        else showToast('Action impossible.', 'error');
+      });
+    } else {
+      reduceLocalArticle(id, function(a){});
+      loadArticles(); showToast(msg);
+    }
+  }
+  function reduceLocalArticle(id, fn2) {
+    let arts = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+    const a = arts.find(x => x.id === id);
+    if (a) fn2(a);
+    localStorage.setItem('admin_articles', JSON.stringify(arts));
+  }
+  function setLocalStatus(id, status) {
+    let arts = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+    arts.forEach(function(a){ if (a.id === id) { a.status = status; a.scheduledAt = ''; } });
+    localStorage.setItem('admin_articles', JSON.stringify(arts));
+    loadArticles();
+  }
+  window.trashArticle = function (id) {
+    if (!confirm('Mettre cet article à la corbeille ?')) return;
+    if (useServer) postArticleAction('/articles/' + id + '/trash', id, 'Article mis à la corbeille.');
+    else setLocalStatus(id, 'corbeille');
+  };
+  window.restoreArticle = function (id) {
+    if (useServer) postArticleAction('/articles/' + id + '/restore', id, 'Article restauré.');
+    else setLocalStatus(id, 'publie');
+  };
+  window.publishArticle = function (id) {
+    if (useServer) postArticleAction('/articles/' + id + '/publish', id, 'Article publié !');
+    else setLocalStatus(id, 'publie');
+  };
+  window.unpublishArticle = function (id) {
+    if (useServer) {
+      apiGet('/admin/articles').then(function(arts){
+        var a = (arts || []).find(function(x){ return x.id === id; });
+        if (a && useServer) {
+          a.status = 'brouillon'; a.scheduledAt = '';
+          apiPost('/articles/' + id, a).then(function(){ loadArticles(); showToast('Article dépublié.'); });
+        }
+      });
+    } else setLocalStatus(id, 'brouillon');
+  };
+  window.duplicateArticle = function (id) {
+    if (useServer) {
+      apiPost('/articles/' + id + '/duplicate', {}).then(function(res){
+        if (res && res.ok) { loadArticles(); showToast('Copie créée en brouillon.'); }
+        else showToast('Impossible de dupliquer.', 'error');
+      });
+    } else {
+      let arts = JSON.parse(localStorage.getItem('admin_articles') || '[]');
+      const src = arts.find(x => x.id === id);
+      if (src) {
+        var cp = Object.assign({}, src);
+        cp.id = Date.now(); cp.title = (src.title || 'Article') + ' (copie)';
+        cp.status = 'brouillon'; cp.scheduledAt = ''; cp.featured = false;
+        arts.push(cp); localStorage.setItem('admin_articles', JSON.stringify(arts));
+        loadArticles(); showToast('Copie créée en brouillon.');
+      }
+    }
+  };
+
   window.deleteArticle = function (id) {
-    if (!confirm('Supprimer cet article définitivement ?')) return;
+    if (!confirm('Supprimer cet article définitivement ? Cette action est irréversible.')) return;
     apiDel('/articles/' + id);
     if (!useServer) {
       let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
@@ -294,7 +452,7 @@ function forceLogin() {
       localStorage.setItem('admin_articles', JSON.stringify(articles));
     }
     loadArticles();
-    showToast('Article supprimé.');
+    showToast('Article supprimé définitivement.');
   };
 
   // ===== COMMENTS MODERATION =====

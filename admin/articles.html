@@ -89,7 +89,7 @@
             <textarea id="art-content_sw" class="form-input lang-field" data-lang="_sw" placeholder="Contenu complet en swahili" rows="8" style="display:none;"></textarea>
             <textarea id="art-content_es" class="form-input lang-field" data-lang="_es" placeholder="Contenu complet en espagnol" rows="8" style="display:none;"></textarea>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
             <div class="form-group">
               <label>Auteur</label>
               <input type="text" id="art-author" class="form-input" placeholder="Nom de l'auteur" required>
@@ -102,12 +102,58 @@
                 <option value="breaking">🔴 Breaking News</option>
               </select>
             </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select id="art-status" class="form-input" style="cursor:pointer;border-color:var(--primary);">
+                <option value="publie">✅ Publié (visible immédiatement)</option>
+                <option value="brouillon">📝 Brouillon (masqué du public)</option>
+                <option value="programme">⏰ Programmé (publication à une date)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" id="art-sched-wrap" style="display:none;">
+            <label>📅 Date et heure de publication programmée</label>
+            <input type="datetime-local" id="art-scheduled-at" class="form-input">
+            <div style="font-size:0.78rem;color:#999;margin-top:4px;">L'article deviendra automatiquement public à cette date et cette heure.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group">
+              <label>Tags (séparés par des virgules)</label>
+              <input type="text" id="art-tags" class="form-input" placeholder="Ex: Goma, Sécurité, Éducation">
+            </div>
+            <div class="form-group">
+              <label>Vidéo intégrée (URL YouTube/Vimeo)</label>
+              <input type="text" id="art-video" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group">
+              <label>SEO - Titre (optionnel)</label>
+              <input type="text" id="art-seo-title" class="form-input" placeholder="Titre optimisé pour les moteurs de recherche">
+            </div>
+            <div class="form-group">
+              <label>SEO - Description (optionnel)</label>
+              <input type="text" id="art-seo-desc" class="form-input" placeholder="Description pour le référencement (max 300)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Galerie d'images (une URL par ligne)</label>
+            <textarea id="art-gallery" class="form-input" placeholder="/assets/uploads/photo1.jpg&#10;/assets/uploads/photo2.jpg" rows="2"></textarea>
           </div>
           <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 Publier l'article</button>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer / publier</button>
             <button type="button" class="btn btn-outline" id="cancel-article">Annuler</button>
           </div>
         </form>
+      </div>
+
+      <!-- Filtres par statut -->
+      <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
+        <button class="btn btn-sm art-filter-tab active" data-filter="all" style="background:var(--primary);color:#fff;border:1px solid var(--primary);"><span class="art-filter-count">0</span> Tous</button>
+        <button class="btn btn-sm art-filter-tab" data-filter="publie" style="background:#fff;color:#333;border:1px solid #ccc;">✅ Publiés <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="brouillon" style="background:#fff;color:#333;border:1px solid #ccc;">📝 Brouillons <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="programme" style="background:#fff;color:#333;border:1px solid #ccc;">⏰ Programmés <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="corbeille" style="background:#fff;color:#333;border:1px solid #ccc;">🗑️ Corbeille <span class="art-filter-count" style="opacity:0.7;"></span></button>
       </div>
 
       <!-- Liste des articles -->
@@ -119,6 +165,7 @@
               <th>Titre</th>
               <th>Catégorie</th>
               <th>Date</th>
+              <th>Statut</th>
               <th>Actions</th>
             </tr>
           </thead>
