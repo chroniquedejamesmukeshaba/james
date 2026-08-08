@@ -1,3 +1,37 @@
+// ===== THEME CLAIR / SOMBRE =====
+(function () {
+  var KEY = 'site_theme';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+  }
+var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  applyTheme(saved);
+  function initToggle() {
+    if (!document.body) { setTimeout(initToggle, 50); return; }
+    var existing = document.getElementById('theme-toggle');
+    if (existing) return;
+    if (document.body.classList.contains('admin-body')) return;
+    var btn = document.createElement('button');
+    btn.id = 'theme-toggle';
+    btn.className = 'theme-toggle';
+    btn.title = 'Basculer entre le mode clair et le mode sombre';
+    btn.setAttribute('aria-label', 'Basculer le thème');
+    function icon() {
+      btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+    }
+    icon();
+    btn.addEventListener('click', function () {
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+      icon();
+    });
+    document.body.appendChild(btn);
+  }
+  initToggle();
+})();
+
 // ===== SERVICE WORKER / PWA =====
 var deferredPrompt;
 if ('serviceWorker' in navigator) {

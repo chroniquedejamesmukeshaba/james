@@ -761,7 +761,7 @@ function forceLogin() {
           '<span class="progress-val">' + it.v + '</span></div>';
       }).join('');
     },
-    line: function (canvas, labels, series, palette) {
+    line: function (canvas, series, palette) {
       if (!canvas) return;
       var dpr = window.devicePixelRatio || 1;
       var w = canvas.clientWidth || 600;
