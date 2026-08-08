@@ -142,6 +142,14 @@ var TRANSLATIONS = {
   home_search_none:   { fr:'Aucun r\u00e9sultat pour cette recherche.', en:'No results for this search.', sw:'Hakuna matokeo ya utafutaji huu.', es:'Sin resultados para esta b\u00fasqueda.' },
   home_search_title:  { fr:'R\u00e9sultats', en:'Results', sw:'Matokeo', es:'Resultados' },
 
+  // === ARTICLE MODERNE ===
+  reading_time:       { fr:'Lecture', en:'Reading', sw:'Usomaji', es:'Lectura' },
+  modified:           { fr:'Mis \u00e0 jour', en:'Updated', sw:'Imesasishwa', es:'Actualizado' },
+  priority_important: { fr:'Important', en:'Important', sw:'Muhimu', es:'Importante' },
+  sources:            { fr:'Sources', en:'Sources', sw:'Vyanzo', es:'Fuentes' },
+  report_comment:     { fr:'Signaler', en:'Report', sw:'Ripoti', es:'Reportar' },
+  copied_link:        { fr:'Lien copi\u00e9 dans le presse-papiers.', en:'Link copied to clipboard.', sw:'Kiungo kimenakiliwa.', es:'Enlace copiado.' },
+
   // === GENERIC ===
   learn_more:         { fr:'En savoir plus', en:'Learn more', sw:'Jifunze zaidi', es:'Saber m\u00e1s' },
   read_article:       { fr:'Lire l\'article', en:'Read article', sw:'Soma makala', es:'Leer art\u00edculo' },

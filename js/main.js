@@ -242,8 +242,25 @@ window._renderComments = function(list) {
     return;
   }
   container.innerHTML = list.map(c =>
-    '<div class="comment"><div><span class="comment-author">' + c.name + '</span><span class="comment-date">' + c.date + '</span></div><div class="comment-text">' + c.text + '</div></div>'
+    '<div class="comment"><div><span class="comment-author">' + c.name + '</span><span class="comment-date">' + c.date + '</span></div>' +
+    '<div class="comment-text">' + c.text + '</div>' +
+    '<div><button class="comment-report" data-cid="' + c.id + '" aria-label="Signaler ce commentaire">🚩 Signaler</button></div></div>'
   ).join('');
+  container.querySelectorAll('.comment-report').forEach(function(btn){
+    btn.onclick = function(){
+      if (typeof window.flagComment === 'function') window.flagComment(parseInt(this.dataset.cid), this);
+    };
+  });
+};
+
+window.flagComment = function (cid, btn) {
+  if (!confirm('Signaler ce commentaire à la modération ?')) return;
+  const aid = document.getElementById('comments-list') ? document.getElementById('comments-list').dataset.articleId : null;
+  if (window.location.protocol !== 'file:' && aid) {
+    fetch('/api/comments/' + aid + '/' + cid + '/flag', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason:'signale par un lecteur'})})
+      .then(function(r){ if(r.ok) done(); }).catch(function(){ done(); });
+  } else { done(); }
+  function done(){ if (btn) btn.textContent = '🚩 Signalé'; showToast('Merci, votre signalement a été transmis à la modération.'); }
 };
 
 // ===== AUTO-CLEAN EVERY 3 MIN =====
@@ -259,6 +276,30 @@ if (!document.querySelector('.admin-body')) {
     });
   }, 180000);
 }
+
+// ===== BREAKING NEWS BAR =====
+(function () {
+  if (document.body.classList.contains('admin-body')) return;
+  function attach(s) {
+    if (!s || !s.breaking_news_enabled || !s.breaking_article_id) return;
+    if (document.querySelector('.breaking-bar')) return;
+    var bar = document.createElement('div');
+    bar.className = 'breaking-bar';
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', 'Derni\u00e8re heure');
+    bar.innerHTML =
+      '<span class="bb-dot" aria-hidden="true"></span>' +
+      '<span class="bb-label">' + (typeof t === 'function' ? t('home_breaking') : 'Derni\u00e8re heure') + '</span>' +
+      '<a class="bb-title" href="/article?id=' + s.breaking_article_id + '">' + (s.breaking_title || '') + '</a>' +
+      '<a class="bb-link" href="/article?id=' + s.breaking_article_id + '">' + (typeof t === 'function' ? t('read_article') : 'Lire') + ' \u2192</a>';
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+  function load() {
+    if (window.location.protocol === 'file:') return;
+    fetch('/api/settings?_=' + Date.now()).then(function (r) { return r.json(); }).then(attach).catch(function () {});
+  }
+  document.addEventListener('DOMContentLoaded', load);
+})();
 
 // ===== TOAST =====
 window.showToast = function (message, type) {

@@ -144,6 +144,7 @@ function apiDel(path) {
           excerpt: document.getElementById('art-excerpt').value,
           content: document.getElementById('art-content').value,
           author: document.getElementById('art-author').value,
+          priority: (document.getElementById('art-priority') || {}).value || 'normal',
           date: new Date().toISOString().split('T')[0]
         };
         // Include translations
@@ -227,6 +228,8 @@ function apiDel(path) {
     document.getElementById('art-excerpt').value = article.excerpt;
     document.getElementById('art-content').value = article.content;
     document.getElementById('art-author').value = article.author;
+    var prioEl = document.getElementById('art-priority');
+    if (prioEl) prioEl.value = ['breaking','important','normal'].indexOf(article.priority) !== -1 ? article.priority : 'normal';
     // Load translations
     ['_en','_sw','_es'].forEach(function(sfx){
       var t = document.getElementById('art-title'+sfx); if (t) t.value = article['title'+sfx] || '';
@@ -302,11 +305,20 @@ function apiDel(path) {
         return;
       }
       tbody.innerHTML = allComments.map(function(c) {
-        var row = c.pending ? ' style="background:#fff8e1;"' : '';
-        var actions = c.pending
-          ? '<button class="btn btn-sm btn-primary" onclick="approveComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✓ Approuver</button> <button class="btn btn-sm btn-secondary" onclick="rejectComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✕ Rejeter</button>'
-          : '<span style="color:#27ae60;">Approuvé</span>';
-        return '<tr' + row + '><td>' + c.name + '</td><td>' + c.text.substring(0, 60) + (c.text.length > 60 ? '...' : '') + '</td><td>' + c.date + '</td><td>Article #' + c.articleId + '</td><td>' + actions + '</td></tr>';
+        var row = '';
+        var badge = '';
+        if (c.pending) { row = ' style="background:#fff8e1;"'; badge = '<span style="font-size:0.7rem;color:#b8860b;font-weight:700;">EN ATTENTE</span> '; }
+        else if (c.status === 'hidden') { row = ' style="opacity:0.55;"'; badge = '<span style="font-size:0.7rem;color:#999;font-weight:700;">MASQUÉ</span> '; }
+        if (c.flagged) badge += '<span style="font-size:0.7rem;color:var(--secondary);font-weight:700;">🚩 SIGNALÉ' + (c.flag_reason ? ' : ' + c.flag_reason : '') + '</span> ';
+        var actions = '';
+        if (c.pending) {
+          actions = '<button class="btn btn-sm btn-primary" onclick="approveComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✓ Approuver</button> <button class="btn btn-sm btn-secondary" onclick="rejectComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">✕ Rejeter</button>';
+        } else {
+          actions = '<button class="btn btn-sm btn-outline" onclick="setCommentStatus(' + c.articleId + ',' + c.id + ',' + (c.status === 'hidden' ? "'visible'" : "'hidden'") + ')" style="padding:4px 10px;font-size:0.8rem;">' + (c.status === 'hidden' ? '👁 Afficher' : '🙈 Masquer') + '</button> ';
+        }
+        actions += '<button class="btn btn-sm btn-outline" onclick="blockCommentUser(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">🚫 Bloquer</button>';
+        actions += ' <button class="btn btn-sm btn-secondary" onclick="rejectComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑</button>';
+        return '<tr' + row + '><td>' + c.name + '</td><td>' + badge + c.text.substring(0, 60) + (c.text.length > 60 ? '...' : '') + '</td><td>' + c.date + '</td><td>Article #' + c.articleId + '</td><td>' + actions + '</td></tr>';
       }).join('');
     });
   }
@@ -330,6 +342,63 @@ function apiDel(path) {
     loadPendingComments();
     showToast('Commentaire rejeté.');
   };
+
+  window.setCommentStatus = function (articleId, commentId, status) {
+    if (useServer) apiPost('/comments/' + articleId + '/' + commentId + '/status', { status: status });
+    const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
+    const c = comments.find(c => c.id === commentId);
+    if (c) { c.status = status; c.pending = false; }
+    localStorage.setItem('comments_' + articleId, JSON.stringify(comments));
+    loadPendingComments();
+    showToast(status === 'hidden' ? 'Commentaire masqué.' : 'Commentaire affiché.');
+  };
+
+  window.blockCommentUser = function (articleId, commentId) {
+    const comments = JSON.parse(localStorage.getItem('comments_' + articleId) || '[]');
+    const c = comments.find(c => c.id === commentId);
+    const name = c ? c.name : '';
+    if (!name) return;
+    if (!confirm('Bloquer « ' + name + ' » ? Ses commentaires seront refusés.')) return;
+    if (useServer) apiPost('/blocked', { name: name }).then(function (r) {
+      if (r && r.ok) showToast('Utilisateur bloqué : ' + name);
+    });
+    loadPendingComments();
+  };
+
+  // ===== BREAKING NEWS SETTINGS (dashboard) =====
+  var bnsEnabled = document.getElementById('bns-enabled');
+  if (bnsEnabled) {
+    (function () {
+      var sel = document.getElementById('bns-article');
+      var saveBtn = document.getElementById('bns-save');
+      var statusEl = document.getElementById('bns-status');
+      apiGet('/articles').then(function (arts) {
+        if (!arts) return;
+        arts.forEach(function (a) {
+          var opt = document.createElement('option');
+          opt.value = a.id;
+          var p = a.priority === 'breaking' ? ' 🔴 ' : (a.priority === 'important' ? ' ⭐ ' : '');
+          opt.textContent = p + (a.title || 'Sans titre').substring(0, 60);
+          sel.appendChild(opt);
+        });
+        apiGet('/settings').then(function (s) {
+          if (s) {
+            bnsEnabled.checked = !!s.breaking_news_enabled;
+            if (s.breaking_article_id) sel.value = String(s.breaking_article_id);
+          }
+        }).catch(function () {});
+      }).catch(function () {});
+      saveBtn.addEventListener('click', function () {
+        var payload = {
+          breaking_news_enabled: bnsEnabled.checked,
+          breaking_article_id: sel.value ? Number(sel.value) : null
+        };
+        var done = function () { statusEl.textContent = '✅ Réglages enregistrés.'; setTimeout(function () { statusEl.textContent = ''; }, 3000); };
+        if (useServer) apiPost('/settings', payload).then(done).catch(function () {});
+        else done();
+      });
+    })();
+  }
 
   // ===== DASHBOARD STATS =====
   var statEls = {

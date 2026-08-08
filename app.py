@@ -27,6 +27,14 @@ def write_json(name, data):
     path = os.path.join(DATA_DIR, name + '.json')
     with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
+def read_obj(name, default):
+    path = os.path.join(DATA_DIR, name + '.json')
+    if not os.path.exists(path): return default
+    try:
+        with open(path, 'r', encoding='utf-8') as f: return json.load(f)
+    except Exception:
+        return default
+
 # --- SECURITY ---
 ADMINS = {
     'Shine2026':    'YAGIRWA GEDEON GUIDE',
@@ -166,6 +174,7 @@ def update_article(aid):
     articles = read_json('articles')
     data = request.json or {}
     data['id'] = aid
+    data['modified'] = time.strftime('%Y-%m-%dT%H:%M:%S')
     for i, a in enumerate(articles):
         if a['id'] == aid:
             articles[i] = {**a, **data}
@@ -244,13 +253,29 @@ def get_comments(article_id):
 @rate_limit('comment_post', 50, 24 * 3600)
 def add_comment(article_id):
     key = f'comments_{article_id}'
-    comments = read_json(key)
     data = request.json or {}
-    data['id'] = int(time.time() * 1000)
-    data['pending'] = True
-    comments.append(data)
+    name = (data.get('name') or '').strip()[:40]
+    text = (data.get('text') or '').strip()[:2000]
+    if not name or not text:
+        return jsonify({'ok': False, 'error': 'champs requis'}), 400
+    if not any(ch.isalpha() for ch in text):
+        return jsonify({'ok': False, 'error': 'texte invalide'}), 400
+    if text.lower().count('http') > 2:
+        return jsonify({'ok': False, 'error': 'trop de liens'}), 400
+    if name.lower() in read_obj('blocked', []):
+        return jsonify({'ok': False, 'error': 'compte bloque'}), 403
+    comments = read_json(key)
+    entry = {
+        'id': int(time.time() * 1000),
+        'name': name,
+        'text': text[:1500],
+        'date': data.get('date') or time.strftime('%Y-%m-%d'),
+        'pending': True,
+        'status': 'pending'
+    }
+    comments.append(entry)
     write_json(key, comments)
-    return jsonify({'ok': True})
+    return jsonify({'ok': True, 'id': entry['id']})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/approve', methods=['POST'])
 @admin_required
@@ -258,7 +283,39 @@ def approve_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = read_json(key)
     for c in comments:
-        if c['id'] == cid: c['pending'] = False; break
+        if c['id'] == cid:
+            c['pending'] = False
+            c['status'] = 'visible'
+            break
+    write_json(key, comments)
+    return jsonify({'ok': True})
+
+@app.route('/api/comments/<int:article_id>/<int:cid>/status', methods=['POST'])
+@admin_required
+def set_comment_status(article_id, cid):
+    st = (request.json or {}).get('status')
+    if st not in ('visible', 'hidden'):
+        return jsonify({'ok': False, 'error': 'status invalide'}), 400
+    key = f'comments_{article_id}'
+    comments = read_json(key)
+    for c in comments:
+        if c['id'] == cid:
+            c['status'] = st
+            c['pending'] = False
+            break
+    write_json(key, comments)
+    return jsonify({'ok': True})
+
+@app.route('/api/comments/<int:article_id>/<int:cid>/flag', methods=['POST'])
+@rate_limit('comment_flag', 10, 24 * 3600)
+def flag_comment(article_id, cid):
+    key = f'comments_{article_id}'
+    comments = read_json(key)
+    for c in comments:
+        if c['id'] == cid:
+            c['flagged'] = True
+            c['flag_reason'] = ((request.json or {}).get('reason') or '')[:200]
+            break
     write_json(key, comments)
     return jsonify({'ok': True})
 
@@ -268,6 +325,85 @@ def delete_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = [c for c in read_json(key) if c['id'] != cid]
     write_json(key, comments)
+    return jsonify({'ok': True})
+
+# --- BLOCKED USERS ---
+@app.route('/api/blocked', methods=['GET'])
+@admin_required
+def list_blocked():
+    return jsonify(read_obj('blocked', []))
+
+@app.route('/api/blocked', methods=['POST'])
+@admin_required
+def block_user():
+    name = ((request.json or {}).get('name') or '').strip().lower()[:40]
+    if not name:
+        return jsonify({'ok': False, 'error': 'nom vide'}), 400
+    bl = read_obj('blocked', [])
+    if name not in bl:
+        bl.append(name)
+    write_json('blocked', bl)
+    return jsonify({'ok': True})
+
+@app.route('/api/blocked/<path:name>', methods=['DELETE'])
+@admin_required
+def unblock_user(name):
+    bl = [n for n in read_obj('blocked', []) if n != name.lower()]
+    write_json('blocked', bl)
+    return jsonify({'ok': True})
+
+# --- REACTIONS ---
+REACTION_TYPES = ('like', 'love', 'wow', 'sad', 'angry')
+
+@app.route('/api/reactions/<int:article_id>', methods=['GET'])
+def get_reactions(article_id):
+    return jsonify(read_obj('reactions', {}).get(str(article_id), {}))
+
+@app.route('/api/reactions/<int:article_id>', methods=['POST'])
+@rate_limit('reaction_post', 40, 24 * 3600)
+def add_reaction(article_id):
+    rtype = (request.json or {}).get('type')
+    if rtype not in REACTION_TYPES:
+        return jsonify({'ok': False, 'error': 'type inconnu'}), 400
+    data = read_obj('reactions', {})
+    key = str(article_id)
+    slot = dict(data.get(key) or {})
+    slot[rtype] = int(slot.get(rtype, 0)) + 1
+    data[key] = slot
+    write_json('reactions', data)
+    return jsonify({'ok': True, 'count': slot[rtype]})
+
+# --- SETTINGS (BREAKING NEWS) ---
+DEFAULT_SETTINGS = {'breaking_news_enabled': True, 'breaking_article_id': None}
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    s = read_obj('settings', DEFAULT_SETTINGS)
+    out = dict(DEFAULT_SETTINGS)
+    out.update(s)
+    out['breaking_article_id'] = out.get('breaking_article_id') or None
+    if not out['breaking_article_id']:
+        for a in read_json('articles'):
+            if str(a.get('priority', '')).lower() == 'breaking':
+                out['breaking_article_id'] = a.get('id')
+                break
+    if out['breaking_article_id']:
+        for a in read_json('articles'):
+            if a.get('id') == out['breaking_article_id']:
+                out['breaking_title'] = a.get('title')
+                break
+    return jsonify(out)
+
+@app.route('/api/settings', methods=['POST'])
+@admin_required
+def save_settings():
+    d = read_obj('settings', DEFAULT_SETTINGS)
+    data = request.json or {}
+    if 'breaking_news_enabled' in data:
+        d['breaking_news_enabled'] = bool(data['breaking_news_enabled'])
+    if 'breaking_article_id' in data:
+        d['breaking_article_id'] = data['breaking_article_id']
+    write_json('settings', d)
     return jsonify({'ok': True})
 
 # --- NEWSLETTER ---

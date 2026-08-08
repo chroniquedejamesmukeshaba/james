@@ -51,6 +51,21 @@
       <div id="visits-chart" style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);"></div>
 
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:15px;">⚡ Breaking News</h3>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">Activez la barre d'actualité affichée en haut du site et choisissez l'article mis en avant. L'article doit être marqué « Breaking News » dans la gestion des articles.</p>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+            <input type="checkbox" id="bns-enabled" style="width:18px;height:18px;cursor:pointer;"> Barre Breaking News activée
+          </label>
+          <select id="bns-article" class="form-input" style="max-width:340px;cursor:pointer;">
+            <option value="">Article Breaking (auto)</option>
+          </select>
+          <button type="button" class="btn btn-primary" id="bns-save">💾 Enregistrer</button>
+        </div>
+        <div id="bns-status" style="font-size:0.8rem;color:#27ae60;margin-top:10px;"></div>
+      </div>
+
+      <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
         <h3 style="color:var(--primary);margin-bottom:15px;">Actions rapides</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <a href="articles.html" class="btn btn-primary">➕ Nouvel article</a>
