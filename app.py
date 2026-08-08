@@ -829,6 +829,8 @@ def push_broadcast(title, body, url='', scope=None):
         if not s.get('endpoint'):
             continue
         prefs = s.get('prefs') or {}
+        if scope == 'news' and not prefs.get('news'):
+            continue
         if scope == 'breaking' and not prefs.get('breaking'):
             continue
         if scope == 'rdc' and not prefs.get('rdc'):
