@@ -69,6 +69,71 @@
         <div id="countries-pie" style="width:250px;height:250px;position:relative;"></div>
         <div id="countries-list"></div>
       </div>
+
+      <h3 style="color:var(--primary);margin:35px 0 15px;">Analyse par article</h3>
+      <div class="art-picker-wrap">
+        <input type="search" id="art-search" class="form-input" placeholder="🔍 Filtrer les articles…" style="max-width:260px;">
+        <select id="art-picker" class="form-input" style="max-width:480px;">
+          <option value="">— Sélectionner un article —</option>
+        </select>
+      </div>
+
+      <div id="art-analytics" style="display:none;">
+        <div class="stats-grid" style="margin-bottom:25px;">
+          <div class="stat-card"><div class="number" id="art-visits">0</div><div class="label">Visites</div></div>
+          <div class="stat-card"><div class="number" id="art-uniques">0</div><div class="label">Visiteurs uniques</div></div>
+          <div class="stat-card"><div class="number" id="art-readers">0</div><div class="label">Lecteurs</div><div class="sub">moy. <span id="art-avg">—</span></div></div>
+          <div class="stat-card"><div class="number" id="art-shares">0</div><div class="label">Partages</div></div>
+          <div class="stat-card"><div class="number" id="art-reactions">0</div><div class="label">Réactions</div></div>
+          <div class="stat-card"><div class="number" id="art-comments">0</div><div class="label">Commentaires</div></div>
+          <div class="stat-card"><div class="number" id="art-exit">0 %</div><div class="label">Taux de sortie</div></div>
+        </div>
+
+        <div class="dash-row">
+          <div class="dash-card">
+            <h3>Visites (30 derniers jours)</h3>
+            <canvas id="art-line-chart" height="200"></canvas>
+            <div class="dash-legend">
+              <span><i style="background:#58a6ff;"></i> Visites</span>
+              <span><i style="background:#3fb950;"></i> Uniques</span>
+            </div>
+          </div>
+          <div class="dash-card">
+            <h3>Durée de lecture</h3>
+            <div id="art-read-hist"></div>
+          </div>
+        </div>
+
+        <div class="dash-row-3">
+          <div class="dash-card">
+            <h3>Pays</h3>
+            <div id="art-countries"></div>
+          </div>
+          <div class="dash-card">
+            <h3>Appareils</h3>
+            <div id="art-devices"></div>
+          </div>
+          <div class="dash-card">
+            <h3>Canaux de partage</h3>
+            <div id="art-channels"></div>
+          </div>
+        </div>
+
+        <div class="dash-card" style="margin-top:24px;">
+          <h3>Dernières visites</h3>
+          <div class="admin-table">
+            <table>
+              <thead><tr><th>Date</th><th>Pays</th><th>Appareil</th><th>Navigateur</th><th>Provenance</th></tr></thead>
+              <tbody id="art-views-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button id="art-prev" type="button">← Précédent</button>
+            <span id="art-page-info">1 / 1</span>
+            <button id="art-next" type="button">Suivant →</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
   <script src="../js/main.js"></script>
@@ -172,5 +237,93 @@
     .period-btn:hover { border-color:var(--primary); }
     .period-btn.active { background:var(--primary);color:var(--white);border-color:var(--primary); }
   </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var picker = document.getElementById('art-picker');
+      var search = document.getElementById('art-search');
+      var container = document.getElementById('art-analytics');
+      var arts = [];
+      var cur = null;
+      var page = 1;
+
+      function init() {
+        if (window.location.protocol === 'file:' || !picker) return;
+        fetch('/api/articles', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (list) {
+          arts = (list || []).slice().sort(function (a, b) { return (b.id || 0) - (a.id || 0); });
+          rebuildList();
+        }).catch(function () {});
+      }
+      function rebuildList() {
+        var q = (search ? search.value : '').toLowerCase();
+        var shown = arts.filter(function (a) {
+          return !q || (a.title || '').toLowerCase().indexOf(q) !== -1 || (a.category || '').toLowerCase().indexOf(q) !== -1;
+        });
+        var old = picker.value;
+        picker.innerHTML = '<option value="">— Sélectionner un article —</option>' +
+          shown.map(function (a) { return '<option value="' + a.id + '">' + (a.title || 'Sans titre').substring(0, 80) + ' — ' + (a.category || '') + '</option>'; }).join('');
+        if (old) picker.value = old;
+      }
+      search && search.addEventListener('input', rebuildList);
+
+      picker.addEventListener('change', function () {
+        cur = picker.value ? String(picker.value) : null;
+        container.style.display = cur ? 'block' : 'none';
+        page = 1;
+        if (cur) load();
+      });
+
+      function load() {
+        if (window.location.protocol === 'file:' || !cur) return;
+        var th = { 'Cache-Control': 'no-cache' };
+        var tok = localStorage.getItem('admin_token');
+        if (tok) th['X-Admin-Token'] = tok;
+        fetch('/api/analytics/' + cur + '?page=' + page, { cache: 'no-store', headers: th }).then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        }).then(render).catch(function () {});
+      }
+
+      function render(d) {
+        var t = d.totals || {};
+        document.getElementById('art-visits').textContent = Dash.fmt(t.visits || 0);
+        document.getElementById('art-uniques').textContent = Dash.fmt(t.uniques || 0);
+        document.getElementById('art-readers').textContent = Dash.fmt(t.readers || 0);
+        document.getElementById('art-avg').textContent = Dash.secs(t.avgReadSec || 0);
+        document.getElementById('art-shares').textContent = Dash.fmt(t.shares || 0);
+        document.getElementById('art-reactions').textContent = Dash.fmt(t.reactions || 0);
+        document.getElementById('art-comments').textContent = Dash.fmt(t.comments || 0);
+        document.getElementById('art-exit').textContent = (t.exitRate == null ? '—' : t.exitRate + ' %');
+        var s = d.series || {};
+        Dash.line(document.getElementById('art-line-chart'), [
+          { labels: s.labels || [], data: s.visits || [], name: 'Visites', color: '#58a6ff' },
+          { labels: s.labels || [], data: s.uniques || [], name: 'Uniques', color: '#3fb950' }
+        ], ['#58a6ff', '#3fb950']);
+        var buckets = [['0–10 s'], ['10–30 s'], ['30 s–1 min'], ['1–3 min'], ['3 min +']].map(function (b, i) {
+          return { lab: b[0], v: d.readHistogram[i] || 0 };
+        });
+        var bmax = Math.max.apply(Math, buckets.map(function (b) { return b.v; }).concat([1]));
+        document.getElementById('art-read-hist').innerHTML = buckets.map(function (b) {
+          return '<div class="progress-row"><span class="p-label" style="width:90px;">' + b.lab + '</span>' +
+            '<div class="progress-track"><div class="progress-fill" style="width:' + Math.round(b.v / bmax * 100) + '%;background:#f0883e;"></div></div>' +
+            '<span class="progress-val">' + b.v + '</span></div>';
+        }).join('');
+        document.getElementById('art-countries').innerHTML = Dash.bars((d.countries || []).map(function (x) { return { n: x.country, v: x.visits }; }), '#a371f7');
+        document.getElementById('art-devices').innerHTML = Dash.bars((d.devices || []).map(function (x) { return { n: x.name, v: x.count }; }), '#58a6ff');
+        document.getElementById('art-channels').innerHTML = Dash.bars((d.shareChannels || []).map(function (x) { return { n: x.name, v: x.count }; }), '#3fb950');
+        var pg = d.views || {};
+        var body = document.getElementById('art-views-body');
+        body.innerHTML = pg.items && pg.items.length ? pg.items.map(function (v) {
+          return '<tr><td>' + v.date + '</td><td>' + v.country + '</td><td>' + v.device + '</td><td>' + v.browser + '</td><td>' + v.source + '</td></tr>';
+        }).join('') : '<tr><td colspan="5" class="dash-empty" style="text-align:center;">Aucune visite.</td></tr>';
+        document.getElementById('art-page-info').textContent = pg.page + ' / ' + pg.totalPages;
+        document.getElementById('art-prev').disabled = !pg.items || pg.page <= 1;
+        document.getElementById('art-next').disabled = !pg.items || pg.page >= pg.totalPages;
+      }
+
+      document.getElementById('art-prev').addEventListener('click', function () { if (page > 1) { page--; load(); } });
+      document.getElementById('art-next').addEventListener('click', function () { page++; load(); });
+      init();
+    });
+  </script>
 </body>
 </html>

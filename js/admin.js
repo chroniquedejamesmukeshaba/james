@@ -438,67 +438,242 @@ function forceLogin() {
     })();
   }
 
-  // ===== DASHBOARD STATS =====
-  var statEls = {
-    articles: document.getElementById('stat-articles'),
-    comments: document.getElementById('stat-comments'),
-    subs: document.getElementById('stat-subs'),
-    visits: document.getElementById('stat-visits'),
-    chart: document.getElementById('visits-chart')
-  };
-  if (statEls.articles) {
-    function loadStats(data) {
-      if (data) {
-        statEls.articles.textContent = data.articles || 0;
-        statEls.comments.textContent = data.comments || 0;
-        statEls.subs.textContent = data.subs || 0;
-        statEls.visits.textContent = data.visits || 0;
-        updateChart(data.visitsList || []);
-      } else {
-        var a = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-        var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
-        var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]').map(function(v){return typeof v === 'string' ? v : (v.date||'');});
-        var totalComments = 0;
-        Object.keys(localStorage).filter(function(k){return k.startsWith('comments_');}).forEach(function(k){
-          totalComments += JSON.parse(localStorage.getItem(k) || '[]').length;
-        });
-        statEls.articles.textContent = a.length;
-        statEls.comments.textContent = totalComments;
-        statEls.subs.textContent = subs.length;
-        statEls.visits.textContent = visits.length;
-        updateChart(visits);
+  // ===== DASHBOARD PRO =====
+  window.Dash = {
+    fmt: function (n) { return n.toLocaleString('fr-FR'); },
+    secs: function (s) {
+      s = s || 0;
+      if (s < 60) return Math.round(s) + ' s';
+      if (s < 3600) return (s / 60).toFixed(1).replace('.', ',') + ' min';
+      return (s / 3600).toFixed(1).replace('.', ',') + ' h';
+    },
+    bars: function (items, color) {
+      if (!items || !items.length) return '<div class="dash-empty">Aucune donnée.</div>';
+      var max = 1;
+      items.forEach(function (it) { if (it.v > max) max = it.v; });
+      return items.map(function (it) {
+        var w = Math.max(2, Math.round(it.v / max * 100));
+        return '<div class="progress-row"><span class="p-label" title="' + it.n + '">' + it.n + '</span>' +
+          '<div class="progress-track"><div class="progress-fill" style="width:' + w + '%;background:' + color + ';"></div></div>' +
+          '<span class="progress-val">' + it.v + '</span></div>';
+      }).join('');
+    },
+    line: function (canvas, labels, series, palette) {
+      if (!canvas) return;
+      var dpr = window.devicePixelRatio || 1;
+      var w = canvas.clientWidth || 600;
+      var h = 240;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.height = h + 'px';
+      var ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+      var padL = 36, padR = 10, padT = 12, padB = 24;
+      var plotW = w - padL - padR, plotH = h - padT - padB;
+      var n = series[0] ? series[0].data.length : 0;
+      if (!n) {
+        ctx.fillStyle = '#8b949e'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Aucune visite sur cette période.', w / 2, h / 2);
+        return;
       }
+      var max = 1;
+      series.forEach(function (s) {
+        s.data.forEach(function (v) { if (v > max) max = v; });
+      });
+      max = Math.ceil(max * 1.15);
+      ctx.strokeStyle = '#21262d'; ctx.fillStyle = '#8b949e'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+      for (var i = 0; i <= 4; i++) {
+        var y = padT + plotH - (plotH * i / 4);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+        ctx.fillText(Math.round(max * i / 4), padL - 6, y + 3);
+      }
+      ctx.textAlign = 'center';
+      var step = Math.max(1, Math.ceil(n / 12));
+      for (var li = 0; li < n; li += step) {
+        ctx.fillText(series[0].labels[li], padL + plotW * li / (n - 1), h - 7);
+      }
+      function xAt(k) { return padL + plotW * k / (n - 1); }
+      function yAt(v) { return padT + plotH - (v / max) * plotH; }
+      series.forEach(function (s, si) {
+        var color = s.color || palette[si % palette.length];
+        ctx.beginPath();
+        s.data.forEach(function (v, k) {
+          if (k === 0) ctx.moveTo(xAt(k), yAt(v)); else ctx.lineTo(xAt(k), yAt(v));
+        });
+        if (si === 0) {
+          ctx.lineTo(xAt(n - 1), padT + plotH); ctx.lineTo(xAt(0), padT + plotH); ctx.closePath();
+          ctx.fillStyle = 'rgba(88,166,255,0.08)'; ctx.fill();
+          ctx.beginPath();
+          s.data.forEach(function (v, k) {
+            if (k === 0) ctx.moveTo(xAt(k), yAt(v)); else ctx.lineTo(xAt(k), yAt(v));
+          });
+        }
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+        ctx.stroke();
+        s.data.forEach(function (v, k) {
+          ctx.beginPath();
+          ctx.arc(xAt(k), yAt(v), 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = color; ctx.fill();
+        });
+      });
+      var tip = canvas._tip;
+      if (tip) { ctx.fillStyle = tip.line + '33'; ctx.fillRect(tip.x, padT, 1.5, plotH); }
+      canvas._draw = function (ev) {
+        var rect = canvas.getBoundingClientRect();
+        var mx = ev.clientX - rect.left;
+        var min = 1e9, k = -1;
+        for (var i2 = 0; i2 < n; i2++) {
+          var d = Math.abs(xAt(i2) - mx);
+          if (d < min) { min = d; k = i2; }
+        }
+        canvas._tip = { x: xAt(k), width: 14 };
+        var t = document.getElementById('db-line-tip');
+        var txt = series[0].labels[k] + ' — ' + series.map(function (s) { return s.name + ' : ' + s.data[k]; }).join(' · ');
+        if (!t) {
+          t = document.createElement('div');
+          t.id = 'db-line-tip';
+          t.style.cssText = 'position:absolute;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 9px;border-radius:6px;font-size:0.75rem;pointer-events:none;z-index:5;';
+          canvas.parentNode.appendChild(t);
+        }
+        t.textContent = txt;
+        t.style.left = Math.min(rect.width - 180, mx + 8) + 'px';
+        t.style.top = '8px';
+        t.style.display = 'block';
+        window.Dash.line(canvas, series, palette);
+      };
+      canvas.addEventListener('mousemove', canvas._draw);
+      if (!canvas._cl) {
+        canvas._cl = true;
+        canvas.addEventListener('mouseleave', function () {
+          canvas._tip = null;
+          var t = document.getElementById('db-line-tip');
+          if (t) t.style.display = 'none';
+          window.Dash.line(canvas, series, palette);
+        });
+      }
+    },
+    doughnut: function (canvas, items, centerText) {
+      if (!canvas) return;
+      var dpr = window.devicePixelRatio || 1;
+      var w = canvas.clientWidth || 220;
+      var h = 230;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.height = h + 'px';
+      var ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+      var cx = w / 2, cy = h / 2, r = Math.min(h / 2 - 8, 95), th = 22;
+      var total = 0;
+      items.forEach(function (it) { total += it.v || 0; });
+      if (!total) {
+        ctx.fillStyle = '#8b949e'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Aucune donnée', cx, cy);
+        return;
+      }
+      var colors = ['#58a6ff', '#3fb950', '#f0883e', '#d2a8ff', '#f778ba', '#39c5cf', '#e3b341', '#f85149'];
+      var start = -Math.PI / 2;
+      var legend = '';
+      items.forEach(function (it, i) {
+        var angle = (it.v / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, start, start + angle);
+        ctx.arc(cx, cy, r - th, start + angle, start, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        legend += '<div style="display:flex;align-items:center;gap:7px;font-size:0.78rem;color:#c9d1d9;"><span style="width:10px;height:10px;border-radius:3px;background:' + colors[i % colors.length] + ';display:inline-block;"></span>' + it.n + ' <b style="color:#8b949e;margin-left:auto;">' + it.v + '</b></div>';
+        start += angle;
+      });
+      ctx.fillStyle = '#c9d1d9'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(centerText, cx, cy - 2);
+      ctx.fillStyle = '#8b949e'; ctx.font = '10px sans-serif';
+      ctx.fillText('visites', cx, cy + 14);
+      var lg = canvas.parentNode.querySelector('.dash-legend');
+      if (lg) lg.innerHTML = legend;
     }
-    apiGet('/stats').then(function(s) { loadStats(s); }).catch(function(){ loadStats(null); });
-  }
+  };
+  window.Dash.doughnutLegend = true;
 
-  function updateChart(visits) {
-    const ctx = document.getElementById('visits-chart');
-    if (!ctx) return;
-    const days = 7;
-    const labels = [];
-    const data = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().split('T')[0];
-      labels.push(d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
-      data.push(visits.filter(function(v){return typeof v === 'string' ? v.startsWith(key) : (v.date && v.date.startsWith(key));}).length);
-    }
-    const maxVal = Math.max(...data, 1);
-    let bars = '';
-    data.forEach((val, i) => {
-      const h = Math.max(4, (val / maxVal) * 150);
-      bars += `
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">
-          <div style="width:30px;height:${h}px;background:var(--primary);border-radius:4px 4px 0 0;transition:0.3s;" title="${val} visites"></div>
-          <span style="font-size:0.7rem;color:var(--text-light);text-align:center;">${labels[i]}</span>
-          <span style="font-size:0.7rem;font-weight:600;">${val}</span>
-        </div>
-      `;
+  function initDashboard() {
+    var els = {
+      visits: document.getElementById('db-visits'),
+      uniques: document.getElementById('db-uniques'),
+      readers: document.getElementById('db-readers'),
+      readsec: document.getElementById('db-readsec'),
+      readsub: document.getElementById('db-readsub'),
+      avgread: document.getElementById('db-avg-read'),
+      articles: document.getElementById('db-articles'),
+      comments: document.getElementById('db-comments'),
+      shares: document.getElementById('db-shares'),
+      subs: document.getElementById('db-subs'),
+      sub: document.getElementById('db-visits-sub'),
+      top: document.getElementById('db-top-body'),
+      topHint: document.getElementById('db-top-hint'),
+      chart: document.getElementById('db-line-chart'),
+      cat: document.getElementById('db-cat-chart'),
+      devs: document.getElementById('db-devices'),
+      bowsers: document.getElementById('db-browsers'),
+      sources: document.getElementById('db-sources'),
+      countries: document.getElementById('db-countries')
+    };
+    if (!els.visits) return;
+    var period = '30d';
+    var periodLabel = { '7d': '7 derniers jours', '30d': '30 derniers jours', '90d': '90 derniers jours', '12m': '12 derniers mois' };
+    var tabs = document.querySelectorAll('#db-period-tabs .dash-tab');
+    tabs.forEach(function (b) {
+      b.addEventListener('click', function () {
+        tabs.forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+        period = b.dataset.period;
+        load();
+      });
     });
-    ctx.innerHTML = `<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;">${bars}</div>`;
+    function load() {
+      apiGet('/analytics/overview?period=' + period).then(render).catch(function () {
+        els.visits.textContent = '—';
+        els.chart && els.chart.getContext && Dash.line(els.chart, [], []);
+      });
+    }
+    function render(d) {
+      if (!d) return;
+      var t = d.totals || {};
+      els.visits.textContent = Dash.fmt(t.visits || 0);
+      els.sub.textContent = periodLabel[period] || '';
+      els.uniques.textContent = Dash.fmt(t.uniques || 0);
+      els.readers.textContent = Dash.fmt(t.readers || 0);
+      els.readsec.textContent = Dash.secs(t.readSeconds || 0);
+      els.readsub.textContent = 'moy. ' + Dash.secs(t.avgReadSec || 0) + '/lecteur';
+      els.articles.textContent = Dash.fmt(t.articles || 0);
+      els.comments.textContent = Dash.fmt(t.comments || 0);
+      els.shares.textContent = Dash.fmt(t.shares || 0);
+      els.topHint.textContent = '(' + periodLabel[period] + ')';
+      var s = d.series || {};
+      var hasData = (s.visits || []).some(function (v) { return v > 0; });
+      Dash.line(els.chart, [
+        { labels: s.labels || [], data: s.visits || [], name: 'Visites', color: '#58a6ff' },
+        { labels: s.labels || [], data: s.uniques || [], name: 'Uniques', color: '#3fb950' }
+      ], ['#58a6ff', '#3fb950']);
+      if (els.top) {
+        var arts = d.topArticles || [];
+        els.top.innerHTML = arts.length ? arts.map(function (a) {
+          return '<tr><td><strong>' + a.title + '</strong><br><span style="color:#8b949e;font-size:0.75rem;">' + a.category + '</span></td>' +
+            '<td>' + Dash.fmt(a.visits) + '</td><td>' + Dash.fmt(a.uniques) + '</td>' +
+            '<td>' + Dash.fmt(a.readers) + ' <span style="color:#8b949e;font-size:0.72rem;">(' + Dash.secs(a.avgReadSec) + ')</span></td>' +
+            '<td>' + Dash.fmt(a.shares) + '</td></tr>';
+        }).join('') : '<tr><td colspan="5" class="dash-empty" style="text-align:center;">Aucune visite d\'article.</td></tr>';
+      }
+      var cats = (d.topCategories || []).map(function (c) { return { n: c.category, v: c.visits }; });
+      var total = cats.reduce(function (a, b) { return a + b.v; }, 0);
+      Dash.doughnut(els.cat, cats, total);
+      var colors = ['#58a6ff', '#3fb950'];
+      els.devs.innerHTML = Dash.bars((d.devices || []).map(function (x) { return { n: x.name, v: x.count }; }), colors[0]);
+      els.bowsers.innerHTML = Dash.bars((d.browsers || []).map(function (x) { return { n: x.name, v: x.count }; }), colors[1]);
+      els.sources.innerHTML = Dash.bars((d.sources || []).map(function (x) { return { n: x.name, v: x.count }; }), '#f0883e');
+      els.countries.innerHTML = Dash.bars((d.countries || []).map(function (x) { return { n: x.country, v: x.visits }; }), '#a371f7');
+    }
+    load();
   }
+  initDashboard();
 
   // ===== VISIT TRACKER (public pages) =====
   if (!document.querySelector('.admin-body')) {
@@ -509,7 +684,7 @@ function forceLogin() {
     var params = new URLSearchParams(window.location.search);
     var articleId = params.get('id') || '';
     var path = window.location.pathname.replace('/index.html','/') || '/';
-    var data = {date:new Date().toISOString(), path:path, articleId:articleId};
+    var data = {date:new Date().toISOString(), path:path, articleId:articleId, ref:(document.referrer||'').slice(0,300)};
     if (window.location.protocol !== 'file:') {
       fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
     }

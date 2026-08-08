@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
@@ -1143,7 +1143,11 @@ def track_visit():
                 country = g.get('country', '')
         except Exception:
             pass
-    visits.append({'date': data.get('date', ''), 'path': data.get('path', ''), 'articleId': data.get('articleId', ''), 'country': country})
+    visits.append({'date': data.get('date', ''), 'path': data.get('path', ''), 'articleId': data.get('articleId', ''),
+                   'country': country,
+                   'ip': request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '',
+                   'ua': (request.headers.get('User-Agent') or '')[:200],
+                   'ref': (data.get('ref') or '')[:300]})
     if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
     return jsonify({'ok': True})
@@ -1224,6 +1228,291 @@ def get_stats():
     visits = len(visitsData)
     visitsList = [v if isinstance(v, str) else v.get('date', '') for v in visitsData]
     return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsList})
+
+# --- ANALYTICS AVANCEES (tableau de bord + par article) ---
+def _visit_epoch(v):
+    d = v if isinstance(v, str) else (v.get('date') or '') if isinstance(v, dict) else ''
+    if not d:
+        return None
+    try:
+        return calendar.timegm(time.strptime(d[:19], '%Y-%m-%dT%H:%M:%S'))
+    except Exception:
+        return None
+
+def _detect_device(ua):
+    ua = (ua or '').lower()
+    if not ua:
+        return 'inconnu'
+    if 'mobile' in ua or 'android' in ua:
+        return 'mobile'
+    if 'ipad' in ua or 'tablet' in ua:
+        return 'tablette'
+    return 'ordinateur'
+
+def _detect_browser(ua):
+    ua = (ua or '').lower()
+    if 'edg' in ua:
+        return 'Edge'
+    if 'firefox' in ua:
+        return 'Firefox'
+    if 'chrome' in ua or 'crios' in ua:
+        return 'Chrome'
+    if 'safari' in ua:
+        return 'Safari'
+    return 'Autre'
+
+def _classify_source(ref):
+    r = (ref or '').lower()
+    if not r:
+        return 'Direct'
+    for k in ('facebook', 'twitter', 'x.com', 'whatsapp', 'instagram', 'telegram', 'tiktok', 'linkedin'):
+        if k in r:
+            return 'Reseaux sociaux'
+    for k in ('google', 'bing', 'yahoo', 'duckduckgo'):
+        if k in r:
+            return 'Moteurs de recherche'
+    return 'Autres sites'
+
+@app.route('/api/analytics/overview', methods=['GET'])
+@admin_required
+def analytics_overview():
+    period = request.args.get('period', '30d')
+    days = {'7d': 7, '30d': 30, '90d': 90, '12m': 365}.get(period, 30)
+    cutoff = time.time() - days * 86400
+    raw_visits = read_json('visits')
+    visits = []
+    for v in raw_visits:
+        e = _visit_epoch(v)
+        if e is not None and e >= cutoff:
+            visits.append(v)
+    art_list = read_json('articles')
+    art_map = {str(a['id']): a for a in art_list}
+    uniq = set()
+    dev, brw, src = {}, {}, {}
+    countries = {}
+    cat_visits = {}
+    art_visits = {}
+    art_uniq = {}
+    for v in visits:
+        if not isinstance(v, dict):
+            continue
+        ip = (v.get('ip') or '').strip()
+        if ip:
+            uniq.add(ip)
+        dk = _detect_device(v.get('ua', ''))
+        dev[dk] = dev.get(dk, 0) + 1
+        bk = _detect_browser(v.get('ua', ''))
+        brw[bk] = brw.get(bk, 0) + 1
+        sk = _classify_source(v.get('ref', ''))
+        src[sk] = src.get(sk, 0) + 1
+        c = v.get('country') or 'Inconnu'
+        countries[c] = countries.get(c, 0) + 1
+        aid = v.get('articleId', '')
+        if aid:
+            art_visits[aid] = art_visits.get(aid, 0) + 1
+            art_uniq.setdefault(aid, set()).add(ip) if ip else None
+            cat = ((art_map.get(aid) or {}).get('category') or 'Autre').strip()
+            cat_visits[cat] = cat_visits.get(cat, 0) + 1
+    reads_all = read_json('reads')
+    shares_all = read_json('shares')
+    read_n = read_sec = shares_n = 0
+    art_reads = {}
+    for r in reads_all:
+        if float(r.get('t', 0)) >= cutoff:
+            read_n += 1
+            sec = int(r.get('s', 0))
+            read_sec += sec
+            art_reads.setdefault(r.get('a', ''), []).append(sec)
+    art_shares = {}
+    for s in shares_all:
+        if float(s.get('t', 0)) >= cutoff:
+            shares_n += 1
+            a = s.get('a', '')
+            art_shares[a] = art_shares.get(a, 0) + 1
+    reactions = read_obj('reactions', {})
+    reactions_total = sum(sum(v.values()) for v in reactions.values() if isinstance(v, dict))
+    comments_total = 0
+    for f in os.listdir(DATA_DIR):
+        if f.startswith('comments_'):
+            comments_total += len(read_json(f[:-5]))
+    top = []
+    for aid, cnt in sorted(art_visits.items(), key=lambda x: -x[1])[:8]:
+        a = art_map.get(aid) or {}
+        rs = art_reads.get(aid, [])
+        top.append({
+            'id': aid,
+            'title': (a.get('title') or 'Article #' + aid)[:80],
+            'category': (a.get('category') or 'Autre').strip(),
+            'visits': cnt,
+            'uniques': len(art_uniq.get(aid, set())),
+            'readers': len(rs),
+            'readMinutes': round(sum(rs) / 60.0, 1),
+            'avgReadSec': round(sum(rs) / len(rs)) if rs else 0,
+            'shares': art_shares.get(aid, 0),
+            'reactions': sum(v for v in (reactions.get(aid) or {}).values()),
+            'comments': len(read_json('comments_' + aid)),
+        })
+    now = time.time()
+    today_start = now - (now % 86400)
+    labels, sv, su = [], [], []
+    for i in range(days - 1, -1, -1):
+        start = today_start - i * 86400
+        end = start + 86400
+        labels.append(time.strftime('%d/%m', time.gmtime(start)))
+        cnt, ips = 0, set()
+        for v in visits:
+            if not isinstance(v, dict):
+                continue
+            e = _visit_epoch(v)
+            if e is None or e < start or e >= end:
+                continue
+            cnt += 1
+            ip = (v.get('ip') or '').strip()
+            if ip:
+                ips.add(ip)
+        sv.append(cnt)
+        su.append(len(ips))
+    return jsonify({
+        'period': period,
+        'totals': {
+            'visits': len(visits), 'uniques': len(uniq), 'readers': read_n,
+            'readSeconds': read_sec, 'avgReadSec': round(read_sec / read_n) if read_n else 0,
+            'shares': shares_n, 'reactions': reactions_total, 'comments': comments_total,
+            'subs': len(read_json('newsletter')), 'donations': len(read_json('donations')),
+            'articles': len(art_list),
+        },
+        'series': {'labels': labels, 'visits': sv, 'uniques': su},
+        'topArticles': top,
+        'topCategories': sorted([{'category': k, 'visits': v} for k, v in cat_visits.items()], key=lambda x: -x['visits'])[:8],
+        'countries': sorted([{'country': k, 'visits': v} for k, v in countries.items()], key=lambda x: -x['visits'])[:8],
+        'devices': sorted([{'name': k, 'count': v} for k, v in dev.items()], key=lambda x: -x['count']),
+        'browsers': sorted([{'name': k, 'count': v} for k, v in brw.items()], key=lambda x: -x['count']),
+        'sources': sorted([{'name': k, 'count': v} for k, v in src.items()], key=lambda x: -x['count']),
+    })
+
+@app.route('/api/analytics/<int:article_id>', methods=['GET'])
+@admin_required
+def analytics_article(article_id):
+    aid = str(article_id)
+    art_list = read_json('articles')
+    art = next((a for a in art_list if str(a['id']) == aid), None)
+    if not art:
+        return jsonify({'ok': False, 'error': 'article introuvable'}), 404
+    page = max(1, int(request.args.get('page', 1)))
+    per = min(max(int(request.args.get('per', 25)), 5), 100)
+    raw_visits = read_json('visits')
+    visits = []
+    for v in raw_visits:
+        if isinstance(v, dict) and v.get('articleId') == aid:
+            e = _visit_epoch(v)
+            if e is not None:
+                w = dict(v)
+                w['_e'] = e
+                visits.append(w)
+    total = len(visits)
+    uniq = set()
+    countries = {}
+    dev = {}
+    for v in visits:
+        ip = (v.get('ip') or '').strip()
+        if ip:
+            uniq.add(ip)
+        c = v.get('country') or 'Inconnu'
+        countries[c] = countries.get(c, 0) + 1
+        dk = _detect_device(v.get('ua', ''))
+        dev[dk] = dev.get(dk, 0) + 1
+    reads = [int(r.get('s', 0)) for r in read_json('reads') if r.get('a') == aid]
+    read_sec = sum(reads)
+    shares = [s for s in read_json('shares') if s.get('a') == aid]
+    reactions = read_obj('reactions', {})
+    react = reactions.get(aid, {})
+    views_react = sum(v for v in react.values() if isinstance(v, int))
+    comments = len(read_json('comments_' + aid))
+    now = time.time()
+    today_start = now - (now % 86400)
+    labels, sv, su = [], [], []
+    for i in range(29, -1, -1):
+        start = today_start - i * 86400
+        end = start + 86400
+        labels.append(time.strftime('%d/%m', time.gmtime(start)))
+        cnt, ips = 0, set()
+        for v in visits:
+            e = v.get('_e', 0)
+            if e >= start and e < end:
+                cnt += 1
+                ip = (v.get('ip') or '').strip()
+                if ip:
+                    ips.add(ip)
+        sv.append(cnt)
+        su.append(len(ips))
+    exit_rate = visit_sess = exit_sess = 0
+    if total:
+        by_ip = {}
+        for v in raw_visits:
+            if not isinstance(v, dict):
+                continue
+            ip = (v.get('ip') or '').strip()
+            e = _visit_epoch(v)
+            if not ip or e is None:
+                continue
+            by_ip.setdefault(ip, []).append((e, v.get('articleId', '')))
+        for ip, lst in by_ip.items():
+            lst.sort()
+            cur = None
+            a_last = ''
+            sess_aids = set()
+            for e, a in lst:
+                if cur is not None and e - cur > 1800:
+                    if aid in sess_aids:
+                        visit_sess += 1
+                        if a_last == aid:
+                            exit_sess += 1
+                    sess_aids = set()
+                sess_aids.add(a)
+                a_last = a
+                cur = e
+            if sess_aids and aid in sess_aids:
+                visit_sess += 1
+                if a_last == aid:
+                    exit_sess += 1
+        exit_rate = round(100.0 * exit_sess / visit_sess, 1) if visit_sess else 0
+    else:
+        exit_rate = 0
+    ordered = sorted(visits, key=lambda x: -x.get('_e', 0))
+    total_pages = max(1, -(-total // per))
+    page = min(page, total_pages)
+    start_i = (page - 1) * per
+    views_out = []
+    for v in ordered[start_i:start_i + per]:
+        views_out.append({
+            'date': time.strftime('%d/%m/%Y %H:%M', time.gmtime(v.get('_e', 0))),
+            'country': v.get('country') or 'Inconnu',
+            'device': _detect_device(v.get('ua', '')),
+            'browser': _detect_browser(v.get('ua', '')),
+            'source': _classify_source(v.get('ref', '')),
+        })
+    channels = {}
+    for s in shares:
+        ch = s.get('c', 'autre')
+        channels[ch] = channels.get(ch, 0) + 1
+    return jsonify({
+        'article': {'id': aid, 'title': art.get('title'), 'category': art.get('category'), 'date': art.get('date')},
+        'totals': {
+            'visits': total, 'uniques': len(uniq), 'readers': len(reads),
+            'readSeconds': read_sec, 'avgReadSec': round(read_sec / len(reads)) if reads else 0,
+            'shares': len(shares), 'reactions': views_react, 'comments': comments, 'exitRate': exit_rate,
+        },
+        'series': {'labels': labels, 'visits': sv, 'uniques': su},
+        'readHistogram': [
+            len([r for r in reads if r < 10]), len([r for r in reads if 10 <= r < 30]),
+            len([r for r in reads if 30 <= r < 60]), len([r for r in reads if 60 <= r < 180]),
+            len([r for r in reads if r >= 180]),
+        ],
+        'countries': sorted([{'country': k, 'visits': v} for k, v in countries.items()], key=lambda x: -x['visits'])[:6],
+        'devices': sorted([{'name': k, 'count': v} for k, v in dev.items()], key=lambda x: -x['count']),
+        'shareChannels': sorted([{'name': k, 'count': v} for k, v in channels.items()], key=lambda x: -x['count']),
+        'views': {'page': page, 'per': per, 'total': total, 'totalPages': total_pages, 'items': views_out},
+    })
 
 # --- AUTH ---
 # --- AUTH: connexion, deconnexion, mot de passe, recuperation, 2FA ---

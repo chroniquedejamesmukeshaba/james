@@ -30,27 +30,97 @@
     <main class="admin-main">
       <h2 style="color:var(--primary);margin-bottom:25px;">Tableau de bord</h2>
 
-      <div class="stats-grid">
+      <div class="dash-grid">
         <div class="stat-card">
-          <div class="number" id="stat-articles">0</div>
+          <div class="number" id="db-visits">0</div>
+          <div class="label">Visites</div>
+          <div class="sub" id="db-visits-sub">période</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="db-uniques">0</div>
+          <div class="label">Visiteurs uniques</div>
+          <div class="sub">adresses IP distinctes</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="db-readers">0</div>
+          <div class="label">Lecteurs</div>
+          <div class="sub">temps moyen : <span id="db-avg-read">—</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="db-readsec">0</div>
+          <div class="label">Temps de lecture</div>
+          <div class="sub" id="db-readsub">secondes</div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="db-articles">0</div>
           <div class="label">Articles publiés</div>
         </div>
         <div class="stat-card">
-          <div class="number" id="stat-comments">0</div>
+          <div class="number" id="db-comments">0</div>
           <div class="label">Commentaires</div>
         </div>
         <div class="stat-card">
-          <div class="number" id="stat-subs">0</div>
-          <div class="label">Abonnés newsletter</div>
+          <div class="number" id="db-shares">0</div>
+          <div class="label">Partages</div>
         </div>
         <div class="stat-card">
-          <div class="number" id="stat-visits">0</div>
-          <div class="label">Visites enregistrées</div>
+          <div class="number" id="db-subs">0</div>
+          <div class="label">Abonnés newsletter</div>
         </div>
       </div>
 
-      <h3 style="color:var(--primary);margin-bottom:15px;">Fréquence des visites (7 derniers jours)</h3>
-      <div id="visits-chart" style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);"></div>
+      <div class="dash-card" style="margin-bottom:24px;">
+        <h3>Fréquence des visites
+          <span class="dash-tabs" id="db-period-tabs">
+            <button class="dash-tab" data-period="7d">7 jours</button>
+            <button class="dash-tab active" data-period="30d">30 jours</button>
+            <button class="dash-tab" data-period="90d">90 jours</button>
+            <button class="dash-tab" data-period="12m">12 mois</button>
+          </span>
+        </h3>
+        <canvas id="db-line-chart" height="230"></canvas>
+        <div class="dash-legend">
+          <span><i style="background:#58a6ff;"></i> Visites</span>
+          <span><i style="background:#3fb950;"></i> Visiteurs uniques</span>
+        </div>
+      </div>
+
+      <div class="dash-row">
+        <div class="dash-card">
+          <h3>Top articles <span class="hint" id="db-top-hint"></span></h3>
+          <div class="admin-table">
+            <table>
+              <thead><tr><th>Article</th><th>Visites</th><th>Uniques</th><th>Lectures</th><th>Partages</th></tr></thead>
+              <tbody id="db-top-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3>Top catégories</h3>
+          <canvas id="db-cat-chart" height="230"></canvas>
+          <div class="dash-legend"></div>
+        </div>
+      </div>
+
+      <div class="dash-row-3">
+        <div class="dash-card">
+          <h3>Appareils</h3>
+          <div id="db-devices"></div>
+        </div>
+        <div class="dash-card">
+          <h3>Navigateurs</h3>
+          <div id="db-browsers"></div>
+        </div>
+        <div class="dash-card">
+          <h3>Provenance</h3>
+          <div id="db-sources"></div>
+        </div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom:24px;">
+        <h3>Pays des visiteurs</h3>
+        <div id="db-countries"></div>
+      </div>
 
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
         <h3 style="color:var(--primary);margin-bottom:15px;">⚡ Breaking News</h3>
