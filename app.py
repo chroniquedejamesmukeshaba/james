@@ -1,6 +1,7 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets
 from io import BytesIO
 from functools import wraps
+from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory, redirect, Response
 
 app = Flask(__name__)
@@ -35,31 +36,80 @@ def read_obj(name, default):
     except Exception:
         return default
 
-# --- SECURITY ---
-ADMINS = {
+# --- SECURITY (authentification securisee) ---
+_LEGACY_ADMINS = {
     'Shine2026':    'YAGIRWA GEDEON GUIDE',
     'Lufumica2026': 'LUFUNGULO MICHAEL',
     'Sergio2026':   'SERGE IRENGE',
     'Christvie2026':'MUKESHABA JAMES MPALA',
 }
 TOKEN_TTL = 12 * 3600
+PBKDF2_ITER = 200000
+
+def _hash_pass(password, salt=None):
+    if not salt:
+        salt = base64.urlsafe_b64encode(os.urandom(16)).decode().rstrip('=')
+    dk = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), PBKDF2_ITER)
+    return ('pbkdf2$%d$%s$%s' % (PBKDF2_ITER, salt, base64.urlsafe_b64encode(dk).decode().rstrip('=')))
+
+_hash = _hash_pass
+
+def _check_pass(password, stored):
+    try:
+        _, it, salt, dk = stored.split('$')
+        dk2 = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), int(it))
+        return hmac.compare_digest(base64.urlsafe_b64encode(dk2).decode().rstrip('='), dk)
+    except Exception:
+        return False
+
+def _new_token():
+    return secrets.token_urlsafe(28)
+
+def load_admins():
+    """Charge les comptes admin. A la premiere execution, migre les comptes legacy (haches PBKDF2)."""
+    items = read_obj('admins', None)
+    if items is None or not items.get('admins'):
+        accounts = []
+        for i, (pwd, name) in enumerate(_LEGACY_ADMINS.items(), 1):
+            accounts.append({
+                'id': i, 'user': 'admin', 'name': name,
+                'pass_hash': _hash(pwd), 'pass_changed': '',
+                'twofa': False, 'totp_secret': '',
+                'recovery_codes': [_hash(secrets.token_urlsafe(9)) for _ in range(3)],
+                'created': time.strftime('%Y-%m-%d'),
+            })
+        write_json('admins', {'admins': accounts})
+        return accounts
+    return items.get('admins')
+
+def _save_admins(accounts):
+    write_json('admins', {'admins': accounts})
+
+def _grant_token(acct):
+    token = _new_token()
+    tokens = read_obj('admin_tokens', {})
+    tokens[token] = {'user': acct.get('user'), 'name': acct.get('name'),
+                     'exp': time.time() + TOKEN_TTL, 'created': time.time()}
+    # purge des jetons expires
+    now = time.time()
+    tokens = {k: v for k, v in tokens.items() if v.get('exp', 0) > now}
+    write_json('admin_tokens', tokens)
+    return token
 
 def admin_ok():
     t = request.headers.get('X-Admin-Token', '')
-    if t and t in ADMINS:
-        return True
-    bear = request.headers.get('Authorization', '')
-    if bear.startswith('Bearer '):
-        part = bear[7:]
-        if ':' in part:
-            tok, ts = part.rsplit(':', 1)
-            if tok in ADMINS and ts.isdigit() and (time.time() - float(ts)) < TOKEN_TTL:
-                digest = hmac.new(tok.encode(), ts.encode(), hashlib.sha256).hexdigest()
-                if part == tok + ':' + ts and digest == ts:
-                    return True
-        elif part in ADMINS:
-            return True
-    return False
+    if not t:
+        return None
+    tokens = read_obj('admin_tokens', {})
+    entry = tokens.get(t)
+    if not entry:
+        return None
+    if entry.get('exp', 0) < time.time():
+        return None
+    # fenetre glissante
+    entry['exp'] = time.time() + TOKEN_TTL
+    write_json('admin_tokens', tokens)
+    return entry
 
 def admin_required(f):
     @wraps(f)
@@ -68,6 +118,26 @@ def admin_required(f):
             return jsonify({'ok': False, 'error': 'non autorise'}), 401
         return f(*args, **kwargs)
     return wrapper
+
+# --- TOTP (RFC 6238) : 2FA sans dependance externe ---
+def totp_new_secret():
+    return base64.b32encode(os.urandom(10)).decode().rstrip('=')
+
+def totp_code(secret, t=None):
+    key = base64.b32decode(secret.upper() + '=' * ((8 - len(secret) % 8) % 8))
+    counter = int((t if t is not None else time.time()) // 30).to_bytes(8, 'big')
+    h = hmac.new(key, counter, hashlib.sha1).digest()
+    off = h[-1] & 0x0F
+    code = ((h[off] & 0x7F) << 24 | (h[off + 1] & 0xFF) << 16 |
+            (h[off + 2] & 0xFF) << 8 | (h[off + 3] & 0xFF))
+    return ('%06d' % (code % 1000000))
+
+def totp_valid(secret, code, drift=1):
+    code = re.sub(r'\D', '', str(code or ''))
+    if len(code) != 6 or not secret:
+        return False
+    now = int(time.time()) // 30
+    return any(totp_code(secret, (now + d) * 30) == code for d in range(-drift, drift + 1))
 
 RATE_CACHE = {}
 def rate_limit(route, limit, window):
@@ -1156,16 +1226,197 @@ def get_stats():
     return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsList})
 
 # --- AUTH ---
-@app.route('/api/auth', methods=['POST'])
-@rate_limit('auth_post', 8, 300)
-def auth():
-    d = request.json or {}
-    name = ADMINS.get(d.get('pass', ''))
-    if d.get('user') == 'admin' and name:
-        return jsonify({'ok': True, 'name': name, 'token': d.get('pass', '')})
-    return jsonify({'ok': False}), 401
+# --- AUTH: connexion, deconnexion, mot de passe, recuperation, 2FA ---
+AUTH_FAILS = {}
+AUTH_MAX_FAILS = 5
+AUTH_LOCK_WINDOW = 900  # 15 minutes
 
-# --- IMAGE UPLOAD ---
+def _lock_info(ip):
+    """Retourne (verrouille, nb de fautes enregistrees)."""
+    now = time.time()
+    fails = [t for t in AUTH_FAILS.get(ip, []) if now - t < AUTH_LOCK_WINDOW]
+    AUTH_FAILS[ip] = fails
+    return len(fails) >= AUTH_MAX_FAILS, len(fails)
+
+def _record_fail(ip):
+    now = time.time()
+    AUTH_FAILS.setdefault(ip, []).append(now)
+
+def _find_account(user, password):
+    if user != 'admin':
+        return None
+    for acct in load_admins():
+        if _check_pass(password, acct.get('pass_hash') or ''):
+            return acct
+    return None
+
+def _grant_token(acct):
+    token = _new_token()
+    tokens = read_obj('admin_tokens', {})
+    now = time.time()
+    tokens = {k: v for k, v in tokens.items() if v.get('exp', 0) > now}
+    tokens[token] = {'account': acct.get('user'), 'name': acct.get('name'),
+                     'exp': now + TOKEN_TTL, 'created': now}
+    write_json('admin_tokens', tokens)
+    return token
+
+@app.route('/api/auth', methods=['POST'])
+@rate_limit('auth_post', 20, 300)
+def auth():
+    ip = request.remote_addr or '?'
+    locked, _ = _lock_info(ip)
+    if locked:
+        return jsonify({'ok': False, 'error': 'locked'}), 429
+    d = request.json or {}
+    acct = _find_account(d.get('user', ''), d.get('pass', ''))
+    if not acct:
+        _record_fail(ip)
+        return jsonify({'ok': False, 'error': 'identifiants invalides'}), 401
+    acct = dict(acct)
+    if acct.get('twofa'):
+        code = re.sub(r'\D', '', str(d.get('totp') or ''))
+        if not totp_valid(acct.get('totp_secret') or '', code):
+            _record_fail(ip)
+            return jsonify({'ok': False, 'error': 'code de securite invalide', 'totp': True}), 401
+    AUTH_FAILS.pop(ip, None)
+    token = _grant_token(acct)
+    return jsonify({'ok': True, 'name': acct.get('name'), 'token': token,
+                    'twofa': bool(acct.get('twofa'))})
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    t = request.headers.get('X-Admin-Token', '')
+    tokens = read_obj('admin_tokens', {})
+    tokens.pop(t, None)
+    write_json('admin_tokens', tokens)
+    return jsonify({'ok': True})
+
+@app.route('/api/auth/status', methods=['GET'])
+@admin_required
+def auth_status():
+    entry = admin_ok()
+    twofa = False
+    for a in load_admins():
+        if a.get('name') == entry.get('name'):
+            twofa = bool(a.get('twofa'))
+            break
+    return jsonify({'ok': True, 'name': entry.get('name'), 'twofa': twofa})
+
+@app.route('/api/auth/password', methods=['POST'])
+@admin_required
+def auth_password():
+    entry = admin_ok()
+    accounts = load_admins()
+    acct = None
+    for a in accounts:
+        if a.get('name') == entry.get('name'):
+            acct = a
+            break
+    if not acct:
+        return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+    d = request.json or {}
+    if not _check_pass(d.get('current') or '', acct.get('pass_hash') or ''):
+        return jsonify({'ok': False, 'error': 'mot de passe actuel incorrect'}), 400
+    nxt = str(d.get('next') or '')
+    if len(nxt) < 8:
+        return jsonify({'ok': False, 'error': 'nouveau mot de passe trop court (8 caracteres min)'}), 400
+    acct['pass_hash'] = _hash(nxt)
+    acct['pass_changed'] = time.strftime('%Y-%m-%dT%H:%M:%S')
+    _save_admins(accounts)
+    tokens = read_obj('admin_tokens', {})
+    tokens = {k: v for k, v in tokens.items() if v.get('name') != acct['name']}
+    write_json('admin_tokens', tokens)
+    return jsonify({'ok': True})
+
+@app.route('/api/auth/recovery', methods=['POST'])
+def auth_recovery():
+    """Recuperation securisee : un code de recuperation a usage unique change le mot de passe."""
+    d = request.json or {}
+    if d.get('user') != 'admin':
+        return jsonify({'ok': False, 'error': 'identifiants invalides'}), 401
+    code = str(d.get('code') or '').strip()
+    nxt = str(d.get('next') or d.get('pass') or '')
+    if len(nxt) < 8:
+        return jsonify({'ok': False, 'error': 'nouveau mot de passe trop court (8 caracteres min)'}), 400
+    if not code:
+        return jsonify({'ok': False, 'error': 'code requis'}), 400
+    accounts = load_admins()
+    for acct in accounts:
+        codes = list(acct.get('recovery_codes') or [])
+        for i, stored in enumerate(codes):
+            if _check_pass(code, stored):
+                codes.pop(i)
+                new_code = secrets.token_urlsafe(12)
+                codes.append(_hash(new_code))
+                acct['recovery_codes'] = codes
+                acct['pass_hash'] = _hash(nxt)
+                acct['pass_changed'] = time.strftime('%Y-%m-%dT%H:%M:%S')
+                _save_admins(accounts)
+                tokens = read_obj('admin_tokens', {})
+                tokens = {k: v for k, v in tokens.items() if v.get('name') != acct['name']}
+                write_json('admin_tokens', tokens)
+                return jsonify({'ok': True, 'new_recovery_code': new_code})
+    return jsonify({'ok': False, 'error': 'code invalide ou deja utilise'}), 400
+
+@app.route('/api/auth/totp/start', methods=['POST'])
+@admin_required
+def auth_totp_start():
+    entry = admin_ok()
+    accounts = load_admins()
+    for acct in accounts:
+        if acct.get('name') == entry.get('name'):
+            sec = totp_new_secret()
+            acct['totp_secret'] = sec
+            _save_admins(accounts)
+            uri = ('otpauth://totp/Chronique:%s?secret=%s&issuer=Chronique' %
+                   (quote(acct['name']), sec))
+            return jsonify({'ok': True, 'secret': sec, 'uri': uri})
+    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+
+@app.route('/api/auth/totp/activate', methods=['POST'])
+@admin_required
+def auth_totp_activate():
+    entry = admin_ok()
+    d = request.json or {}
+    accounts = load_admins()
+    for acct in accounts:
+        if acct.get('name') == entry.get('name'):
+            if not totp_valid(acct.get('totp_secret') or '', d.get('code')):
+                return jsonify({'ok': False, 'error': 'code de securite invalide'}), 400
+            acct['twofa'] = True
+            _save_admins(accounts)
+            return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+
+@app.route('/api/auth/totp/deactivate', methods=['POST'])
+@admin_required
+def auth_totp_deactivate():
+    entry = admin_ok()
+    d = request.json or {}
+    accounts = load_admins()
+    for acct in accounts:
+        if acct.get('name') == entry.get('name'):
+            if not totp_valid(acct.get('totp_secret') or '', d.get('code')):
+                return jsonify({'ok': False, 'error': 'code de securite invalide'}), 400
+            acct['twofa'] = False
+            acct['totp_secret'] = ''
+            _save_admins(accounts)
+            return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+
+@app.route('/api/admin/recovery-codes/regenerate', methods=['POST'])
+@admin_required
+def admin_recovery_regenerate():
+    """Regenere les codes de recuperation et les retourne UNE SEULE fois, en clair."""
+    entry = admin_ok()
+    accounts = load_admins()
+    for acct in accounts:
+        if acct.get('name') == entry.get('name'):
+            codes = [secrets.token_urlsafe(12) for _ in range(3)]
+            acct['recovery_codes'] = [_hash(c) for c in codes]
+            _save_admins(accounts)
+            return jsonify({'ok': True, 'codes': codes})
+    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404# --- IMAGE UPLOAD ---
 def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
     if not HAS_PIL:
         return img_bytes

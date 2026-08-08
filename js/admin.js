@@ -1,26 +1,42 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ===== LOGIN =====
+  // ===== LOGIN (authentification securisee : token serveur + 2FA) =====
   const ADMINS = { 'Shine2026':'YAGIRWA GEDEON GUIDE', 'Lufumica2026':'LUFUNGULO MICHAEL', 'Sergio2026':'SERGE IRENGE', 'Christvie2026':'MUKESHABA JAMES MPALA' };
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
+    const totpWrap = document.getElementById('totp-wrap');
+    const totpInput = document.getElementById('totp-code');
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      function grant(name) {
+      const payload = { user: username, pass: password };
+      if (totpInput && totpInput.value) payload.totp = totpInput.value;
+      function grant(res) {
         localStorage.setItem('admin_logged', 'true');
-        localStorage.setItem('admin_name', name);
-        localStorage.setItem('admin_token', password);
+        localStorage.setItem('admin_name', res.name || '');
+        localStorage.setItem('admin_token', res.token || '');
         window.location.href = 'index.html';
       }
       if (window.location.protocol !== 'file:') {
-        fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:username,pass:password})})
-          .then(function(r){ return r.ok ? r.json() : null; })
-          .then(function(res){ if (res && res.ok && res.name) { grant(res.name); } else { showToast('Identifiants incorrects.', 'error'); } })
+        fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+          .then(function(r){ return r.json().then(function(b){ return {status:r.status, body:b}; }); })
+          .then(function(res){
+            if (res.body && res.body.ok && res.body.token) { grant(res.body); return; }
+            if (res.body && res.body.totp) {
+              if (totpWrap) {
+                totpWrap.style.display = 'block';
+                if (totpInput) totpInput.focus();
+                showToast('Entrez votre code de securite 2FA.', 'error');
+              }
+              return;
+            }
+            if (res.status === 429) { showToast('Trop de tentatives. Reessayez dans quelques minutes.', 'error'); return; }
+            showToast('Identifiants incorrects.', 'error');
+          })
           .catch(function(){ showToast('Serveur injoignable. Vérifiez la connexion.', 'error'); });
-      } else if (username === 'admin' && ADMINS[password]) {
-        grant(ADMINS[password]);
+      } else if (username === 'admin' && Object.prototype.hasOwnProperty.call(ADMINS, password)) {
+        grant({ name: ADMINS[password], token: password });
       } else {
         showToast('Identifiants incorrects.', 'error');
       }
@@ -38,16 +54,33 @@ function authHeaders(extra) {
 
 function apiGet(path) {
   if (!useServer) return null;
-  return fetch('/api' + path, {headers: authHeaders()}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+  return fetch('/api' + path, {headers: authHeaders()}).then(function(r){
+    if (r.status === 401) { forceLogin(); return null; }
+    return r.ok ? r.json() : null;
+  }).catch(function(){return null});
 }
 function apiPost(path, data) {
   if (!useServer) return null;
   return fetch('/api' + path,{method:'POST',headers:authHeaders(),body:JSON.stringify(data)})
-    .then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+    .then(function(r){
+      if (r.status === 401) { forceLogin(); return null; }
+      return r.ok ? r.json() : null;
+    }).catch(function(){return null});
 }
 function apiDel(path) {
   if (!useServer) return null;
-  return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){return r.ok}).catch(function(){return false});
+  return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){
+    if (r.status === 401) { forceLogin(); return null; }
+    return r.ok;
+  }).catch(function(){return false});
+}
+function forceLogin() {
+  if (window.location.protocol === 'file:' || localStorage.getItem('admin_redirecting')) return;
+  localStorage.setItem('admin_redirecting', '1');
+  localStorage.removeItem('admin_logged');
+  localStorage.removeItem('admin_name');
+  localStorage.removeItem('admin_token');
+  window.location.href = 'login.html';
 }
 
 // ===== CHECK AUTH =====
@@ -64,8 +97,13 @@ function apiDel(path) {
     }
     document.getElementById('logout-btn')?.addEventListener('click', function (e) {
       e.preventDefault();
+      var token = localStorage.getItem('admin_token');
+      if (token && window.location.protocol !== 'file:') {
+        fetch('/api/auth/logout', { method: 'POST', headers: { 'X-Admin-Token': token } }).catch(function () {});
+      }
       localStorage.removeItem('admin_logged');
       localStorage.removeItem('admin_name');
+      localStorage.removeItem('admin_token');
       window.location.href = 'login.html';
     });
   }

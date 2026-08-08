@@ -24,10 +24,21 @@
         <label>Mot de passe</label>
         <input type="password" id="password" class="form-input" placeholder="Mot de passe" required>
       </div>
+      <div class="form-group" id="totp-wrap" style="display:none;">
+        <label>Code de sécurité (2FA)</label>
+        <input type="text" id="totp-code" class="form-input" placeholder="6 chiffres" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+        <small style="color:var(--text-light);">Entrez le code de votre application d'authentification.</small>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;">Se connecter</button>
     </form>
 
   </div>
+  <script>
+    window.addEventListener('load', function () {
+      var t = document.getElementById('totp-code');
+      if (t) t.addEventListener('input', function () { t.value = t.value.replace(/\D/g, ''); });
+    });
+  </script>
   <script src="../js/main.js"></script>
   <script src="../js/admin.js"></script>
 </body>
