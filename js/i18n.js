@@ -184,6 +184,27 @@ var TRANSLATIONS = {
   sr_title:           { fr:'Recherche', en:'Search', sw:'Utafutaji', es:'B\u00fasqueda' },
   sr_subtitle:        { fr:'Recherchez par titre, contenu, cat\u00e9gorie, auteur, date ou mots-cl\u00e9s.', en:'Search by title, content, category, author, date or keywords.', sw:'Tafuta kwa kichwa, maudhui, kategoria, mwandishi, tarehe au maneno.', es:'Busque por t\u00edtulo, contenido, categor\u00eda, autor, fecha o palabras clave.' },
 
+  // === NOTIFICATIONS ===
+  ntf_title:          { fr:'Recevez les derni\u00e8res actualit\u00e9s', en:'Receive the latest news', sw:'Pokea habari za hivi punde', es:'Reciba las \u00faltimas noticias' },
+  ntf_desc:           { fr:'Activez les notifications pour \u00eatre alert\u00e9 d\u00e8s la publication d\u2019un article ou d\u2019une Breaking News.', en:'Turn on notifications to be alerted as soon as an article or a Breaking News is published.', sw:'Washa arifa ili ujulishwe mara tu makala au Breaking News inapochapishwa.', es:'Active las notificaciones para ser alertado en cuanto se publique un art\u00edculo o una Breaking News.' },
+  ntf_label_news:     { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest news', sw:'Habari za hivi punde', es:'\u00daltimas noticias' },
+  ntf_label_breaking: { fr:'Breaking News', en:'Breaking News', sw:'Breaking News', es:'Breaking News' },
+  ntf_label_rdc:      { fr:'Actualit\u00e9s de la RDC', en:'DRC news', sw:'Habari za DRC', es:'Noticias de la RDC' },
+  ntf_label_intl:     { fr:'Actualit\u00e9s internationales', en:'International news', sw:'Habari za kimataifa', es:'Noticias internacionales' },
+  ntf_btn_on:         { fr:'Activer les notifications', en:'Enable notifications', sw:'Washa arifa', es:'Activar notificaciones' },
+  ntf_btn_off:        { fr:'D\u00e9sactiver', en:'Disable', sw:'Zima', es:'Desactivar' },
+  ntf_ok_push:        { fr:'Notifications activ\u00e9es. Merci !', en:'Notifications enabled. Thank you!', sw:'Arifa zimewashwa. Asante!', es:'\u00a1Notificaciones activadas. Gracias!' },
+  ntf_ok_prefs:       { fr:'Pr\u00e9f\u00e9rences enregistr\u00e9es. Les notifications push ne sont pas disponibles sur ce navigateur.', en:'Preferences saved. Push notifications are not available on this browser.', sw:'Mapendeleo yamehifadhiwa. Arifa za push hazipatikani kwenye kivinjari hiki.', es:'Preferencias guardadas. Las notificaciones push no est\u00e1n disponibles en este navegador.' },
+  ntf_err:            { fr:'Une erreur est survenue. R\u00e9essayez plus tard.', en:'An error occurred. Try again later.', sw:'Hitilafu imetokea. Jaribu tena baadaye.', es:'Se produjo un error. Int\u00e9ntelo de nuevo m\u00e1s tarde.' },
+  ntf_already:        { fr:'Notifications d\u00e9j\u00e0 activ\u00e9es.', en:'Notifications already enabled.', sw:'Arifa tayari zimewashwa.', es:'Notificaciones ya activadas.' },
+
+  // === PLUS LUS ===
+  popular_title:      { fr:'Les plus lus', en:'Most read', sw:'Zinazosomwa zaidi', es:'M\u00e1s le\u00eddos' },
+  popular_today:      { fr:'Aujourd\u2019hui', en:'Today', sw:'Leo', es:'Hoy' },
+  popular_week:       { fr:'Cette semaine', en:'This week', sw:'Wiki hii', es:'Esta semana' },
+  popular_month:      { fr:'Ce mois', en:'This month', sw:'Mwezi huu', es:'Este mes' },
+  popular_all:        { fr:'Depuis la publication', en:'All time', sw:'Tangu kuchapishwa', es:'Desde la publicaci\u00f3n' },
+
   // === GENERIC ===
   learn_more:         { fr:'En savoir plus', en:'Learn more', sw:'Jifunze zaidi', es:'Saber m\u00e1s' },
   read_article:       { fr:'Lire l\'article', en:'Read article', sw:'Soma makala', es:'Leer art\u00edculo' },

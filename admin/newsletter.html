@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsletter &amp; Notifications - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="newsletter.html" class="active">📧 Newsletter &amp; Notifications</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <h2 style="color:var(--primary);margin-bottom:25px;">Newsletter &amp; Notifications</h2>
+
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;">
+        <div class="stat-card" style="flex:1;min-width:150px;">
+          <div class="number" id="stat-nl">0</div>
+          <div class="label">Abonnés newsletter</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:150px;">
+          <div class="number" id="stat-ntf">0</div>
+          <div class="label">Inscrits notifications</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:150px;">
+          <div class="number" id="stat-push-devices">0</div>
+          <div class="label">Appareils Push Web</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:30px;">
+        <h3 style="color:var(--primary);margin-bottom:15px;">📧 Abonnés à la newsletter</h3>
+        <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow-x:auto;">
+          <table class="admin-table" id="nl-table">
+            <thead><tr><th>Nom</th><th>Email</th><th>Catégories préférées</th><th>Inscription</th><th></th></tr></thead>
+            <tbody id="nl-rows"></tbody>
+          </table>
+          <p id="nl-empty" style="color:var(--text-light);font-size:0.9rem;">Chargement…</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:30px;">
+        <h3 style="color:var(--primary);margin-bottom:15px;">🔔 Inscrits aux notifications</h3>
+        <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow-x:auto;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+            <span id="push-status" style="font-size:0.85rem;color:var(--text-light);"></span>
+          </div>
+          <table class="admin-table" id="ntf-table">
+            <thead><tr><th>Nom</th><th>Email</th><th>Préférences</th><th>Push Web</th><th>Inscription</th><th></th></tr></thead>
+            <tbody id="ntf-body"></tbody>
+          </table>
+          <p id="ntf-empty" style="color:var(--text-light);font-size:0.9rem;">Chargement…</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:15px;">🚀 Envoyer un test de notification push</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <label style="flex:1;min-width:180px;font-size:0.85rem;font-weight:600;">
+            Titre
+            <input type="text" id="push-title" class="form-input" placeholder="Ex : ⚡ Breaking News" style="margin-top:6px;">
+          </label>
+          <label style="flex:2;min-width:220px;font-size:0.85rem;font-weight:600;">
+            Message
+            <input type="text" id="push-body" class="form-input" placeholder="Le message affiché" style="margin-top:6px;">
+          </label>
+          <label style="font-size:0.85rem;font-weight:600;">
+            Destinataires
+            <select id="push-scope" class="form-input" style="margin-top:6px;cursor:pointer;">
+              <option value="">Tous les inscrits (push)</option>
+              <option value="breaking">Abonnés Breaking News</option>
+              <option value="rdc">Abonnés RDC</option>
+              <option value="international">Abonnés International</option>
+            </select>
+          </label>
+          <button type="button" class="btn btn-primary" id="push-send">🚀 Envoyer</button>
+        </div>
+        <div id="push-result" style="font-size:0.8rem;color:#27ae60;margin-top:10px;"></div>
+      </div>
+
+      <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:15px;">Actions rapides</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="articles.html" class="btn btn-primary">➕ Nouvel article</a>
+          <a href="comments.html" class="btn btn-outline">💬 Modérer les commentaires</a>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script>
+    (function () {
+      var token = localStorage.getItem('admin_token') || localStorage.getItem('admin_pass') || '';
+      var headers = function () { return { 'X-Admin-Token': token, 'Content-Type': 'application/json' }; };
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      function api(url, method, body) {
+        var opts = { method: method || 'GET', headers: headers() };
+        if (body !== undefined) opts.body = JSON.stringify(body);
+        return fetch(url, opts).then(function (r) { return r.json(); });
+      }
+
+      var nameEl = document.getElementById('admin-name-display');
+      var storedName = localStorage.getItem('admin_name');
+      if (storedName && nameEl) { nameEl.style.display = ''; nameEl.textContent = storedName; }
+      var outBtn = document.getElementById('logout-btn');
+      if (outBtn) outBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.removeItem('admin_logged'); localStorage.removeItem('admin_name'); localStorage.removeItem('admin_token');
+        window.location.href = 'login.html';
+      });
+
+      // ---- NEWSLETTER ----
+      function renderNl(list) {
+        var body = document.getElementById('nl-body');
+        var empty = document.getElementById('nl-empty');
+        document.getElementById('stat-nl').textContent = list.length;
+        if (!list.length) { body.innerHTML = ''; empty.textContent = 'Aucun abonné pour le moment.'; return; }
+        empty.textContent = '';
+        body.innerHTML = list.map(function (s) {
+          var cats = (s.categories || []).length
+            ? s.categories.map(function (c) { return '<span style="background:#eef4fa;color:var(--primary);border-radius:20px;padding:2px 10px;font-size:0.75rem;margin-right:5px;">' + esc(c) + '</span>'; }).join('')
+            : '<span style="color:var(--text-light);font-size:0.8rem;">Toutes</span>';
+          return '<tr><td>' + esc(s.name || '-') + '</td><td>' + esc(s.email) + '</td><td>' + cats + '</td><td>' + esc(s.date || '-') + '</td>' +
+            '<td><button class="btn btn-sm btn-secondary" data-del="' + encodeURIComponent(s.email) + '" style="padding:4px 10px;font-size:0.8rem;">Supprimer</button></td></tr>';
+        }).join('');
+        body.querySelectorAll('[data-del]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (!confirm('Supprimer cet abonné newsletter ?')) return;
+            api('/api/newsletter/' + encodeURIComponent(b.dataset.del), 'DELETE').then(function () { loadAll(); });
+          });
+        });
+      }
+
+      // ---- NOTIFICATIONS ----
+      function prefsBadge(s) {
+        var m = { news: '📰 Actus', breaking: '🔴 Breaking', rdc: '🇨🇩 RDC', international: '🌍 International' };
+        return Object.keys(m).filter(function (k) { return s.prefs && s.prefs[k]; }).map(function (k) {
+          return '<span style="background:#fff7e6;color:#8a5a00;border-radius:20px;padding:2px 10px;font-size:0.75rem;margin-right:5px;">' + m[k] + '</span>';
+        }).join('') || '<span style="color:var(--text-light);font-size:0.8rem;">Aucune</span>';
+      }
+      function renderNtf() {
+        var list = window.__ntf || [];
+        var body = document.getElementById('ntf-body');
+        var empty = document.getElementById('ntf-empty');
+        document.getElementById('stat-ntf').textContent = list.length;
+        var devices = list.filter(function (s) { return s.endpoint; }).length;
+        document.getElementById('stat-push-devices').textContent = devices;
+        if (!list.length) { body.innerHTML = ''; empty.textContent = 'Aucune inscription pour le moment.'; return; }
+        empty.textContent = '';
+        body.innerHTML = list.map(function (s) {
+          return '<tr><td>' + esc(s.name || '-') + '</td><td>' + esc(s.email || '-') + '</td><td>' + prefsBadge(s) + '</td>' +
+            '<td>' + (s.endpoint ? ('✅ Push<br><span style="font-size:0.7rem;color:var(--text-light);">' + esc(s.endpoint) + '</span>') : '<span style="color:var(--text-light);">Préférences seules</span>') + '</td>' +
+            '<td>' + esc(s.created || '-') + '</td>' +
+            '<td><button class="btn btn-sm btn-secondary" data-ntf="' + s.id + '" style="padding:4px 10px;font-size:0.8rem;">Supprimer</button></td></tr>';
+        }).join('');
+        body.querySelectorAll('[data-ntf]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (!confirm('Supprimer cette inscription ?')) return;
+            api('/api/notifications/' + b.dataset.ntf, 'DELETE').then(function () { loadAll(); });
+          });
+        });
+      }
+
+      function loadAll() {
+        api('/api/newsletter').then(function (d) { if (Array.isArray(d)) renderNl(d); });
+        api('/api/notifications').then(function (d) { if (Array.isArray(d)) { window.__ntf = d; renderNtf(); } });
+        api('/api/push/status').then(function (s) {
+          var el = document.getElementById('push-status');
+          if (el) el.innerHTML = s && s.available
+            ? (s.vapid_configured ? '✅ Push Web opérationnel (clés VAPID configurées).' : '⚠️ Push Web disponible mais clés VAPID non générées (un visiteur les générera au premier abonnement).')
+            : '⚠️ pywebpush non installé : l\'envoi push envoie besoin de la dépendance.';
+        }).catch(function () {});
+      }
+      loadAll();
+
+      document.getElementById('push-send').addEventListener('click', function () {
+        var title = document.getElementById('push-title').value.trim();
+        var body = document.getElementById('push-body').value.trim();
+        var scope = document.getElementById('push-scope').value;
+        var res = document.getElementById('push-result');
+        res.textContent = 'Envoi en cours…';
+        api('/api/push/send', 'POST', { title: title, body: body, url: '/', scope: scope }).then(function (d) {
+          res.textContent = d.ok ? ('✅ ' + (d.sent || 0) + ' notification(s) envoyée(s).') : ('❌ ' + (d.error || 'erreur'));
+        }).catch(function () { res.textContent = '❌ Erreur réseau.'; });
+      });
+    })();
+  </script>
+</body>
+</html>

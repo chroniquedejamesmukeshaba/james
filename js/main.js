@@ -170,20 +170,40 @@ document.addEventListener('DOMContentLoaded', function () {
   if (nlForm) {
     nlForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      const email = this.querySelector('input[type="email"]').value;
-      if (email) {
-        if (window.location.protocol !== 'file:') {
-          fetch('/api/newsletter', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})}).catch(function(){});
-        }
-        let subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
-        if (!subs.includes(email)) {
-          subs.push(email);
-          localStorage.setItem('nl_subscribers', JSON.stringify(subs));
-        }
-        showToast('Merci ! Vous êtes abonné à notre newsletter.');
-        this.querySelector('input[type="email"]').value = '';
+      const emailEl = this.querySelector('input[type="email"]');
+      const email = emailEl ? emailEl.value.trim() : '';
+      if (!email) { showToast('Veuillez renseigner votre adresse email.', 'error'); return; }
+      const nameEl = this.querySelector('input[name="nl-name"]');
+      const cats = [];
+      this.querySelectorAll('input[name="nl-cat"]:checked').forEach(function (c) { cats.push(c.value); });
+      const payload = { email: email, name: nameEl ? nameEl.value.trim() : '', categories: cats };
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/newsletter', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});
       }
+      let subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
+      if (!subs.includes(email)) {
+        subs.push(email);
+        localStorage.setItem('nl_subscribers', JSON.stringify(subs));
+      }
+      showToast('Merci ! Vous êtes abonné à notre newsletter.');
+      this.reset();
     });
+    // Catégories préférées remplies depuis l'API
+    const nlCats = nlForm.querySelector('.nl-cats');
+    if (nlCats) {
+      function fillCats() {
+        fetch('/api/categories').then(function (r) { return r.json(); }).then(function (list) {
+          if (!list || !list.length) { nlCats.style.display = 'none'; return; }
+          nlCats.innerHTML = list.slice(0, 6).map(function (c) {
+            var esc = String(c.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return '<label class="nl-cat-label"><input type="checkbox" name="nl-cat" value="' + esc + '"> ' + esc + '</label>';
+          }).join('');
+          nlCats.style.display = '';
+        }).catch(function () { nlCats.style.display = 'none'; });
+      }
+      fillCats();
+      document.addEventListener('langchange', function () { setTimeout(fillCats, 300); });
+    }
   }
 
   // ===== COMMENT FORM =====

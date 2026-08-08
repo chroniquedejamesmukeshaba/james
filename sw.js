@@ -1,10 +1,10 @@
-const CACHE = 'chronique-v4';
+const CACHE = 'chronique-v5';
 const STATIC = [
   '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
   '/objets-perdus.html', '/heritage.html', '/faq.html', '/donation.html',
   '/page.html', '/article.html',
-  '/css/style.css', '/css/home.css', '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/home.js',
+  '/css/style.css', '/css/home.css', '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/notify.js', '/js/home.js',
   '/manifest.json', '/assets/images/logo.png',
   '/assets/images/icon-192.png', '/assets/images/icon-512.png'
 ];
@@ -56,5 +56,35 @@ self.addEventListener('fetch', function(e) {
 
   e.respondWith(
     caches.match(req).then(function(r) { return r || fetch(req); })
+  );
+});
+
+// ===== NOTIFICATIONS PUSH =====
+self.addEventListener('push', function(e) {
+  var data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (err) {}
+  var title = data.title || 'Chronique de James Mukeshaba';
+  var options = {
+    body: data.body || '',
+    icon: '/assets/images/icon-192.png',
+    badge: '/assets/images/icon-192.png',
+    data: { url: data.url || '/' }
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', function(e) {
+  e.notification.close();
+  var url = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(function(list) {
+      for (var i = 0; i < list.length; i++) {
+        if ('focus' in list[i]) {
+          list[i].navigate(url);
+          return list[i].focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
   );
 });

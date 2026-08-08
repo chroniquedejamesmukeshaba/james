@@ -208,12 +208,50 @@
     input.addEventListener('input', function () { show(input.value); });
   }
 
+  // ---------- LES PLUS LUS ----------
+  var POP_PERIODS = [['today', 'popular_today', 'Aujourd\'hui'], ['week', 'popular_week', 'Cette semaine'], ['month', 'popular_month', 'Ce mois'], ['all', 'popular_all', 'Depuis la publication']];
+  var popPeriod = 'week';
+
+  function renderMostRead() {
+    var wrap = document.getElementById('home-popular');
+    if (!wrap) return;
+    if (window.location.protocol === 'file:') { wrap.style.display = 'none'; return; }
+    fetch('/api/popular?period=' + popPeriod + '&limit=8&lang=' + siteLang)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        if (!d || !d.items || !d.items.length) { wrap.style.display = 'none'; return; }
+        var tabs = POP_PERIODS.map(function (p) {
+          return '<button type="button" class="pop-tab' + (p[0] === popPeriod ? ' active' : '') + '" data-period="' + p[0] + '">' +
+            (typeof t === 'function' && t(p[1]) !== p[1] ? t(p[1]) : p[2]) + '</button>';
+        }).join('');
+        wrap.innerHTML = '<div class="container"><div class="head">' +
+          '<h2>' + (typeof t === 'function' ? t('popular_title') : 'Les plus lus') + '</h2>' +
+          '<div class="pop-tabs">' + tabs + '</div>' +
+          '</div><div class="section-grid pop-grid">' +
+          d.items.map(function (a) {
+            return '<article class="home-card pop-card"><a class="thumb" href="' + linkOf(a) + '" tabindex="-1" aria-hidden="true">' + thumbOf(a) + '</a>' +
+              '<div class="body"><div class="cat">' + normCat(a.category) + '</div>' +
+              '<h3><a href="' + linkOf(a) + '">' + esc(a.title) + '</a></h3>' +
+              '<div class="pop-metrics"><span>' + esc(a.views || 0) + ' vues</span><span>&#128293; ' + esc(a.reactions || 0) + '</span><span>&#10145; ' + esc(a.shares || 0) + '</span></div>' +
+              '</div></article>';
+          }).join('') + '</div></div>';
+        wrap.querySelectorAll('.pop-tab').forEach(function (b) {
+          b.addEventListener('click', function () {
+            popPeriod = b.dataset.period;
+            renderMostRead();
+          });
+        });
+      })
+      .catch(function () { wrap.style.display = 'none'; });
+  }
+
   // ---------- CHARGEMENT ----------
   function renderAll() {
     var list = sorted();
     renderTicker(list);
     renderHero(list);
     renderSections();
+    renderMostRead();
   }
 
   function loadLocal() {

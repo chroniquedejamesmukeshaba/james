@@ -77,7 +77,9 @@
         <p data-i18n="newsletter_desc">Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
       </div>
       <form class="newsletter-form" id="newsletter-form">
+        <input type="text" name="nl-name" class="nl-name" placeholder="Votre nom" autocomplete="name">
         <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
+        <div class="nl-cats" role="group" aria-label="Cat&eacute;gories pr&eacute;f&eacute;r&eacute;es"></div>
         <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
       </form>
     </div>

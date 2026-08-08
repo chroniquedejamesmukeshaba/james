@@ -191,7 +191,7 @@
         document.title = title + ' - Chronique de James Mukeshaba';
       }
 
-      function renderShare(article) {
+function renderShare(article) {
         var u = encodeURIComponent(window.location.href);
         var txt = encodeURIComponent(article.title);
         document.getElementById('share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
@@ -200,9 +200,18 @@
         document.getElementById('share-li').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u;
         document.getElementById('share-copy').onclick = function () {
           (navigator.clipboard ? navigator.clipboard.writeText(window.location.href) : Promise.reject())
-            .then(function () { showToast('🔗 Lien copié dans le presse-papiers.'); })
+            .then(function () { showToast('?? Lien copié dans le presse-papiers.'); trackShare('copy'); })
             .catch(function () { showToast('Impossible de copier le lien.', 'error'); });
         };
+        ['fb', 'wa', 'x', 'li'].forEach(function (ch) {
+          document.getElementById('share-' + ch).addEventListener('click', function () { trackShare(ch); });
+        });
+      }
+
+      function trackShare(channel) {
+        if (!window._aid || window.location.protocol === 'file:') return;
+        var p = { articleId: window._aid, channel: channel };
+        fetch('/api/share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }).catch(function () {});
       }
 
       var REACTIONS = [
@@ -253,6 +262,7 @@
             if (article.cat) window.location.href = '/categorie/' + article.cat;
           });
         }
+        window._aid = article.id;
 
         var pb = document.getElementById('article-priority');
         if (article.priority === 'breaking') {
@@ -371,6 +381,28 @@
         loadArticle();
       });
     });
+  </script>
+  <script>
+    // ===== TEMPS DE LECTURE (popularite) =====
+    (function () {
+      if (window.location.protocol === 'file:') return;
+      var start = Date.now();
+      var sent = false;
+      function report() {
+        if (sent || !window._aid) return;
+        var secs = Math.round((Date.now() - start) / 1000);
+        if (secs < 5) return;
+        sent = true;
+        var p = { articleId: window._aid, seconds: Math.min(300, secs) };
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/read', new Blob([JSON.stringify(p)], { type: 'application/json' }));
+        } else {
+          fetch('/api/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }).catch(function () {});
+        }
+      }
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') report(); });
+      window.addEventListener('pagehide', report);
+    })();
   </script>
 </body>
 </html>

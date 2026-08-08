@@ -584,6 +584,127 @@ def add_reaction(article_id):
     write_json('reactions', data)
     return jsonify({'ok': True, 'count': slot[rtype]})
 
+# --- POPULARITE (vues, lecture, partages, reactions, commentaires) ---
+READ_MAX = 300
+
+@app.route('/api/read', methods=['POST'])
+@rate_limit('read_post', 200, 24 * 3600)
+def track_read():
+    d = request.json or {}
+    aid = str(d.get('articleId') or '')
+    seconds = int(d.get('seconds') or 0)
+    if not aid or seconds <= 0:
+        return jsonify({'ok': False, 'error': 'champs requis'}), 400
+    seconds = min(seconds, READ_MAX)
+    data = read_obj('reads', [])
+    data.append({'a': aid, 's': seconds, 't': time.time()})
+    if len(data) > 200000:
+        data = data[-200000:]
+    write_json('reads', data)
+    return jsonify({'ok': True})
+
+@app.route('/api/share', methods=['POST'])
+@rate_limit('share_post', 60, 24 * 3600)
+def track_share():
+    d = request.json or {}
+    aid = str(d.get('articleId') or '')
+    channel = (d.get('channel') or 'other')[:20]
+    if not aid:
+        return jsonify({'ok': False, 'error': 'champs requis'}), 400
+    data = read_obj('shares', [])
+    data.append({'a': aid, 'c': channel, 't': time.time()})
+    if len(data) > 100000:
+        data = data[-100000:]
+    write_json('shares', data)
+    return jsonify({'ok': True})
+
+
+def period_cutoff(period):
+    now = time.time()
+    if period == 'today':
+        return now - (now % 86400)
+    if period == 'week':
+        return now - 7 * 86400
+    if period == 'month':
+        return now - 30 * 86400
+    return None
+
+
+@app.route('/api/popular')
+def get_popular():
+    lang = request.args.get('lang', 'fr')
+    period = request.args.get('period', 'week')
+    limit = min(int(request.args.get('limit', 20)), 50)
+    cutoff = period_cutoff(period)
+    views = {}
+    for v in read_json('visits'):
+        if not isinstance(v, dict):
+            continue
+        aid = str(v.get('articleId') or '')
+        if not aid:
+            continue
+        d = v.get('date') or ''
+        if cutoff is not None and (d[:19] < time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff))):
+            continue
+        views[aid] = views.get(aid, 0) + 1
+    read_secs = {}
+    for r in read_obj('reads', []):
+        if cutoff is not None and float(r.get('t', 0) or 0) < cutoff:
+            continue
+        aid = str(r.get('a') or '')
+        read_secs[aid] = read_secs.get(aid, 0) + int(r.get('s') or 0)
+    share_n = {}
+    for s in read_obj('shares', []):
+        if cutoff is not None and float(s.get('t', 0) or 0) < cutoff:
+            continue
+        aid = str(s.get('a') or '')
+        share_n[aid] = share_n.get(aid, 0) + 1
+    reactions = read_obj('reactions', {})
+    comments_n = {}
+    for f in os.listdir(DATA_DIR):
+        if not f.startswith('comments_'):
+            continue
+        aid = f[len('comments_'):-5]
+        for c in read_json(f[:-5]):
+            if c.get('status') == 'hidden':
+                continue
+            d = str(c.get('date') or '')[:10]
+            if cutoff is not None and d and d < time.strftime('%Y-%m-%d', time.gmtime(cutoff)):
+                continue
+            comments_n[aid] = comments_n.get(aid, 0) + 1
+    scored = []
+    for a in read_json('articles'):
+        aid = str(a.get('id'))
+        v = views.get(aid, 0)
+        rd = read_secs.get(aid, 0)
+        sh = share_n.get(aid, 0)
+        rx = sum(int(x) for x in (reactions.get(aid) or {}).values())
+        cm = comments_n.get(aid, 0)
+        if not (v or rd or sh or rx or cm):
+            continue
+        score = v * 2 + (rd / 60.0) * 2 + sh * 10 + rx * 5 + cm * 8
+        scored.append((score, aid))
+    scored.sort(key=lambda x: -x[0])
+    top = [aid for _, aid in scored[:limit]]
+    out = []
+    for a in read_json('articles'):
+        aid = str(a.get('id'))
+        if aid not in top:
+            continue
+        v = views.get(aid, 0)
+        rd = read_secs.get(aid, 0)
+        sh = share_n.get(aid, 0)
+        rx = sum(int(x) for x in (reactions.get(aid) or {}).values())
+        cm = comments_n.get(aid, 0)
+        item = dict(article_lite(a, lang),
+                    views=v, read_min=round(rd / 60.0, 1), shares=sh,
+                    reactions=rx, comments=cm,
+                    score=round(v * 2 + (rd / 60.0) * 2 + sh * 10 + rx * 5 + cm * 8, 1))
+        out.append(item)
+    order = {aid: i for i, aid in enumerate(top)}
+    out.sort(key=lambda x: order.get(str(x.get('id')), 99))
+    return jsonify({'period': period, 'items': out})
+
 # --- SETTINGS (BREAKING NEWS) ---
 DEFAULT_SETTINGS = {'breaking_news_enabled': True, 'breaking_article_id': None}
 
@@ -615,23 +736,215 @@ def save_settings():
     if 'breaking_article_id' in data:
         d['breaking_article_id'] = data['breaking_article_id']
     write_json('settings', d)
+    # Notification push automatique aux abonnes Breaking News
+    try:
+        if bool(d.get('breaking_news_enabled')) and d.get('breaking_article_id'):
+            aid = d['breaking_article_id']
+            for a in read_json('articles'):
+                if a.get('id') == aid:
+                    t = a.get('title') or ''
+                    if t:
+                        push_broadcast('Breaking News', t[:140], '/article?id=' + str(aid), 'breaking')
+                    break
+    except Exception:
+        pass
     return jsonify({'ok': True})
 
 # --- NEWSLETTER ---
 @app.route('/api/newsletter', methods=['GET'])
 @admin_required
 def get_subscribers():
-    return jsonify(read_json('newsletter'))
+    raw = read_json('newsletter')
+    out = []
+    for s in raw:
+        if isinstance(s, str):
+            out.append({'email': s, 'name': '', 'categories': [], 'date': ''})
+        else:
+            out.append(s)
+    return jsonify(out)
 
 @app.route('/api/newsletter', methods=['POST'])
 @rate_limit('newsletter_post', 10, 24 * 3600)
 def subscribe():
     subs = read_json('newsletter')
-    email = (request.json or {}).get('email')
-    if email and email not in subs:
-        subs.append(email)
-        write_json('newsletter', subs)
+    d = request.json or {}
+    email = (d.get('email') or '').strip().lower()[:120]
+    if not email or '@' not in email:
+        return jsonify({'ok': False, 'error': 'email invalide'}), 400
+    entry = {
+        'email': email,
+        'name': (d.get('name') or '').strip()[:60],
+        'categories': [str(c).strip()[:40] for c in (d.get('categories') or [])][:8],
+        'date': time.strftime('%Y-%m-%d'),
+    }
+    for i, s in enumerate(subs):
+        cur = s if isinstance(s, str) else s.get('email', '')
+        if cur.lower() == email:
+            entry['date'] = (s.get('date') if isinstance(s, dict) else '') or entry['date']
+            subs[i] = entry
+            break
+    else:
+        subs.append(entry)
+    write_json('newsletter', subs)
     return jsonify({'ok': True})
+
+@app.route('/api/newsletter/<path:email>', methods=['DELETE'])
+@admin_required
+def delete_subscriber(email):
+    email = email.lower()
+    subs = [s for s in read_json('newsletter')
+            if (s if isinstance(s, str) else s.get('email', '')).lower() != email]
+    write_json('newsletter', subs)
+    return jsonify({'ok': True})
+
+# --- NOTIFICATIONS (WEB PUSH) ---
+def webpush_send(sub, title, body, url=''):
+    try:
+        from pywebpush import webpush
+    except Exception:
+        return False
+    try:
+        info = read_obj('push', {})
+        priv = info.get('vapid_private_key') or ''
+        if not priv:
+            return False
+        payload = json.dumps({'title': title, 'body': body, 'url': url}, ensure_ascii=False)
+        webpush(
+            subscription_info={
+                'endpoint': sub.get('endpoint', ''),
+                'keys': {'p256dh': sub.get('p256dh', ''), 'auth': sub.get('auth', '')},
+            },
+            data=payload,
+            vapid_private_key=priv,
+            vapid_claims={'sub': 'mailto:contact@chroniquedejamesmukeshaba.com'},
+        )
+        return True
+    except Exception:
+        return False
+
+
+def push_broadcast(title, body, url='', scope=None):
+    sent = 0
+    for s in read_json('notifications'):
+        if not s.get('endpoint'):
+            continue
+        prefs = s.get('prefs') or {}
+        if scope == 'breaking' and not prefs.get('breaking'):
+            continue
+        if scope == 'rdc' and not prefs.get('rdc'):
+            continue
+        if scope == 'international' and not prefs.get('international'):
+            continue
+        if webpush_send(s, title, body, url):
+            sent += 1
+    return sent
+
+
+@app.route('/api/push/status', methods=['GET'])
+@admin_required
+def push_status():
+    try:
+        import pywebpush
+        available = True
+    except Exception:
+        available = False
+    info = read_obj('push', {})
+    return jsonify({
+        'available': available,
+        'vapid_configured': bool(info.get('vapid_private_key')),
+        'vapid_public_key': info.get('vapid_public_key') or '',
+    })
+
+
+@app.route('/api/push/setup', methods=['POST'])
+@rate_limit('push_setup', 10, 24 * 3600)
+def push_setup():
+    try:
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+    except Exception:
+        return jsonify({'ok': False, 'error': 'push indisponible'}), 501
+    info = read_obj('push', {})
+    if not info.get('vapid_private_key'):
+        try:
+            private_key = ec.generate_private_key(ec.SECP256R1())
+            priv_pem = private_key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption()).decode().replace('\n', '')
+            public_key = private_key.public_key().public_bytes(
+                serialization.Encoding.X962,
+                serialization.PublicFormat.UncompressedPoint).hex()
+            info['vapid_private_key'] = priv_pem
+            info['vapid_public_key'] = public_key
+            write_json('push', info)
+        except Exception:
+            return jsonify({'ok': False, 'error': 'generation impossible'}), 500
+    return jsonify({'ok': True, 'vapid_public_key': info['vapid_public_key']})
+
+
+@app.route('/api/notifications', methods=['POST'])
+@rate_limit('notif_post', 20, 24 * 3600)
+def save_notification_prefs():
+    d = request.json or {}
+    entry = {
+        'id': int(time.time() * 1000),
+        'name': (d.get('name') or '').strip()[:60],
+        'email': (d.get('email') or '').strip().lower()[:120],
+        'prefs': {
+            'news': bool(d.get('news', False)),
+            'breaking': bool(d.get('breaking', False)),
+            'rdc': bool(d.get('rdc', False)),
+            'international': bool(d.get('international', False)),
+        },
+        'endpoint': (d.get('endpoint') or '').strip()[:500],
+        'p256dh': (d.get('p256dh') or '').strip()[:500],
+        'auth': (d.get('auth') or '').strip()[:200],
+        'created': time.strftime('%Y-%m-%dT%H:%M:%S'),
+    }
+    subs = read_json('notifications')
+    for i, s in enumerate(subs):
+        same = (entry['endpoint'] and s.get('endpoint') == entry['endpoint']) or \
+               (entry['email'] and s.get('email') == entry['email'])
+        if same:
+            entry['id'] = s['id']
+            subs[i] = entry
+            break
+    else:
+        subs.append(entry)
+    write_json('notifications', subs)
+    return jsonify({'ok': True, 'id': entry['id']})
+
+@app.route('/api/notifications', methods=['GET'])
+@admin_required
+def list_notifications():
+    out = []
+    for s in read_json('notifications'):
+        cp = dict(s)
+        if cp.get('endpoint'):
+            cp['endpoint'] = cp['endpoint'][:64] + ('...' if len(cp['endpoint']) > 64 else '')
+        out.append(cp)
+    return jsonify(out)
+
+@app.route('/api/notifications/<int:nid>', methods=['DELETE'])
+@admin_required
+def delete_notification(nid):
+    subs = [s for s in read_json('notifications') if s.get('id') != nid]
+    write_json('notifications', subs)
+    return jsonify({'ok': True})
+
+@app.route('/api/push/send', methods=['POST'])
+@admin_required
+def push_send():
+    d = request.json or {}
+    title = (d.get('title') or '').strip()[:120]
+    body = (d.get('body') or '').strip()[:300]
+    url = (d.get('url') or '').strip()[:300]
+    scope = (d.get('scope') or '')[:20]
+    if not title:
+        return jsonify({'ok': False, 'error': 'titre requis'}), 400
+    sent = push_broadcast(title, body, url, scope or None)
+    return jsonify({'ok': True, 'sent': sent})
 
 # --- LOST & FOUND ---
 @app.route('/api/lost-found', methods=['GET'])
