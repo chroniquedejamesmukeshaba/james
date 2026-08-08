@@ -1,0 +1,289 @@
+/* =========================================================================
+ * Soutenir nos actions communautaires - JS public
+ * Flux securise :
+ *   1. POST /api/donations  -> cree une intention de don (txn_id unique,
+ *      cle d'idempotence). Aucun credit n'est applique.
+ *   2. POST /api/payments/init -> initie le paiement chez le prestataire
+ *      (appel cote serveur). Retour navigateur IGNORE comme preuve.
+ *   3. La campagne n'est creditee qu'apres confirmation serveur
+ *      (webhook signe du prestataire ou POST /api/payments/verify).
+ * AUCUNE simulation de paiement.
+ * ========================================================================= */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var campaigns = [];
+  var selectedCampaignId = null;
+  var idempotencyKey = newIdem();
+  var busy = false;
+
+  function newIdem() {
+    if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'don-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+  }
+
+  function fmtUSD(v) {
+    return Number(v || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  }
+
+  function showError(msg) {
+    var e = $('don-error');
+    if (msg) {
+      e.textContent = msg;
+      e.style.display = 'block';
+    } else {
+      e.style.display = 'none';
+    }
+  }
+
+  function showInfo(msg) {
+    var i = $('don-info');
+    if (msg) {
+      i.textContent = msg;
+      i.style.display = 'block';
+    } else {
+      i.style.display = 'none';
+    }
+  }
+
+  /* ---------- Campagnes ---------- */
+  function renderCampaigns(list) {
+    var box = $('campaign-list');
+    if (!list.length) {
+      box.innerHTML = '<div class="sg-empty" style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.75;">' +
+        'Aucune campagne de financement en cours pour le moment. Revenez bient&ocirc;t.</div>';
+      return;
+    }
+    var html = '';
+    list.forEach(function (c) {
+      var goal = Number(c.goal || 0);
+      var col = Number(c.collected || 0);
+      var pct = goal > 0 ? Math.min(col / goal * 100, 100) : 0;
+      var isDone = goal > 0 && col >= goal;
+      var img = (c.image && (c.image[0] === '/' || c.image.indexOf('http') === 0 || c.image.indexOf('data:') === 0)) ? c.image : '';
+      var endBadge = '';
+      if (c.endDate) {
+        var end = new Date(c.endDate);
+        if (!isNaN(end.getTime()) && end < new Date()) endBadge = '<span class="cat-chip" style="background:rgba(192,57,43,.12);color:#c0392b;">Termin&eacute;e</span>';
+      }
+      html += '<article class="wcard campaign-card" data-id="' + c.id + '" style="cursor:pointer;display:flex;flex-direction:column;overflow:hidden;border:2px solid transparent;transition:border-color .2s;">' +
+        (img ? '<div class="card-banner" style="height:170px;background:url(' + img + ') center/cover;"></div>' :
+               '<div class="card-banner" style="height:170px;background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
+        '<div class="wcard-body" style="padding:20px;flex:1;display:flex;flex-direction:column;gap:10px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+        '<h3 style="margin:0;font-size:1.05rem;">' + esc(c.title) + '</h3>' + endBadge + '</div>' +
+        '<p style="margin:0;font-size:0.92rem;opacity:0.8;flex:1;">' + esc(c.description || '') + '</p>' +
+        '<div class="campaign-progress" style="margin-top:4px;">' +
+        '  <div class="campaign-progress-bar"><div class="campaign-progress-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
+        '  <div class="campaign-progress-labels"><span><strong>' + fmtUSD(col) + '</strong> collect&eacute;s</span>' +
+        '  <span>' + pct.toFixed(0) + '% &middot; objectif ' + fmtUSD(goal) + '</span></div>' +
+        '</div>' +
+        (isDone ? '<span class="cat-chip" style="background:rgba(31,111,235,.12);color:var(--primary);">Objectif atteint &mdash; merci !</span>' : '') +
+        '<button class="btn-primary" style="border:none;padding:11px;border-radius:8px;font-weight:600;cursor:pointer;">Je fais un don</button>' +
+        '</div></article>';
+    });
+    box.innerHTML = html;
+
+    box.querySelectorAll('.campaign-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        box.querySelectorAll('.campaign-card').forEach(function (x) { x.style.borderColor = 'transparent'; });
+        card.style.borderColor = 'var(--primary)';
+        selectCampaign(Number(card.dataset.id));
+      });
+    });
+    if (list.length) selectCampaign(Number(list[0].id));
+  }
+
+  function selectCampaign(id) {
+    var c = null;
+    campaigns.forEach(function (x) { if (x.id === id) c = x; });
+    if (!c) return;
+    selectedCampaignId = id;
+    $('don-campaign-id').value = id;
+    var goal = Number(c.goal || 0);
+    var col = Number(c.collected || 0);
+    $('don-form-campaign').textContent = c.title + ' &mdash; ' + fmtUSD(col) + ' collect&eacute;s sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre g&eacute;n&eacute;rosit&eacute; !';
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function loadCampaigns() {
+    fetch('/api/campaigns?_=' + Date.now())
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (list) {
+        campaigns = (list || []).filter(function (c) { return c.status === 'active'; });
+        renderCampaigns(campaigns);
+      })
+      .catch(function () {
+        $('campaign-list').innerHTML = '<div class="sg-empty" style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.75;">Impossible de charger les campagnes. R&eacute;essayez plus tard.</div>';
+      });
+  }
+
+  /* ---------- Moyens de paiement ---------- */
+  function loadPaymentMethods() {
+    fetch('/api/payments/methods?_=' + Date.now())
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (!cfg) return;
+        var enabled = cfg.providers || {};
+        document.querySelectorAll('.pay-method').forEach(function (label) {
+          var input = label.querySelector('input');
+          var disabled = !enabled[input.value] || !enabled[input.value].enabled;
+          label.style.opacity = disabled ? '0.45' : '1';
+          input.disabled = disabled;
+          if (disabled && input.checked) input.checked = false;
+        });
+        var first = document.querySelector('.pay-method input:not(:disabled)');
+        if (first) first.checked = true;
+        var note = $('pay-unavailable-note');
+        if (cfg.payment_unavailable) {
+          note.textContent = 'Les paiements en ligne seront bient&ocirc;t disponibles. Merci de r&eacute;essayer plus tard ou de nous contacter pour un don manuel.';
+        } else {
+          note.textContent = 'Paiement s&eacute;curis&eacute; : vos donn&eacute;es bancaires ne sont jamais stock&eacute;es sur ce site.';
+        }
+      })
+      .catch(function () {});
+  }
+
+  /* ---------- Montants ---------- */
+  function bindAmounts() {
+    document.querySelectorAll('.donation-amount').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
+        b.classList.add('selected');
+        $('don-amount').value = b.dataset.val;
+      });
+    });
+    $('don-amount').addEventListener('input', function () {
+      document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
+    });
+  }
+
+  /* ---------- Soumission : intention puis initiation paiement ---------- */
+  function submitDonation(ev) {
+    ev.preventDefault();
+    if (busy) return;
+    showError(null); showInfo(null);
+
+    var campaignId = $('don-campaign-id').value;
+    if (!campaignId) { showError('Veuillez s&eacute;lectionner une campagne active.'); return; }
+    var amount = parseFloat($('don-amount').value);
+    if (!(amount >= 1 && amount <= 100000)) { showError('Le montant doit &ecirc;tre compris entre 1 et 100000 USD.'); return; }
+    var name = $('don-name').value.trim();
+    var email = $('don-email').value.trim();
+    if (!name) { showError('Veuillez indiquer votre nom complet.'); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showError('Adresse email invalide.'); return; }
+    var methodEl = document.querySelector('.pay-method input[name="pay-method"]:not(:disabled):checked');
+    if (!methodEl) { showError('Aucun moyen de paiement disponible pour le moment.'); return; }
+    var method = methodEl.value;
+
+    busy = true;
+    var submit = $('don-submit');
+    submit.disabled = true;
+    submit.textContent = 'Traitement en cours&hellip;';
+    var txnRef = '';
+
+    var payload = {
+      campaignId: campaignId,
+      amount: amount.toFixed(2),
+      name: name,
+      email: email,
+      message: $('don-message').value.trim(),
+      method: method,
+      idempotency_key: idempotencyKey
+    };
+
+    fetch('/api/donations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
+      .then(function (res) {
+        if (!res.body.ok) {
+          var msg = res.body.errors ? Object.values(res.body.errors)[0] : (res.body.error || 'Erreur lors de l\u2019enregistrement du don.');
+          throw new Error(msg);
+        }
+        var txn = res.body.txn_id;
+        txnRef = txn;
+        $('don-txn-id').value = txn;
+        $('don-ref').textContent = txn;
+        return initPayment(txn, method);
+      })
+      .then(function (res) {
+        // Intentions renouvelees a chaque tentative : une nouvelle cle permet
+        // de reessayer sans creer de doublon cote prestataire.
+        idempotencyKey = newIdem();
+        if (res.redirect_url) {
+          $('don-pending').style.display = 'block';
+          $('don-pending-msg').textContent = 'Vous allez &ecirc;tre redirig&eacute;(e) vers ' + method.replace('_', ' ') + ' pour finaliser votre paiement.';
+          window.location.href = res.redirect_url;
+          return;
+        }
+        // Paiement non configure : on garde l'intention mais on informe
+        // honnetement (aucune simulation).
+        $('don-pending').style.display = 'block';
+        $('don-pending-msg').textContent = 'Votre don est enregistr&eacute; avec la r&eacute;f&eacute;rence ' + txnRef + '. Le paiement en ligne sera bient&ocirc;t disponible : votre demande restera valide d&egrave;s l\u2019activation du prestataire.';
+      })
+      .catch(function (err) {
+        showError(err.message || 'Une erreur est survenue. R&eacute;essayez.');
+      })
+      .finally(function () {
+        busy = false;
+        submit.disabled = false;
+        submit.textContent = '\u2764\uFE0F Proc&eacute;der au paiement s&eacute;curis&eacute;';
+      });
+  }
+
+  function initPayment(txnId, method) {
+    return fetch('/api/payments/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ txn_id: txnId })
+    }).then(function (r) {
+      return r.json().then(function (d) {
+        if (!d.ok && d.code !== 'payment_unavailable') throw new Error(d.error || 'Initiation du paiement impossible.');
+        if (!d.ok && d.code === 'payment_unavailable') return { redirect_url: '' };
+        return d;
+      });
+    });
+  }
+
+  /* ---------- Retour depuis le prestataire : verification serveur ---------- */
+  function checkReturn() {
+    var q = new URLSearchParams(window.location.search);
+    var txn = q.get('txn_id');
+    if (!txn) return;
+    $('don-pending').style.display = 'block';
+    $('don-ref').textContent = txn;
+    $('don-pending-msg').textContent = 'V&eacute;rification du paiement aupr&egrave;s du prestataire&hellip;';
+    fetch('/api/payments/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ txn_id: txn })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok && d.status === 'confirmed') {
+        $('don-pending-msg').textContent = 'Merci ! Votre don (' + txn + ') a &eacute;t&eacute; confirm&eacute; et comptabilis&eacute;. Un email de confirmation vous sera envoy&eacute;.';
+        loadCampaigns();
+      } else if (d.ok && (d.status === 'failed' || d.status === 'cancelled')) {
+        $('don-pending-msg').textContent = 'Votre paiement a &eacute;t&eacute; annul&eacute; ou n\u2019a pas abouti. Vous pouvez r&eacute;essayer.';
+        idempotencyKey = newIdem();
+      } else {
+        $('don-pending-msg').textContent = 'Votre paiement est en cours de confirmation c&ocirc;t&eacute; prestataire. Vous recevrez une confirmation par email d&egrave;s validation.';
+      }
+    }).catch(function () {
+      $('don-pending-msg').textContent = 'Impossible de v&eacute;rifier le paiement pour le moment. Vous recevrez une confirmation par email d&egrave;s validation.';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadCampaigns();
+    loadPaymentMethods();
+    bindAmounts();
+    $('donation-form').addEventListener('submit', submitDonation);
+    checkReturn();
+  });
+})();

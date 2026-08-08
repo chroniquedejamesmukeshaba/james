@@ -1,0 +1,40 @@
+{
+    "mode":  "sandbox",
+    "providers":  {
+                      "paypal":  {
+                                     "enabled":  false,
+                                     "client_id":  "",
+                                     "client_secret":  "",
+                                     "webhook_secret":  "",
+                                     "phone":  ""
+                                 },
+                      "airtel_money":  {
+                                           "enabled":  false,
+                                           "client_id":  "",
+                                           "client_secret":  "",
+                                           "webhook_secret":  "",
+                                           "phone":  ""
+                                       },
+                      "orange_money":  {
+                                           "enabled":  false,
+                                           "client_id":  "",
+                                           "client_secret":  "",
+                                           "webhook_secret":  "",
+                                           "phone":  ""
+                                       },
+                      "vodacom_mpesa":  {
+                                            "enabled":  false,
+                                            "client_id":  "",
+                                            "client_secret":  "",
+                                            "webhook_secret":  "",
+                                            "phone":  ""
+                                        },
+                      "card":  {
+                                   "enabled":  false,
+                                   "merchant_id":  "",
+                                   "api_key":  "",
+                                   "webhook_secret":  "",
+                                   "gateway":  "aggregator"
+                               }
+                  }
+}

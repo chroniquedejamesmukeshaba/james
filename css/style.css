@@ -33,10 +33,18 @@ html[data-theme="dark"] html { background: #0a0d13; }
 html[data-theme="dark"] .top-bar { background: #0a1929; color: #c9d6e6; }
 html[data-theme="dark"] .top-bar a { color: #c9d6e6; }
 html[data-theme="dark"] .logo-text h1 { color: var(--primary); }
-html[data-theme="dark"] :where(.card-body, .stat-card, .admin-table tr, .faq-item, .team-member, .comments-section, .comment, .article-body, .dash-card, .editor-toolbar, .media-card, .share-btn, .reaction-btn, .pg-btn, .pop-card, .r-card, .home-card, .sr-searchbox, .live-panel, .filters-extras label, .img-upload-area) { background: var(--white); }
+html[data-theme="dark"] .card-body, html[data-theme="dark"] .stat-card, html[data-theme="dark"] .admin-table tr,
+html[data-theme="dark"] .faq-item, html[data-theme="dark"] .team-member, html[data-theme="dark"] .comments-section,
+html[data-theme="dark"] .comment, html[data-theme="dark"] .article-body, html[data-theme="dark"] .dash-card,
+html[data-theme="dark"] .editor-toolbar, html[data-theme="dark"] .media-card, html[data-theme="dark"] .share-btn,
+html[data-theme="dark"] .reaction-btn, html[data-theme="dark"] .pg-btn, html[data-theme="dark"] .pop-card,
+html[data-theme="dark"] .r-card, html[data-theme="dark"] .home-card, html[data-theme="dark"] .sr-searchbox,
+html[data-theme="dark"] .live-panel, html[data-theme="dark"] .filters-extras label, html[data-theme="dark"] .img-upload-area { background: var(--white); }
 html[data-theme="dark"] .admin-table th, html[data-theme="dark"] .admin-table tr:hover { background: #21262d; }
 html[data-theme="dark"] .admin-table { border-color: #30363d; }
-html[data-theme="dark"] :where(.admin-table, .faq-item, .team-member, .reaction-btn, .pg-btn, .r-card, .home-card, .pop-card, .share-btn) { border-color: #30363d; }
+html[data-theme="dark"] .admin-table, html[data-theme="dark"] .faq-item, html[data-theme="dark"] .team-member,
+html[data-theme="dark"] .reaction-btn, html[data-theme="dark"] .pg-btn, html[data-theme="dark"] .r-card,
+html[data-theme="dark"] .home-card, html[data-theme="dark"] .pop-card, html[data-theme="dark"] .share-btn { border-color: #30363d; }
 html[data-theme="dark"] .article-content img, html[data-theme="dark"] .article-gallery img { opacity: 0.9; }
 html[data-theme="dark"] .theme-toggle { background: #21262d; border-color: #30363d; color: #e3b341; }
 html[data-theme="dark"] .theme-toggle:hover { background: #30363d; }
@@ -144,6 +152,21 @@ html[data-theme="dark"] .reaction-btn.active, html[data-theme="dark"] .reaction-
 html[data-theme="dark"] .obj-found { background: #0f2a1a; color: #3fb950; }
 html[data-theme="dark"] .obj-lost-tag { color: #ff7b72; border-color: #ff7b72; }
 
+/* Fonds rouges : garder un rouge foncé pour le texte blanc (lisibilité >= 4.5) */
+html[data-theme="dark"] .breaking-label,
+html[data-theme="dark"] .chip.red,
+html[data-theme="dark"] .lang-btn.active { background: #c0392b !important; border-color: #c0392b !important; }
+html[data-theme="dark"] .lang-btn { background: #21262d !important; color: #c9d1d9 !important; }
+html[data-theme="dark"] .btn-secondary,
+html[data-theme="dark"] .pop-tab.active,
+html[data-theme="dark"] .priority-badge.breaking { background: #c0392b; border-color: #c0392b; }
+html[data-theme="dark"] .btn-secondary:hover { background: #b02d26; }
+html[data-theme="dark"] .breaking-bar { background: linear-gradient(90deg, #b02d26, #c0392b); }
+html[data-theme="dark"] .article-byline .avatar { background: #1f6feb; }
+html[data-theme="dark"] .skip-link { background: #1f6feb !important; }
+html[data-theme="dark"] .campaign-prev, html[data-theme="dark"] .campaign-next { background: rgba(22,27,34,0.85); color: #e6edf3; }
+html[data-theme="dark"] .logo-block, html[data-theme="dark"] .logo, html[data-theme="dark"] .side-item { color: inherit; }
+
 /* Formulaires + champs partout */
 html[data-theme="dark"] .form-input,
 html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="email"],
@@ -197,7 +220,8 @@ html[data-theme="dark"] .cat-side .side-item { border-bottom-color: #21262d; }
 html[data-theme="dark"] .pagination .pg-btn, html[data-theme="dark"] .pop-tab { background: #161b22; border-color: #30363d; color: #c9d1d9; }
 html[data-theme="dark"] .pop-metrics span { background: #21262d; }
 html[data-theme="dark"] .nl-cat-label { background: #161b22; border-color: #30363d; color: #c9d1d9; }
-html[data-theme="dark"] .donation-amount { background: #161b22; border-color: #30363d; }
+html[data-theme="dark"] .donation-amount { background: #161b22; border-color: #30363d; color: #e6edf3; }
+html[data-theme="dark"] .donation-amount.selected, html[data-theme="dark"] .donation-amount.selected:hover { background: #1f6feb; border-color: #58a6ff; color: #fff; }
 html[data-theme="dark"] .search-overlay { background: rgba(3, 8, 14, 0.72); }
 
 /* Élément <footer> (fond var(--primary) en dur) */
@@ -214,6 +238,18 @@ html[data-theme="dark"] .slider-btn { color: #f0f6fc; background: rgba(0,0,0,0.6
 /* Logo : ne pas peindre un fond sur les images */
 html[data-theme="dark"] .logo img.logo-img,
 html[data-theme="dark"] .logo-block img.logo-img { background: none; }
+
+/* Page SOUTENIR : barres de progression + moyens de paiement */
+html[data-theme="dark"] .campaign-progress-bar { background: #21262d; }
+html[data-theme="dark"] .campaign-progress-fill { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+html[data-theme="dark"] .campaign-progress-labels { color: #8b949e; }
+html[data-theme="dark"] .campaign-progress-labels strong { color: #79c0ff; }
+html[data-theme="dark"] .pay-method { border-color: #30363d; background: #161b22; color: #e6edf3; }
+html[data-theme="dark"] .pay-method:hover { border-color: #58a6ff; }
+html[data-theme="dark"] .pay-method input { accent-color: #58a6ff; }
+html[data-theme="dark"] .wcard { background: #161b22; border-color: #30363d; }
+html[data-theme="dark"] .wcard h3 { color: #f0f6fc; }
+html[data-theme="dark"] .wcard .btn-primary { color: #fff; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -760,6 +796,25 @@ footer ul li a:hover { color: var(--accent); padding-left: 5px; }
   background: var(--white);
 }
 .donation-amount:hover, .donation-amount.selected { border-color: var(--primary); background: var(--primary); color: var(--white); }
+
+/* ===== SOUTENIR : campagnes avec progression + moyens de paiement ===== */
+.campaign-progress { margin-top: 6px; }
+.campaign-progress-bar { height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+.campaign-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 6px; transition: width 0.5s; }
+.campaign-progress-labels { display: flex; justify-content: space-between; font-size: 0.82rem; color: #64748b; margin-top: 5px; }
+.campaign-progress-labels strong { color: var(--primary); }
+
+.pay-methods { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.pay-method {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px;
+  cursor: pointer; font-size: 0.9rem; font-weight: 500;
+  transition: border-color 0.2s, background 0.2s;
+}
+.pay-method:hover { border-color: var(--primary); }
+.pay-method input { accent-color: var(--primary); }
+
+.soutenir-section { margin-top: 20px; }
 
 /* ===== TEAM GRID ===== */
 .team-grid {

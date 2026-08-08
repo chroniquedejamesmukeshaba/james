@@ -1,8 +1,9 @@
-﻿import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory, redirect, Response
+import payments as pay
 
 app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
@@ -1243,18 +1244,57 @@ def delete_lost_found(lid):
     return jsonify({'ok': True})
 
 # --- CAMPAIGNS ---
+def _sanitize_campaign(data):
+    """Normalise les champs financiers / dates d'une campagne."""
+    clean = {}
+    for k in ('id', 'title', 'description', 'image', 'status', 'createdAt', 'archivedAt', 'speed', 'type'):
+        if k in data and data[k] is not None:
+            clean[k] = data[k]
+    try:
+        clean['goal'] = round(min(max(float(data.get('goal') or 0), 0), 1e9), 2)
+    except (TypeError, ValueError):
+        clean['goal'] = 0.0
+    try:
+        clean['collected'] = round(min(max(float(data.get('collected') or 0), 0), 1e9), 2)
+    except (TypeError, ValueError):
+        clean['collected'] = 0.0
+    for k in ('startDate', 'endDate'):
+        v = data.get(k)
+        clean[k] = v if isinstance(v, str) and len(v) <= 40 else ''
+    if clean.get('status') not in ('active', 'paused', 'ended', 'archived'):
+        clean['status'] = 'active'
+    return clean
+
+
+def _campaign_progress(c, donations=None):
+    """Ajoute la barre de progression et le nombre de dons confirmes."""
+    out = dict(c)
+    goal = float(c.get('goal') or 0)
+    col = float(c.get('collected') or 0)
+    out['progress'] = round(min(col / goal * 100, 100), 1) if goal > 0 else 0.0
+    out['remaining'] = round(max(goal - col, 0), 2) if goal > 0 else 0.0
+    if donations is not None:
+        out['donationCount'] = sum(1 for d in donations
+                                   if d.get('campaignId') == c.get('id') and d.get('status') == 'confirmed')
+    return out
+
+
 @app.route('/api/campaigns', methods=['GET'])
 def get_campaigns():
-    return jsonify(read_json('campaigns'))
+    campaigns = read_json('campaigns')
+    donations = read_json('donations')
+    return jsonify([_campaign_progress(c, donations) for c in campaigns])
 
 @app.route('/api/campaigns', methods=['POST'])
 @admin_required
 def save_campaign():
     campaigns = read_json('campaigns')
-    data = request.json or {}
+    data = _sanitize_campaign(request.json or {})
     if data.get('id'):
         for i, c in enumerate(campaigns):
             if c['id'] == data['id']:
+                data['collected'] = float(c.get('collected') or 0)
+                data['createdAt'] = c.get('createdAt', '')
                 campaigns[i] = {**c, **data}
                 break
     else:
@@ -1269,10 +1309,11 @@ def save_campaign():
 @admin_required
 def update_campaign(cid):
     campaigns = read_json('campaigns')
-    data = request.json or {}
+    data = _sanitize_campaign(request.json or {})
     data['id'] = cid
     for i, c in enumerate(campaigns):
         if c['id'] == cid:
+            data['collected'] = float(data.get('collected', c.get('collected') or 0))
             campaigns[i] = {**c, **data}
             break
     else:
@@ -1311,7 +1352,34 @@ def set_campaign_speed(cid):
     write_json('campaigns', campaigns)
     return jsonify({'ok': True})
 
-# --- DONATIONS ---
+# --- DONATIONS (intentions de don securisees) ---
+def _find_donation(txn_id):
+    for d in read_json('donations'):
+        if d.get('txn_id') == txn_id:
+            return d
+    return None
+
+def _valid_donation_payload(data, required_key=True):
+    """Validation serveur d'un don : montant borne, infos obligatoires."""
+    errors = {}
+    try:
+        amount = float(data.get('amount'))
+    except (TypeError, ValueError):
+        errors['amount'] = 'Montant invalide.'
+    else:
+        amount = round(amount, 2)
+        if not (1 <= amount <= 100000):
+            errors['amount'] = 'Le montant doit etre compris entre 1 et 100000 USD.'
+    for field, label in (('campaignId', 'campagne'), ('name', 'nom'), ('email', 'email'), ('method', 'methode de paiement')):
+        if not str(data.get(field) or '').strip():
+            errors[field] = 'Le champ "%s" est obligatoire.' % label
+    if required_key and not str(data.get('idempotency_key') or '').strip():
+        errors['idempotency_key'] = 'Cle d idempotence manquante.'
+    email = str(data.get('email') or '')
+    if email and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+        errors['email'] = 'Adresse email invalide.'
+    return errors, amount
+
 @app.route('/api/donations', methods=['GET'])
 @admin_required
 def get_donations():
@@ -1320,9 +1388,235 @@ def get_donations():
 @app.route('/api/donations', methods=['POST'])
 @rate_limit('donation_post', 10, 24 * 3600)
 def add_donation():
+    """Cree une INTENTION de don. Aucun credit n'est applique ici :
+    la campagne ne sera creditee qu'apres confirmation serveur (webhook/verify).
+    """
+    data = (request.json or {})
+    errors, amount = _valid_donation_payload(data)
+    if errors:
+        return jsonify({'ok': False, 'errors': errors}), 400
+
+    # Idempotence : une cle deja utilisee (meme si le don a echoue) est refusee,
+    # ce qui protege contre les doublons de formulaire et les doubles paiements.
+    idem = data['idempotency_key'].strip()[:80]
+    for d in read_json('donations'):
+        if d.get('idempotency_key') == idem:
+            return jsonify({'ok': False, 'errors': {'idempotency_key': 'Demande deja traitee. Merci de recharger la page.'}}), 409
+
+    try:
+        campaign_id = int(str(data.get('campaignId') or '').strip() or 0)
+    except (TypeError, ValueError):
+        campaign_id = None
+    campaign = next((c for c in read_json('campaigns') if c['id'] == campaign_id), None)
+    if not campaign:
+        return jsonify({'ok': False, 'errors': {'campaignId': 'Campagne introuvable.'}}), 404
+    if campaign.get('status') not in ('active',):
+        return jsonify({'ok': False, 'errors': {'campaignId': 'Cette campagne est terminee ou en pause.'}}), 409
+
+    method = str(data.get('method') or '').strip()[:40]
+    allowed = {p['id'] for p in pay.PROVIDERS}
+    if method not in allowed:
+        return jsonify({'ok': False, 'errors': {'method': 'Moyen de paiement inconnu.'}}), 400
+
+    txn_id = 'DON-' + time.strftime('%Y%m%d%H%M%S', time.gmtime()) + '-' + uuid.uuid4().hex[:10].upper()
+    donation = {
+        'txn_id': txn_id,
+        'idempotency_key': idem,
+        'amount': amount,
+        'currency': 'USD',
+        'name': str(data.get('name') or '').strip()[:120],
+        'email': str(data.get('email') or '').strip()[:200],
+        'message': str(data.get('message') or '').strip()[:1000],
+        'method': method,
+        'campaignId': campaign_id,
+        'status': 'pending',
+        'createdAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'confirmedAt': '',
+        'provider_txn_id': '',
+        'ip': request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '',
+    }
     dons = read_json('donations')
-    dons.append(request.json or {})
+    dons.append(donation)
     write_json('donations', dons)
+    pay.log_event(read_json, write_json, 'donation_intent', {'txn_id': txn_id, 'amount': amount, 'method': method,
+                                                  'campaign_id': donation['campaignId']})
+    return jsonify({'ok': True, 'txn_id': txn_id, 'idempotency_key': idem})
+
+def _confirm_donation(txn_id, provider_status='confirmed', provider_txn_id=''):
+    """Confirmation COTE SERVEUR d'un don. Idempotent : la campagne n'est
+    creditee qu'une seule fois, uniquement lors du passage pending -> confirmed.
+    """
+    dons = read_json('donations')
+    don = next((d for d in dons if d.get('txn_id') == txn_id), None)
+    if not don:
+        return {'ok': False, 'error': 'transaction inconnue'}
+    if don.get('status') != 'pending':
+        return {'ok': True, 'already_processed': True}
+    don['status'] = 'confirmed'
+    don['confirmedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    don['provider_status'] = str(provider_status)[:80]
+    if provider_txn_id:
+        don['provider_txn_id'] = str(provider_txn_id)[:120]
+    write_json('donations', dons)
+
+    # Credit unique de la campagne (protections anti-double-paiement).
+    campaigns = read_json('campaigns')
+    for c in campaigns:
+        if c['id'] == don.get('campaignId'):
+            c['collected'] = round(float(c.get('collected') or 0) + float(don.get('amount') or 0), 2)
+            break
+    write_json('campaigns', campaigns)
+    pay.log_event(read_json, write_json, 'donation_confirmed', {'txn_id': txn_id, 'amount': don.get('amount'),
+                                                     'campaign_id': don.get('campaignId')})
+    return {'ok': True}
+
+# --- PAIEMENTS : initiation, webhooks, verification, configuration ---
+@app.route('/api/payments/methods', methods=['GET'])
+def payment_methods():
+    """Methodes disponibles pour le public (aucun secret expose)."""
+    return jsonify(pay.public_config(read_json))
+
+@app.route('/api/payments/init', methods=['POST'])
+@rate_limit('payment_init', 20, 3600)
+def payment_init():
+    """Initie le paiement aupres du prestataire (appel serveur). Le retrait
+    navigateur est IGNORE comme preuve de succes : seule la confirmation
+    serveur (webhook ou verify) fera office de preuve.
+    """
+    data = request.json or {}
+    txn_id = str(data.get('txn_id') or '')
+    don = _find_donation(txn_id)
+    if not don:
+        return jsonify({'ok': False, 'error': 'transaction inconnue'}), 404
+    if don.get('status') != 'pending':
+        return jsonify({'ok': False, 'error': 'transaction deja traitee'}), 409
+    try:
+        adapter = pay.get_adapter(read_json, don.get('method'))
+        result = adapter.init_payment(don)
+        provider_txn_id = str(result.get('provider_txn_id') or '')[:120]
+        if provider_txn_id:
+            dons = read_json('donations')
+            for d in dons:
+                if d['txn_id'] == txn_id:
+                    d['provider_txn_id'] = provider_txn_id
+            write_json('donations', dons)
+        pay.log_event(read_json, write_json, 'payment_initiated', {'txn_id': txn_id, 'method': don.get('method'),
+                                                        'provider_txn_id': provider_txn_id})
+        return jsonify({'ok': True, 'redirect_url': result.get('redirect_url') or '',
+                        'provider_txn_id': provider_txn_id})
+    except pay.PaymentError as e:
+        pay.log_event(read_json, write_json, 'payment_init_failed', {'txn_id': txn_id, 'method': don.get('method'),
+                                                          'error': e.code})
+        return jsonify({'ok': False, 'error': e.msg, 'code': e.code}), 402 if e.code == 'payment_unavailable' else 400
+
+@app.route('/api/payments/webhook/<provider>', methods=['POST'])
+def payment_webhook(provider):
+    """Webhook signe du prestataire : SEULE source de confirmation officielle."""
+    if provider not in pay.ADAPTERS:
+        return jsonify({'error': 'unknown provider'}), 404
+    signature = (request.headers.get('X-Signature') or request.headers.get('X-Paypal-Signature') or '').strip()
+    raw = request.get_data(cache=False)
+    try:
+        pay.verify_webhook_signature(read_json, provider, raw, signature)
+    except pay.PaymentError as e:
+        pay.log_event(read_json, write_json, 'webhook_bad_signature', {'provider': provider, 'error': e.code})
+        return jsonify({'error': 'signature invalide'}), 401
+
+    # Mapping du payload propre a chaque prestataire -> txn serveur.
+    try:
+        body = json.loads(raw or b'{}')
+    except Exception:
+        body = {}
+    provider_txn_id = (body.get('id') or body.get('provider_txn_id') or
+                       (body.get('resource') or {}).get('id') or
+                       (body.get('purchase_units') or [{}])[0].get('payments', {}).get('captures', [{}])[0].get('id') or '')
+    txn_id = (body.get('custom_id') or body.get('reference') or body.get('invoice_id') or '').strip()
+    if not txn_id:
+        root = str(body.get('txn_id') or '')
+        if root.startswith('DON-'):
+            txn_id = root  # certains prestataires renvoient la reference serveur a la racine
+    if not txn_id or not _find_donation(txn_id):
+        pay.log_event(read_json, write_json, 'webhook_unknown_txn', {'provider': provider, 'txn': txn_id})
+        return jsonify({'ok': True})  # jamais d'erreur au webhook : reponse 2xx pour arrete les retries
+    pay.log_event(read_json, write_json, 'webhook_received', {'provider': provider, 'txn': txn_id,
+                                                   'provider_txn': str(provider_txn_id)[:120]})
+    res = _confirm_donation(txn_id, provider_status='confirmed', provider_txn_id=provider_txn_id)
+    return jsonify(res)
+
+@app.route('/api/payments/verify', methods=['POST'])
+@rate_limit('payment_verify', 20, 3600)
+def payment_verify():
+    """Verification serveur du statut aupres du prestataire (methode de secours
+    pour les flux sans webhook, ou apres retour de la page de paiement)."""
+    data = request.json or {}
+    txn_id = str(data.get('txn_id') or '')
+    don = _find_donation(txn_id)
+    if not don:
+        return jsonify({'ok': False, 'error': 'transaction inconnue'}), 404
+    if don.get('status') == 'confirmed':
+        return jsonify({'ok': True, 'status': 'confirmed'})
+    if don.get('status') in ('failed', 'cancelled'):
+        return jsonify({'ok': True, 'status': don['status']})
+    if not don.get('provider_txn_id'):
+        return jsonify({'ok': True, 'status': don.get('status', 'pending')})
+    try:
+        adapter = pay.get_adapter(read_json, don.get('method'))
+        status = adapter.verify_txn(don['provider_txn_id'])
+        if str(status.get('status') or '').upper() in ('COMPLETED', 'SUCCESS', 'APPROVED', 'CAPTURED', 'SUCCESSFUL'):
+            res = _confirm_donation(txn_id, provider_status=status.get('status'),
+                                    provider_txn_id=don['provider_txn_id'])
+            return jsonify({'ok': True, 'status': 'confirmed'})
+        pay.log_event(read_json, write_json, 'payment_verify_pending', {'txn_id': txn_id, 'status': status.get('status')})
+        return jsonify({'ok': True, 'status': str(status.get('status') or 'pending')})
+    except pay.PaymentError as e:
+        return jsonify({'ok': False, 'error': e.msg, 'code': e.code}), 400
+
+@app.route('/api/payments/log', methods=['GET'])
+@admin_required
+def get_payment_log():
+    """Journal d'audit des paiements (append-only)."""
+    logs = read_json(pay.LOG_FILE)
+    return jsonify(list(reversed(logs)) if isinstance(logs, list) else [])
+
+@app.route('/api/payments/config', methods=['GET'])
+@admin_required
+def get_payment_config():
+    """Config de paiement pour l'admin : les secrets ne sont JAMAIS renvoyes."""
+    cfg = pay.config_snapshot(read_json)
+    out = {'mode': cfg.get('mode', 'sandbox')}
+    providers = {}
+    for pid, p in cfg.get('providers', {}).items():
+        providers[pid] = {k: (v if k != 'client_secret' and k != 'webhook_secret' and k != 'api_key'
+                              else ('*****' if v else ''))
+                          for k, v in p.items()}
+    out['providers'] = providers
+    return jsonify(out)
+
+@app.route('/api/payments/config', methods=['POST'])
+@admin_required
+def set_payment_config():
+    data = request.json or {}
+    cfg = pay.config_snapshot(read_json)
+    if data.get('mode') in ('sandbox', 'live'):
+        cfg['mode'] = data['mode']
+    providers = data.get('providers') or {}
+    for pid, p in providers.items():
+        if pid not in cfg.get('providers', {}):
+            continue
+        cur = cfg['providers'][pid]
+        for k, v in p.items():
+            if k in ('client_secret', 'webhook_secret', 'api_key') and v == '*****':
+                continue  # ne pas ecraser un secret par un masque
+            cur[k] = v
+        cur['enabled'] = bool(p.get('enabled'))
+    write_json('payments_config', cfg)
+    try:
+        p = os.path.join(DATA_DIR, 'payments_config.json')
+        if os.path.exists(p):
+            os.chmod(p, 0o600)
+    except OSError:
+        pass
+    pay.log_event(read_json, write_json, 'payment_config_updated', {'mode': cfg.get('mode')})
     return jsonify({'ok': True})
 
 # --- VISITS ---
@@ -2057,6 +2351,11 @@ def serve_index():
 @app.route('/recherche')
 def serve_search_page():
     return send_from_directory(BASE, 'recherche.html')
+
+@app.route('/soutenir')
+@app.route('/don')
+def serve_soutenir_page():
+    return send_from_directory(BASE, 'soutenir.html')
 
 @app.route('/categorie/<slug>')
 def serve_categorie_page(slug):

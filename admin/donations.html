@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donations &amp; Paiements - Administration</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
+      <a href="donations.html" class="active">💳 Donations &amp; Paiements</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <h2 style="color:var(--primary);margin-bottom:25px;">Donations &amp; Paiements</h2>
+
+      <div id="pay-msg" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-size:0.92rem;"></div>
+
+      <div style="display:flex;gap:10px;margin-bottom:15px;">
+        <button class="btn btn-outline" id="pay-filter-all">Toutes</button>
+        <button class="btn btn-outline" id="pay-filter-pending">En attente</button>
+        <button class="btn btn-outline" id="pay-filter-confirmed">Confirmés</button>
+        <button class="btn btn-outline" id="pay-filter-failed">Échecs / Annulés</button>
+      </div>
+
+      <div class="admin-table" style="margin-bottom:35px;">
+        <table>
+          <thead><tr><th>Référence</th><th>Donateur</th><th>Montant</th><th>Méthode</th><th>Campagne</th><th>Statut</th><th>Créé le</th><th>Confirmé le</th></tr></thead>
+          <tbody id="donations-body">
+            <tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Chargement&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Moyens de paiement (prestataires officiels)</h3>
+      <div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+          <label style="font-weight:600;">Mode :</label>
+          <select id="pay-mode" class="form-input" style="width:160px;">
+            <option value="sandbox">Sandbox (test)</option>
+            <option value="live">Production (live)</option>
+          </select>
+          <span style="font-size:0.82rem;color:var(--text-light);">Sandbox = environnement de test du prestataire. Activez « live » uniquement pour les paiements réels.</span>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
+          Connectez ici les API officielles de vos prestataires (PayPal, Mobile Money RDC via opérateurs ou agrégateur agréé, passerelle carte bancaire).
+          Tant qu'un prestataire n'est pas activé ET configuré, les dons en ligne restent désactivés côté public — aucun paiement simulé n'est possible.
+        </p>
+        <div id="pay-providers"></div>
+        <div style="margin-top:15px;display:flex;gap:10px;">
+          <button class="btn btn-primary" id="pay-save">💾 Enregistrer la configuration</button>
+          <span id="pay-save-status" style="align-self:center;font-size:0.85rem;color:var(--text-light);"></span>
+        </div>
+      </div>
+
+      <div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:10px;">Journal des paiements</h3>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
+          La couche de paiement journalise automatiquement : création d'intention, initiation, webhooks reçus, confirmations et échecs
+          (anti-double-paiement, idempotence, signatures vérifiées). Ces journaux sont la trace d'audit de chaque transaction.
+        </p>
+        <div class="admin-table">
+          <table>
+            <thead><tr><th>Horodatage</th><th>Événement</th><th>Détails</th></tr></thead>
+            <tbody id="pay-log-body"><tr><td colspan="3" style="text-align:center;padding:20px;color:#999;">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    function api(method, url, body) {
+      if (window.location.protocol === 'file:') return Promise.reject('file:');
+      var h = {'Content-Type':'application/json'};
+      var token = localStorage.getItem('admin_token');
+      if (token) h['X-Admin-Token'] = token;
+      return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
+        .then(function(r){return r.json()}).catch(function(){return null;});
+    }
+
+    var PROVIDER_LABELS = {
+      paypal: 'PayPal (API Orders v2)',
+      airtel_money: 'Airtel Money RDC (API officielle)',
+      orange_money: 'Orange Money RDC (API officielle)',
+      vodacom_mpesa: 'Vodacom M-Pesa RDC (API officielle)',
+      card: 'Carte Visa / Mastercard (passerelle agrégée)'
+    };
+    var SECRET_FIELDS = ['client_secret', 'webhook_secret', 'api_key'];
+
+    function fmtUSD(v) { return Number(v || 0).toLocaleString('en-US', {style:'currency', currency:'USD'}); }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function showMsg(ok, txt) {
+      var m = document.getElementById('pay-msg');
+      m.textContent = txt;
+      m.style.display = 'block';
+      m.style.background = ok ? '#e7f6ec' : '#fde8e8';
+      m.style.color = ok ? '#166534' : '#b91c1c';
+      m.style.border = '1px solid ' + (ok ? '#bbe7c9' : '#f5c6c6');
+      setTimeout(function(){ m.style.display = 'none'; }, 6000);
+    }
+
+    /* ---------- Liste des transactions ---------- */
+    var currentFilter = 'all';
+    function loadDonations() {
+      api('GET', '/api/donations').then(function(list) {
+        if (!Array.isArray(list)) { document.getElementById('donations-body').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Session expir&eacute;e ou acc&egrave;s refus&eacute;. Veuillez vous reconnecter via l\'espace administrateur.</td></tr>'; return; }
+        var rows = list.filter(function(d){
+          if (currentFilter === 'pending') return d.status === 'pending';
+          if (currentFilter === 'confirmed') return d.status === 'confirmed';
+          if (currentFilter === 'failed') return ['failed','cancelled'].indexOf(d.status) >= 0;
+          return true;
+        });
+        if (!rows.length) {
+          document.getElementById('donations-body').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Aucune transaction.</td></tr>';
+          return;
+        }
+        document.getElementById('donations-body').innerHTML = rows.map(function(d){
+          var badge = d.status === 'confirmed' ? 'color:#166534;background:#e7f6ec;padding:2px 10px;border-radius:12px;'
+            : d.status === 'pending' ? 'color:#92400e;background:#fef3c7;padding:2px 10px;border-radius:12px;'
+            : 'color:#b91c1c;background:#fde8e8;padding:2px 10px;border-radius:12px;';
+          return '<tr><td><code style="font-size:0.78rem;">'+esc(d.txn_id)+'</code></td>' +
+            '<td>'+esc(d.name)+'<br><small style="color:#999;">'+esc(d.email)+'</small></td>' +
+            '<td><strong>'+fmtUSD(d.amount)+'</strong></td>' +
+            '<td>'+esc((PROVIDER_LABELS[d.method]||d.method).split(' (')[0])+'</td>' +
+            '<td style="font-size:0.8rem;">'+esc(d.campaignId || '—')+'</td>' +
+            '<td><span style="'+badge+'">'+esc(d.status||'')+'</span></td>' +
+            '<td>'+(d.createdAt||'—').slice(0,19).replace('T',' ')+'</td>' +
+            '<td>'+(d.confirmedAt ? d.confirmedAt.slice(0,19).replace('T',' ') : '—')+'</td></tr>';
+        }).join('');
+      });
+    }
+
+    ['all','pending','confirmed','failed'].forEach(function(f){
+      document.getElementById('pay-filter-'+f).addEventListener('click', function(){
+        currentFilter = f;
+        ['all','pending','confirmed','failed'].forEach(function(x){
+          document.getElementById('pay-filter-'+x).classList.toggle('active', x === f);
+        });
+        loadDonations();
+      });
+    });
+
+    /* ---------- Configuration des prestataires ---------- */
+    function providerFields(pid) {
+      var common = [
+        {k:'client_id', label:'Client ID', type:'text', secret:false},
+        {k:'client_secret', label:'Client Secret', type:'password', secret:true},
+        {k:'webhook_secret', label:'Secret Webhook (signature HMAC)', type:'password', secret:true}
+      ];
+      if (pid === 'card') {
+        return [
+          {k:'merchant_id', label:'Merchant / Site ID', type:'text', secret:false},
+          {k:'api_key', label:'Clé API', type:'password', secret:true},
+          {k:'webhook_secret', label:'Secret Webhook (signature HMAC)', type:'password', secret:true}
+        ];
+      }
+      if (pid !== 'paypal') {
+        var mm = common.concat([{k:'phone', label:'Numéro collecte (243...)', type:'text', secret:false}]);
+        return mm;
+      }
+      return common;
+    }
+
+    function renderProviders(cfg) {
+      var box = document.getElementById('pay-providers');
+      document.getElementById('pay-mode').value = cfg.mode || 'sandbox';
+      var html = '';
+      Object.keys(PROVIDER_LABELS).forEach(function(pid){
+        var p = (cfg.providers && cfg.providers[pid]) || {};
+        html += '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:14px;">' +
+          '<label style="display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer;margin-bottom:12px;">' +
+          '<input type="checkbox" id="prov-'+pid+'" '+(p.enabled?'checked':'')+'> '+PROVIDER_LABELS[pid]+'</label>' +
+          '<div id="prov-fields-'+pid+'" style="'+(p.enabled?'':'display:none;')+'display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">' +
+          providerFields(pid).map(function(f){
+            var val = f.secret && p[f.k] === '*****' ? '*****' : (p[f.k] || '');
+            return '<div><label style="font-size:0.8rem;color:var(--text-light);">'+f.label+'</label>' +
+              '<input type="'+(f.type)+'" id="field-'+pid+'-'+f.k+'" class="form-input" value="'+esc(val)+'" style="width:100%;" '+(f.secret && val==='*****'?'placeholder="(inchangé)"':'')+'></div>';
+          }).join('') + '</div></div>';
+      });
+      box.innerHTML = html;
+      Object.keys(PROVIDER_LABELS).forEach(function(pid){
+        document.getElementById('prov-'+pid).addEventListener('change', function(){
+          var fields = document.getElementById('prov-fields-'+pid);
+          fields.style.display = this.checked ? 'grid' : 'none';
+        });
+      });
+    }
+
+    function loadConfig() {
+      api('GET', '/api/payments/config').then(function(cfg) {
+        if (cfg && cfg.providers) renderProviders(cfg);
+      });
+    }
+
+    document.getElementById('pay-save').addEventListener('click', function(){
+      var providers = {};
+      Object.keys(PROVIDER_LABELS).forEach(function(pid){
+        var enabled = document.getElementById('prov-'+pid).checked;
+        var p = {enabled: enabled};
+        providerFields(pid).forEach(function(f){
+          var el = document.getElementById('field-'+pid+'-'+f.k);
+          if (!el) return;
+          if (f.secret && el.value === '*****') { p[f.k] = '*****'; return; }
+          p[f.k] = el.value.trim();
+        });
+        providers[pid] = p;
+      });
+      var status = document.getElementById('pay-save-status');
+      status.textContent = 'Enregistrement…';
+      api('POST', '/api/payments/config', {mode: document.getElementById('pay-mode').value, providers: providers}).then(function(res){
+        status.textContent = '';
+        if (res && res.ok) {
+          showMsg(true, 'Configuration des paiements enregistrée. Les secrets restent stockés côté serveur.');
+          loadConfig();
+        } else {
+          showMsg(false, 'Erreur lors de l\'enregistrement.');
+        }
+      });
+    });
+
+    /* ---------- Journal ---------- */
+    function loadLog() {
+      api('GET', '/api/payments/log').then(function(list) {
+        if (!Array.isArray(list)) return;
+        document.getElementById('pay-log-body').innerHTML = list.slice(0, 50).map(function(e){
+          var details = '';
+          try { details = JSON.stringify(e.data || {}); } catch (err) {}
+          return '<tr><td style="white-space:nowrap;font-size:0.8rem;">'+(e.ts||'')+'</td>' +
+            '<td><code style="font-size:0.8rem;">'+esc(e.event)+'</code></td>' +
+            '<td style="font-size:0.8rem;color:var(--text-light);word-break:break-all;">'+esc(details)+'</td></tr>';
+        }).join('');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadDonations();
+      loadConfig();
+      loadLog();
+    });
+  </script>
+</body>
+</html>

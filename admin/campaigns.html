@@ -59,6 +59,37 @@
             <label>Description</label>
             <textarea id="cmp-description" class="form-input" placeholder="Texte d'explication de la campagne..." rows="4" required></textarea>
           </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;">
+            <div class="form-group">
+              <label>Objectif financier (USD)</label>
+              <input type="number" id="cmp-goal" class="form-input" placeholder="Ex: 5000" min="0" step="0.01" style="width:100%;">
+              <small style="color:var(--text-light);display:block;">Montant total &agrave; collecter (0 = sans objectif).</small>
+            </div>
+            <div class="form-group">
+              <label>Montant collect&eacute; (USD)</label>
+              <input type="number" id="cmp-collected" class="form-input" placeholder="Ex: 1250" min="0" step="0.01" style="width:100%;">
+              <small style="color:var(--text-light);display:block;">Valeur initiale (les dons confirm&eacute;s l'augmentent automatiquement).</small>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;">
+            <div class="form-group">
+              <label>Date de d&eacute;but</label>
+              <input type="date" id="cmp-start" class="form-input" style="width:100%;">
+            </div>
+            <div class="form-group">
+              <label>Date de fin</label>
+              <input type="date" id="cmp-end" class="form-input" style="width:100%;">
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select id="cmp-status" class="form-input" style="width:100%;">
+                <option value="active">Active</option>
+                <option value="paused">En pause</option>
+                <option value="ended">Termin&eacute;e</option>
+                <option value="archived">Archiv&eacute;e</option>
+              </select>
+            </div>
+          </div>
           <div class="form-group">
             <label>Vitesse d'affichage (secondes)</label>
             <input type="number" id="cmp-speed" class="form-input" value="5" min="2" max="30" style="width:120px;">
@@ -74,15 +105,15 @@
       <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes actives</h3>
       <div class="admin-table" style="margin-bottom:30px;">
         <table>
-          <thead><tr><th>Titre</th><th>Créée le</th><th>Image</th><th>Vitesse</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Titre</th><th>Cr&eacute;&eacute;e le</th><th>Objectif</th><th>Collect&eacute;</th><th>Progression</th><th>Statut</th><th>Actions</th></tr></thead>
           <tbody id="campaigns-active-body"></tbody>
         </table>
       </div>
 
-      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes archivées</h3>
+      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes archiv&eacute;es</h3>
       <div class="admin-table">
         <table>
-          <thead><tr><th>Titre</th><th>Créée le</th><th>Archivée le</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Titre</th><th>Cr&eacute;&eacute;e le</th><th>Archiv&eacute;e le</th><th>Actions</th></tr></thead>
           <tbody id="campaigns-archived-body"></tbody>
         </table>
       </div>
@@ -165,9 +196,15 @@
           title: document.getElementById('cmp-title').value,
           description: document.getElementById('cmp-description').value,
           image: imageData,
-          speed: speed
+          speed: speed,
+          goal: parseFloat(document.getElementById('cmp-goal').value) || 0,
+          collected: parseFloat(document.getElementById('cmp-collected').value) || 0,
+          startDate: document.getElementById('cmp-start').value,
+          endDate: document.getElementById('cmp-end').value,
+          status: document.getElementById('cmp-status').value
         };
         if (id) data.id = Number(id);
+        if (!id) delete data.collected; // cote serveur, valeur initiale 0 sauf si fournie
 
         if (window.location.protocol !== 'file:' && imageData.startsWith('data:')) {
           var h = {'Content-Type':'application/json'};
@@ -190,6 +227,11 @@
           document.getElementById('cmp-title').value = campaign.title;
           document.getElementById('cmp-description').value = campaign.description;
           document.getElementById('cmp-speed').value = (campaign.speed || 5000) / 1000;
+          document.getElementById('cmp-goal').value = campaign.goal || 0;
+          document.getElementById('cmp-collected').value = campaign.collected || 0;
+          document.getElementById('cmp-start').value = (campaign.startDate || '').slice(0, 10);
+          document.getElementById('cmp-end').value = (campaign.endDate || '').slice(0, 10);
+          document.getElementById('cmp-status').value = campaign.status || 'active';
           if (campaign.image) {
             document.getElementById('cmp-img-preview').src = campaign.image;
             document.getElementById('cmp-img-area').classList.add('has-image');
@@ -201,6 +243,7 @@
           document.getElementById('campaign-form-title').textContent = 'Nouvelle campagne';
           document.getElementById('campaign-id').value = '';
           document.getElementById('cmp-speed').value = 5;
+          document.getElementById('cmp-status').value = 'active';
         }
         window.scrollTo({ top: document.getElementById('campaign-form-container').offsetTop - 100, behavior: 'smooth' });
       }
@@ -221,16 +264,23 @@
         if (!list) list = [];
         var activeBody = document.getElementById('campaigns-active-body');
         var archivedBody = document.getElementById('campaigns-archived-body');
-        var active = list.filter(function(c){return c.status === 'active' || !c.status;});
+        var active = list.filter(function(c){return c.status !== 'archived';});
         var archived = list.filter(function(c){return c.status === 'archived';});
 
         if (active.length === 0) {
-          activeBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">Aucune campagne active.</td></tr>';
+          activeBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Aucune campagne active.</td></tr>';
         } else {
           activeBody.innerHTML = active.map(function(c) {
             var img = c.image && (c.image.startsWith('/') || c.image.startsWith('data:') || c.image.startsWith('http'))
               ? '<img src="'+c.image+'" style="width:60px;height:40px;object-fit:cover;border-radius:4px;">' : '<span style="color:#999;">—</span>';
-            return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+img+'</td><td>'+(c.speed?c.speed/1000+'s':'5s')+'</td><td>' +
+            var goal = Number(c.goal || 0);
+            var col = Number(c.collected || 0);
+            var pct = goal > 0 ? Math.min(col / goal * 100, 100).toFixed(0) : (col > 0 ? '—' : '0');
+            var prog = goal > 0
+              ? '<div class="progress-row" style="margin-bottom:0;min-width:140px;"><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--primary),var(--accent));"></div></div><div class="progress-val">'+pct+'%</div></div>'
+              : '<span style="color:#999;font-size:0.8rem;">—</span>';
+            var fmt = function(v){ return Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD'}); };
+            return '<tr><td><strong>'+c.title+'</strong><br><small style="color:#999;">'+img+'</small></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmt(goal)+'</td><td>'+fmt(col)+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' +
               '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
               '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Arrêter</button> ' +
               '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
