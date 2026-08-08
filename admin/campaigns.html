@@ -89,7 +89,10 @@
   <script>
     function api(method, url, body) {
       if (window.location.protocol === 'file:') return Promise.reject('file:');
-      return fetch(url, {method:method, headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined})
+      var h = {'Content-Type':'application/json'};
+      var token = localStorage.getItem('admin_token');
+      if (token) h['X-Admin-Token'] = token;
+      return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
         .then(function(r){return r.json()}).catch(function(){return null;});
     }
 
@@ -164,7 +167,10 @@
         if (id) data.id = Number(id);
 
         if (window.location.protocol !== 'file:' && imageData.startsWith('data:')) {
-          fetch('/api/upload', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({image:imageData})})
+          var h = {'Content-Type':'application/json'};
+          var tok = localStorage.getItem('admin_token');
+          if (tok) h['X-Admin-Token'] = tok;
+          fetch('/api/upload', {method:'POST', headers:h, body:JSON.stringify({image:imageData})})
             .then(function(r){return r.json()})
             .then(function(res){ data.image = res.url || imageData; save(data); })
             .catch(function(){ save(data); });

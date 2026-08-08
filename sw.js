@@ -1,4 +1,4 @@
-const CACHE = 'chronique-v2';
+const CACHE = 'chronique-v3';
 const STATIC = [
   '/', '/index.html', '/actualites.html',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
@@ -10,7 +10,13 @@ const STATIC = [
 ];
 
 self.addEventListener('install', function(e) {
-  e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(STATIC); }));
+  e.waitUntil(
+    caches.open(CACHE).then(function(c) {
+      return Promise.all(STATIC.map(function(url) {
+        return c.add(url).catch(function() {});
+      }));
+    })
+  );
   self.skipWaiting();
 });
 
@@ -24,12 +30,31 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  if (e.request.url.indexOf('/api/') > -1) {
-    e.respondWith(fetch(e.request).catch(function() { return new Response('[]', {status:200}); }));
+  var req = e.request;
+  if (req.method !== 'GET') return;
+  var url = new URL(req.url);
+
+  if (url.pathname.indexOf('/api/') > -1) {
+    e.respondWith(fetch(req).catch(function() { return new Response('[]', {status: 200, headers: {'Content-Type': 'application/json'}}); }));
     return;
   }
-  if (e.request.method !== 'GET') return;
+
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(function(resp) {
+        if (resp && resp.ok) {
+          var copy = resp.clone();
+          caches.open(CACHE).then(function(c) { c.put(url.origin + url.pathname, copy); });
+        }
+        return resp;
+      }).catch(function() {
+        return caches.match(req).then(function(cached) { return cached || caches.match('/index.html'); });
+      })
+    );
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then(function(r) { return r || fetch(e.request); })
+    caches.match(req).then(function(r) { return r || fetch(req); })
   );
 });

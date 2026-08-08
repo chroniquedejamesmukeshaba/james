@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const navMenu = document.querySelector('nav ul');
   if (menuToggle) {
     menuToggle.addEventListener('click', function () {
-      navMenu.classList.toggle('open');
+      var open = navMenu.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     document.addEventListener('click', function (e) {
       if (!e.target.closest('header')) navMenu.classList.remove('open');
@@ -248,9 +249,10 @@ window._renderComments = function(list) {
 // ===== AUTO-CLEAN EVERY 3 MIN =====
 if (!document.querySelector('.admin-body')) {
   setInterval(function(){
-    var keep = ['admin_logged','admin_name','admin_articles','cms_pages','cms_campaigns'];
+    var keep = ['admin_logged','admin_name','admin_token','admin_articles','cms_pages','cms_campaigns','cms_lang','nl_subscribers','visit_stats','donations'];
     Object.keys(localStorage).forEach(function(k){
-      if (keep.indexOf(k) === -1) localStorage.removeItem(k);
+      var keepKey = keep.indexOf(k) !== -1 || k.indexOf('comments_') === 0;
+      if (!keepKey) localStorage.removeItem(k);
     });
     document.cookie.split(';').forEach(function(c){
       document.cookie = c.replace(/^ +/,'').replace(/=.*/,'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/');

@@ -1,6 +1,7 @@
-import os, json, time, uuid, base64, urllib.request
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib
 from io import BytesIO
-from flask import Flask, request, jsonify, send_from_directory, redirect
+from functools import wraps
+from flask import Flask, request, jsonify, send_from_directory, redirect, Response
 
 app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
@@ -17,11 +18,91 @@ except ImportError:
 def read_json(name):
     path = os.path.join(DATA_DIR, name + '.json')
     if not os.path.exists(path): return []
-    with open(path, 'r', encoding='utf-8') as f: return json.load(f)
+    try:
+        with open(path, 'r', encoding='utf-8') as f: return json.load(f)
+    except Exception:
+        return []
 
 def write_json(name, data):
     path = os.path.join(DATA_DIR, name + '.json')
     with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=2)
+
+# --- SECURITY ---
+ADMINS = {
+    'Shine2026':    'YAGIRWA GEDEON GUIDE',
+    'Lufumica2026': 'LUFUNGULO MICHAEL',
+    'Sergio2026':   'SERGE IRENGE',
+    'Christvie2026':'MUKESHABA JAMES MPALA',
+}
+TOKEN_TTL = 12 * 3600
+
+def admin_ok():
+    t = request.headers.get('X-Admin-Token', '')
+    if t and t in ADMINS:
+        return True
+    bear = request.headers.get('Authorization', '')
+    if bear.startswith('Bearer '):
+        part = bear[7:]
+        if ':' in part:
+            tok, ts = part.rsplit(':', 1)
+            if tok in ADMINS and ts.isdigit() and (time.time() - float(ts)) < TOKEN_TTL:
+                digest = hmac.new(tok.encode(), ts.encode(), hashlib.sha256).hexdigest()
+                if part == tok + ':' + ts and digest == ts:
+                    return True
+        elif part in ADMINS:
+            return True
+    return False
+
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not admin_ok():
+            return jsonify({'ok': False, 'error': 'non autorise'}), 401
+        return f(*args, **kwargs)
+    return wrapper
+
+RATE_CACHE = {}
+def rate_limit(route, limit, window):
+    def deco(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            ip = request.remote_addr or '?'
+            key = (route, ip)
+            now = time.time()
+            items = [t for t in RATE_CACHE.get(key, []) if now - t < window]
+            if len(items) >= limit:
+                return jsonify({'ok': False, 'error': 'trop de requetes'}), 429
+            items.append(now)
+            RATE_CACHE[key] = items
+            return f(*args, **kwargs)
+        return wrapper
+    return deco
+
+@app.after_request
+def security_headers(resp):
+    resp.headers['X-Content-Type-Options'] = 'nosniff'
+    resp.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    resp.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    resp.headers['Content-Security-Policy'] = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://ipapi.co; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; connect-src 'self' https://ip-api.com https://ipapi.co; "
+        "frame-ancestors 'self'; base-uri 'self'; form-action 'self'")
+    if request.path.startswith('/assets/'):
+        resp.headers['Cache-Control'] = 'public, max-age=604800'
+    elif request.path.startswith('/api/'):
+        resp.headers['Cache-Control'] = 'no-store'
+    else:
+        resp.headers['Cache-Control'] = 'no-cache'
+    return resp
+
+def apply_lang(a, lang):
+    if lang and lang != 'fr':
+        for f in ('title', 'content', 'excerpt'):
+            k = f + '_' + lang
+            if k in a and a[k]:
+                a[f] = a[k]
+    return a
 
 # --- ARTICLES ---
 @app.route('/api/articles', methods=['GET'])
@@ -30,16 +111,43 @@ def get_articles():
     articles = read_json('articles')
     if lang and lang != 'fr':
         for a in articles:
-            for f in ('title', 'content', 'excerpt'):
-                k = f + '_' + lang
-                if k in a and a[k]:
-                    a[f] = a[k]
+            apply_lang(a, lang)
     return jsonify(articles)
 
+@app.route('/api/articles/lite')
+def get_articles_lite():
+    lang = request.args.get('lang', 'fr')
+    out = []
+    for a in read_json('articles'):
+        cp = dict(a)
+        cp.pop('content', None)
+        for k in list(cp):
+            if k.startswith('content_'): cp.pop(k, None)
+        img = cp.get('image') or ''
+        if img.startswith('data:'):
+            cp['image'] = ''
+        if lang and lang != 'fr':
+            for f in ('title', 'excerpt'):
+                k = f + '_' + lang
+                if k in cp and cp[k]: cp[f] = cp[k]
+        out.append(cp)
+    return jsonify(out)
+
+@app.route('/api/articles/<int:aid>')
+def get_article(aid):
+    lang = request.args.get('lang', 'fr')
+    for a in read_json('articles'):
+        if str(a.get('id')) == str(aid):
+            cp = dict(a)
+            apply_lang(cp, lang)
+            return jsonify(cp)
+    return jsonify({'error': 'not found'}), 404
+
 @app.route('/api/articles', methods=['POST'])
+@admin_required
 def save_article():
     articles = read_json('articles')
-    data = request.json
+    data = request.json or {}
     if data.get('id'):
         for i, a in enumerate(articles):
             if a['id'] == data['id']:
@@ -52,11 +160,36 @@ def save_article():
     write_json('articles', articles)
     return jsonify({'ok': True, 'id': data['id']})
 
+@app.route('/api/articles/<int:aid>', methods=['PUT'])
+@admin_required
+def update_article(aid):
+    articles = read_json('articles')
+    data = request.json or {}
+    data['id'] = aid
+    for i, a in enumerate(articles):
+        if a['id'] == aid:
+            articles[i] = {**a, **data}
+            break
+    else:
+        data['featured'] = False
+        articles.insert(0, data)
+    write_json('articles', articles)
+    return jsonify({'ok': True, 'id': aid})
+
 @app.route('/api/articles/<int:aid>', methods=['DELETE'])
+@admin_required
 def delete_article(aid):
     articles = [a for a in read_json('articles') if a['id'] != aid]
     write_json('articles', articles)
     return jsonify({'ok': True})
+
+@app.route('/api/categories')
+def list_categories():
+    cats = {}
+    for a in read_json('articles'):
+        c = (a.get('category') or '').strip()
+        if c: cats[c] = cats.get(c, 0) + 1
+    return jsonify([{'name': k, 'count': v} for k, v in sorted(cats.items(), key=lambda x: -x[1])])
 
 # --- PAGES ---
 @app.route('/api/pages', methods=['GET'])
@@ -64,9 +197,10 @@ def get_pages():
     return jsonify(read_json('pages'))
 
 @app.route('/api/pages', methods=['POST'])
+@admin_required
 def save_page():
     pages = read_json('pages')
-    data = request.json
+    data = request.json or {}
     if data.get('id'):
         for i, p in enumerate(pages):
             if p['id'] == data['id']:
@@ -78,7 +212,23 @@ def save_page():
     write_json('pages', pages)
     return jsonify({'ok': True, 'id': data['id']})
 
+@app.route('/api/pages/<int:pid>', methods=['PUT'])
+@admin_required
+def update_page(pid):
+    pages = read_json('pages')
+    data = request.json or {}
+    data['id'] = pid
+    for i, p in enumerate(pages):
+        if p['id'] == pid:
+            pages[i] = {**p, **data}
+            break
+    else:
+        pages.append(data)
+    write_json('pages', pages)
+    return jsonify({'ok': True, 'id': pid})
+
 @app.route('/api/pages/<int:pid>', methods=['DELETE'])
+@admin_required
 def delete_page(pid):
     pages = [p for p in read_json('pages') if p['id'] != pid]
     write_json('pages', pages)
@@ -91,10 +241,11 @@ def get_comments(article_id):
     return jsonify(read_json(key))
 
 @app.route('/api/comments/<int:article_id>', methods=['POST'])
+@rate_limit('comment_post', 50, 24 * 3600)
 def add_comment(article_id):
     key = f'comments_{article_id}'
     comments = read_json(key)
-    data = request.json
+    data = request.json or {}
     data['id'] = int(time.time() * 1000)
     data['pending'] = True
     comments.append(data)
@@ -102,6 +253,7 @@ def add_comment(article_id):
     return jsonify({'ok': True})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/approve', methods=['POST'])
+@admin_required
 def approve_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = read_json(key)
@@ -111,6 +263,7 @@ def approve_comment(article_id, cid):
     return jsonify({'ok': True})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>', methods=['DELETE'])
+@admin_required
 def delete_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = [c for c in read_json(key) if c['id'] != cid]
@@ -119,13 +272,15 @@ def delete_comment(article_id, cid):
 
 # --- NEWSLETTER ---
 @app.route('/api/newsletter', methods=['GET'])
+@admin_required
 def get_subscribers():
     return jsonify(read_json('newsletter'))
 
 @app.route('/api/newsletter', methods=['POST'])
+@rate_limit('newsletter_post', 10, 24 * 3600)
 def subscribe():
     subs = read_json('newsletter')
-    email = request.json.get('email')
+    email = (request.json or {}).get('email')
     if email and email not in subs:
         subs.append(email)
         write_json('newsletter', subs)
@@ -137,15 +292,17 @@ def get_lost_found():
     return jsonify(read_json('lost_found'))
 
 @app.route('/api/lost-found', methods=['POST'])
+@rate_limit('lost_found_post', 10, 24 * 3600)
 def add_lost_found():
     ads = read_json('lost_found')
-    data = request.json
+    data = request.json or {}
     data['id'] = int(time.time() * 1000)
     ads.insert(0, data)
     write_json('lost_found', ads)
     return jsonify({'ok': True})
 
 @app.route('/api/lost-found/<int:lid>', methods=['DELETE'])
+@admin_required
 def delete_lost_found(lid):
     ads = [a for a in read_json('lost_found') if a['id'] != lid]
     write_json('lost_found', ads)
@@ -157,9 +314,10 @@ def get_campaigns():
     return jsonify(read_json('campaigns'))
 
 @app.route('/api/campaigns', methods=['POST'])
+@admin_required
 def save_campaign():
     campaigns = read_json('campaigns')
-    data = request.json
+    data = request.json or {}
     if data.get('id'):
         for i, c in enumerate(campaigns):
             if c['id'] == data['id']:
@@ -173,13 +331,30 @@ def save_campaign():
     write_json('campaigns', campaigns)
     return jsonify({'ok': True, 'id': data['id']})
 
+@app.route('/api/campaigns/<int:cid>', methods=['PUT'])
+@admin_required
+def update_campaign(cid):
+    campaigns = read_json('campaigns')
+    data = request.json or {}
+    data['id'] = cid
+    for i, c in enumerate(campaigns):
+        if c['id'] == cid:
+            campaigns[i] = {**c, **data}
+            break
+    else:
+        campaigns.insert(0, data)
+    write_json('campaigns', campaigns)
+    return jsonify({'ok': True, 'id': cid})
+
 @app.route('/api/campaigns/<int:cid>', methods=['DELETE'])
+@admin_required
 def delete_campaign(cid):
     campaigns = [c for c in read_json('campaigns') if c['id'] != cid]
     write_json('campaigns', campaigns)
     return jsonify({'ok': True})
 
 @app.route('/api/campaigns/<int:cid>/stop', methods=['POST'])
+@admin_required
 def stop_campaign(cid):
     campaigns = read_json('campaigns')
     for c in campaigns:
@@ -191,9 +366,10 @@ def stop_campaign(cid):
     return jsonify({'ok': True})
 
 @app.route('/api/campaigns/<int:cid>/speed', methods=['POST'])
+@admin_required
 def set_campaign_speed(cid):
     campaigns = read_json('campaigns')
-    speed = request.json.get('speed', 5000)
+    speed = (request.json or {}).get('speed', 5000)
     for c in campaigns:
         if c['id'] == cid:
             c['speed'] = speed
@@ -203,40 +379,45 @@ def set_campaign_speed(cid):
 
 # --- DONATIONS ---
 @app.route('/api/donations', methods=['GET'])
+@admin_required
 def get_donations():
     return jsonify(read_json('donations'))
 
 @app.route('/api/donations', methods=['POST'])
+@rate_limit('donation_post', 10, 24 * 3600)
 def add_donation():
     dons = read_json('donations')
-    dons.append(request.json)
+    dons.append(request.json or {})
     write_json('donations', dons)
     return jsonify({'ok': True})
 
 # --- VISITS ---
 @app.route('/api/visits', methods=['GET'])
+@admin_required
 def get_visits():
     return jsonify(read_json('visits'))
 
 @app.route('/api/visits', methods=['POST'])
+@rate_limit('visit_post', 180, 24 * 3600)
 def track_visit():
     visits = read_json('visits')
-    data = request.json
+    data = request.json or {}
     country = data.get('country', '')
     if not country and request.remote_addr:
         try:
             ip = request.remote_addr
-            with urllib.request.urlopen('http://ip-api.com/json/'+ip+'?fields=country', timeout=3) as resp:
+            with urllib.request.urlopen('http://ip-api.com/json/' + ip + '?fields=country', timeout=3) as resp:
                 g = json.loads(resp.read())
-                country = g.get('country','')
+                country = g.get('country', '')
         except Exception:
             pass
-    visits.append({'date': data.get('date',''), 'path': data.get('path',''), 'articleId': data.get('articleId',''), 'country': country})
+    visits.append({'date': data.get('date', ''), 'path': data.get('path', ''), 'articleId': data.get('articleId', ''), 'country': country})
     if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
     return jsonify({'ok': True})
 
 @app.route('/api/visits/analytics', methods=['GET'])
+@admin_required
 def visit_analytics():
     period = request.args.get('period', 'all')
     raw = read_json('visits')
@@ -260,13 +441,13 @@ def visit_analytics():
         cutoff_time = now - 365 * 86400
     if cutoff_time:
         cutoff_str = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff_time))
-        visits = [v for v in visits if v.get('date','')[:19] >= cutoff_str]
+        visits = [v for v in visits if v.get('date', '')[:19] >= cutoff_str]
     article_data = {}
     page_data = {}
     country_data = {}
     for v in visits:
-        aid = v.get('articleId','')
-        path = v.get('path','')
+        aid = v.get('articleId', '')
+        path = v.get('path', '')
         country = v.get('country', '')
         if not country: country = 'Inconnu'
         if aid:
@@ -274,21 +455,21 @@ def visit_analytics():
         page_data[path] = page_data.get(path, 0) + 1
         country_data[country] = country_data.get(country, 0) + 1
     articles_out = []
-    for aid, cnt in sorted(article_data.items(), key=lambda x:-x[1]):
-        articles_out.append({'id': aid, 'title': art_map.get(aid, 'Article #'+aid), 'visits': cnt})
+    for aid, cnt in sorted(article_data.items(), key=lambda x: -x[1]):
+        articles_out.append({'id': aid, 'title': art_map.get(aid, 'Article #' + aid), 'visits': cnt})
     pages_out = []
-    for p, cnt in sorted(page_data.items(), key=lambda x:-x[1]):
+    for p, cnt in sorted(page_data.items(), key=lambda x: -x[1]):
         label = p or '/'
         if '/article' in label: label = 'Article (' + p + ')'
         elif label in ('/', '/index.html'): label = 'Accueil'
-        else: label = label.replace('.html','').replace('/','')
+        else: label = label.replace('.html', '').replace('/', '')
         pages_out.append({'page': label, 'visits': cnt})
     countries_out = []
-    for c, cnt in sorted(country_data.items(), key=lambda x:-x[1]):
+    for c, cnt in sorted(country_data.items(), key=lambda x: -x[1]):
         countries_out.append({'country': c, 'visits': cnt})
     days = {}
     for v in visits:
-        d = v.get('date','')[:10]
+        d = v.get('date', '')[:10]
         if d: days[d] = days.get(d, 0) + 1
     day_labels = sorted(days.keys())
     day_data = [days[d] for d in day_labels]
@@ -302,28 +483,24 @@ def visit_analytics():
 
 # --- STATS ---
 @app.route('/api/stats', methods=['GET'])
+@admin_required
 def get_stats():
     articles = len(read_json('articles'))
     comments = sum(len(read_json(f)) for f in os.listdir(DATA_DIR) if f.startswith('comments_'))
     subs = len(read_json('newsletter'))
     visitsData = read_json('visits')
     visits = len(visitsData)
-    visitsList = [v if isinstance(v, str) else v.get('date','') for v in visitsData]
+    visitsList = [v if isinstance(v, str) else v.get('date', '') for v in visitsData]
     return jsonify({'articles': articles, 'comments': comments, 'subs': subs, 'visits': visits, 'visitsList': visitsList})
 
 # --- AUTH ---
-ADMINS = {
-    'Shine2026':    'YAGIRWA GEDEON GUIDE',
-    'Lufumica2026': 'LUFUNGULO MICHAEL',
-    'Sergio2026':   'SERGE IRENGE',
-    'Christvie2026':'MUKESHABA JAMES MPALA',
-}
 @app.route('/api/auth', methods=['POST'])
+@rate_limit('auth_post', 8, 300)
 def auth():
-    d = request.json
+    d = request.json or {}
     name = ADMINS.get(d.get('pass', ''))
     if d.get('user') == 'admin' and name:
-        return jsonify({'ok': True, 'name': name})
+        return jsonify({'ok': True, 'name': name, 'token': d.get('pass', '')})
     return jsonify({'ok': False}), 401
 
 # --- IMAGE UPLOAD ---
@@ -352,6 +529,7 @@ def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
         return img_bytes
 
 @app.route('/api/upload', methods=['POST'])
+@admin_required
 def upload_image():
     data = request.json
     if not data or not data.get('image'):
@@ -369,6 +547,33 @@ def upload_image():
     with open(path, 'wb') as f:
         f.write(img_bytes)
     return jsonify({'url': '/assets/uploads/' + filename})
+
+# --- SEO ---
+@app.route('/robots.txt')
+def robots():
+    base = request.host_url.rstrip('/')
+    txt = ("User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\n"
+           "Disallow: /assets/uploads/\nSitemap: " + base + "/sitemap.xml\n")
+    return Response(txt, mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    base = request.host_url.rstrip('/')
+    pages = [
+        ('/', None),
+        ('/index.html', None), ('/actualites.html', None), ('/qui-sommes-nous.html', None),
+        ('/projets.html', None), ('/sensibilisation.html', None), ('/objets-perdus.html', None),
+        ('/heritage.html', None), ('/faq.html', None), ('/donation.html', None), ('/page.html', None),
+    ]
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for p, _d in pages:
+        lines.append('<url><loc>' + base + p + '</loc></url>')
+    for a in read_json('articles'):
+        aid = a.get('id')
+        d = a.get('date', '') or ''
+        lines.append('<url><loc>' + base + '/article?id=' + str(aid) + '</loc>' + (('<lastmod>' + d + '</lastmod>') if d else '') + '</url>')
+    lines.append('</urlset>')
+    return Response('\n'.join(lines), mimetype='application/xml')
 
 # --- SERVE STATIC FILES ---
 BASE = os.path.dirname(__file__)
@@ -391,11 +596,7 @@ def serve_article_og():
         for a in read_json('articles'):
             if str(a['id']) == str(aid):
                 article = dict(a)
-                if lang and lang != 'fr':
-                    for f in ('title', 'content', 'excerpt'):
-                        k = f + '_' + lang
-                        if k in a and a[k]:
-                            article[f] = a[k]
+                apply_lang(article, lang)
                 break
     html = open(os.path.join(BASE, 'article.html'), 'r', encoding='utf-8').read()
     if article:
@@ -408,16 +609,32 @@ def serve_article_og():
             img = request.host_url.rstrip('/') + '/assets/images/logo.png'
         if not img.startswith(('http://', 'https://')):
             img = request.host_url.rstrip('/') + '/' + img.lstrip('/')
-        safe = lambda s: s.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;')
+        def safe(s):
+            return s.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
         stitle = safe(title)
-        sdesc = safe(desc or "Chronique de James Mukeshaba - Média d'information")
+        sdesc = safe(desc or "Chronique de James Mukeshaba - MÃ©dia d'information")
+        site = request.host_url.rstrip('/')
+        ld = {
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            'headline': title,
+            'description': desc or '',
+            'image': img,
+            'datePublished': article.get('date', ''),
+            'author': {'@type': 'Person', 'name': article.get('author', 'Chronique de James Mukeshaba')},
+            'publisher': {'@type': 'Organization', 'name': 'Chronique de James Mukeshaba',
+                          'logo': {'@type': 'ImageObject', 'url': site + '/assets/images/logo.png'}},
+            'mainEntityOfPage': site + '/article?id=' + str(aid)
+        }
+        json_ld = '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + '</script>'
         og = f'''
 <meta property="og:title" content="{stitle}">
 <meta property="og:description" content="{sdesc}">
 <meta property="og:image" content="{img}">
-<meta property="og:url" content="{request.host_url.rstrip('/')}/article?id={aid}">
+<meta property="og:url" content="{site}/article?id={aid}">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
+{json_ld}
 '''
         html = html.replace('<title>Article - Chronique de James Mukeshaba</title>', '<title>' + stitle + ' - Chronique de James Mukeshaba</title>' + og)
     return html
@@ -431,7 +648,9 @@ def serve_static(path):
     full = os.path.join(BASE, path)
     if os.path.isfile(full):
         return send_from_directory(BASE, path)
+    if '.' in os.path.basename(path):
+        return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=int(os.environ.get('PORT', '5000')), debug=(os.environ.get('FLASK_DEBUG', '0') == '1'))

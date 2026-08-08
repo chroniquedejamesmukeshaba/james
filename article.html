@@ -177,9 +177,8 @@
 
       function loadArticle() {
         if (window.location.protocol !== 'file:') {
-          fetch('/api/articles?lang='+siteLang).then(function(r){return r.json()}).then(function(articles){
-            var a = articles.find(function(x){return x.id == articleId});
-            if (a) displayArticle(a);
+          fetch('/api/articles/'+articleId+'?lang='+siteLang).then(function(r){return r.ok?r.json():null}).then(function(a){
+            if (a && a.content) displayArticle(a);
             else loadLocalArticle();
           }).catch(function(){loadLocalArticle();});
         } else { loadLocalArticle(); }

@@ -85,8 +85,11 @@
 
       function loadAnalytics(period) {
         if (window.location.protocol === 'file:') return;
+        var th = {'Cache-Control':'no-cache'};
+        var tok = localStorage.getItem('admin_token');
+        if (tok) th['X-Admin-Token'] = tok;
         Promise.all([
-          fetch('/api/visits/analytics?period='+period, {cache:'no-store'}).then(function(r){
+          fetch('/api/visits/analytics?period='+period, {cache:'no-store', headers:th}).then(function(r){
             if (!r.ok) throw new Error('HTTP '+r.status);
             return r.json();
           })

@@ -8,13 +8,19 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      if (username === 'admin' && ADMINS[password]) {
+      function grant(name) {
         localStorage.setItem('admin_logged', 'true');
-        localStorage.setItem('admin_name', ADMINS[password]);
-        if (window.location.protocol !== 'file:') {
-          fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:username,pass:password})}).catch(function(){});
-        }
+        localStorage.setItem('admin_name', name);
+        localStorage.setItem('admin_token', password);
         window.location.href = 'index.html';
+      }
+      if (window.location.protocol !== 'file:') {
+        fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:username,pass:password})})
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(res){ if (res && res.ok && res.name) { grant(res.name); } else { showToast('Identifiants incorrects.', 'error'); } })
+          .catch(function(){ showToast('Serveur injoignable. Vérifiez la connexion.', 'error'); });
+      } else if (username === 'admin' && ADMINS[password]) {
+        grant(ADMINS[password]);
       } else {
         showToast('Identifiants incorrects.', 'error');
       }
@@ -23,19 +29,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ===== DATA API HELPERS =====
 var useServer = window.location.protocol !== 'file:';
+function authHeaders(extra) {
+  var h = extra || {'Content-Type':'application/json'};
+  var token = localStorage.getItem('admin_token');
+  if (token) h['X-Admin-Token'] = token;
+  return h;
+}
 
 function apiGet(path) {
   if (!useServer) return null;
-  return fetch('/api' + path).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+  return fetch('/api' + path, {headers: authHeaders()}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
 }
 function apiPost(path, data) {
   if (!useServer) return null;
-  return fetch('/api' + path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+  return fetch('/api' + path,{method:'POST',headers:authHeaders(),body:JSON.stringify(data)})
     .then(function(r){return r.ok?r.json():null}).catch(function(){return null});
 }
 function apiDel(path) {
   if (!useServer) return null;
-  return fetch('/api' + path,{method:'DELETE'}).then(function(r){return r.ok}).catch(function(){return false});
+  return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){return r.ok}).catch(function(){return false});
 }
 
 // ===== CHECK AUTH =====
@@ -392,11 +404,7 @@ function apiDel(path) {
     var path = window.location.pathname.replace('/index.html','/') || '/';
     var data = {date:new Date().toISOString(), path:path, articleId:articleId};
     if (window.location.protocol !== 'file:') {
-      fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(g){
-        data.country = g.country_name || g.country || '';
-      }).catch(function(){}).then(function(){
-        fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
-      });
+      fetch('/api/visits', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
     }
     var visits = JSON.parse(localStorage.getItem('visit_stats') || '[]');
     visits.push(data);

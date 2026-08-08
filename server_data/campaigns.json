@@ -1,0 +1,30 @@
+[
+  {
+    "title": "RESPECTONS LES MESURES DE SECURITE",
+    "description": "La maladie a Virus EBOLA existe et tue, mais elle est maitrisable ",
+    "image": "/assets/uploads/0a11f51f-dd9a-4d38-814f-d78ad6691526.jpg",
+    "speed": 5000,
+    "id": 1782578878287,
+    "status": "active",
+    "createdAt": "2026-06-27T16:47:58"
+  },
+  {
+    "title": "RENDONS LA VILLE PROPRE ",
+    "description": "Lutte contre l'insalubrité dans nos milliers ",
+    "image": "/assets/uploads/34fc2e4f-f5ab-4935-b49e-bd0e39956d52.jpg",
+    "speed": 5000,
+    "id": 1782578556568,
+    "status": "archived",
+    "createdAt": "2026-06-27T16:42:36",
+    "archivedAt": "2026-07-16T13:13:54"
+  },
+  {
+    "title": "LE VIRUS EBOLA NE PASSERA PAS PAR MOI",
+    "description": "Ebola ne passera pas par mois ",
+    "image": "/assets/uploads/af8cb030-9396-4821-a615-bf355ca05a92.jpg",
+    "speed": 5000,
+    "id": 1782578439481,
+    "status": "active",
+    "createdAt": "2026-06-27T16:40:39"
+  }
+]

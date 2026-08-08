@@ -96,7 +96,10 @@
 
     function api(method, url, body) {
       if (window.location.protocol === 'file:') return Promise.reject('file:');
-      return fetch(url, {method:method, headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined}).then(function(r){return r.json()}).catch(function(){return null;});
+      var h = {'Content-Type':'application/json'};
+      var token = localStorage.getItem('admin_token');
+      if (token) h['X-Admin-Token'] = token;
+      return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined}).then(function(r){return r.json()}).catch(function(){return null;});
     }
 
     document.addEventListener('DOMContentLoaded', function () {
