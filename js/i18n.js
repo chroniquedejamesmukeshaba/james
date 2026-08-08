@@ -131,6 +131,17 @@ var TRANSLATIONS = {
   sensibilisation_archived: { fr:'Campagnes archiv\u00e9es', en:'Archived Campaigns', sw:'Kampeni zilizohifadhiwa', es:'Campa\u00f1as archivadas' },
   sensibilisation_no_archived: { fr:'Aucune campagne archiv\u00e9e pour le moment.', en:'No archived campaigns for now.', sw:'Hakuna kampeni zilizohifadhiwa kwa sasa.', es:'No hay campa\u00f1as archivadas por ahora.' },
 
+  // === HOME MODERNE ===
+  home_breaking:      { fr:'Derni\u00e8re heure', en:'Breaking News', sw:'Habari za mwisho', es:'\u00daltima hora' },
+  home_alaune:        { fr:'\u00c0 la Une', en:'Top Stories', sw:'Habari kuu', es:'Portada' },
+  home_latest:        { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest News', sw:'Habari za hivi punde', es:'\u00daltimas noticias' },
+  home_view_more:     { fr:'Voir plus', en:'View more', sw:'Tazama zaidi', es:'Ver m\u00e1s' },
+  home_support:       { fr:'Soutenir nos actions', en:'Support our actions', sw:'Tunga mkono shughuli zetu', es:'Apoyar nuestras acciones' },
+  home_search_ph:     { fr:'Rechercher un article\u2026', en:'Search an article\u2026', sw:'Tafuta makala\u2026', es:'Buscar un art\u00edculo\u2026' },
+  home_search_hint:   { fr:'Tapez pour rechercher un article\u2026', en:'Type to search an article\u2026', sw:'Andika kutafuta makala\u2026', es:'Escriba para buscar un art\u00edculo\u2026' },
+  home_search_none:   { fr:'Aucun r\u00e9sultat pour cette recherche.', en:'No results for this search.', sw:'Hakuna matokeo ya utafutaji huu.', es:'Sin resultados para esta b\u00fasqueda.' },
+  home_search_title:  { fr:'R\u00e9sultats', en:'Results', sw:'Matokeo', es:'Resultados' },
+
   // === GENERIC ===
   learn_more:         { fr:'En savoir plus', en:'Learn more', sw:'Jifunze zaidi', es:'Saber m\u00e1s' },
   read_article:       { fr:'Lire l\'article', en:'Read article', sw:'Soma makala', es:'Leer art\u00edculo' },

@@ -23,89 +23,108 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:-9999px;background:var(--primary);color:#fff;padding:10px 20px;border-radius:6px;z-index:99999;" onfocus="this.style.left='10px';this.style.top='10px';" onblur="this.style.left='-9999px';this.style.top='-9999px';">Aller au contenu principal</a>
+
   <div class="top-bar">
     <div class="container">
       <div class="social-links" style="margin:0 auto;">
         <a href="#" aria-label="Facebook">f</a>
-        <a href="#" aria-label="X (Twitter)">𝕏</a>
+        <a href="#" aria-label="X (Twitter)">X</a>
       </div>
     </div>
   </div>
 
-  <header>
-    <div class="container header-inner">
-      <a href="index.html" class="logo">
-        <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
-        <div class="logo-text">
-          <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
-          <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
+  <header class="site-header">
+    <div class="header-main">
+      <div class="container header-row">
+        <a href="index.html" class="logo-block">
+          <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+          <div class="logo-text">
+            <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
+            <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
+          </div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" id="search-open" aria-label="Rechercher" aria-haspopup="dialog">&#128269;</button>
+          <a href="donation.html" class="btn-support"><span aria-hidden="true">&#10084;&#65039;</span><span class="txt" data-i18n="home_support">Soutenir nos actions</span></a>
+          <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">&#9776;</button>
         </div>
-      </a>
-      <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">☰</button>
-      <nav id="main-nav">
-        <ul>
-          <li><a href="index.html" class="active" data-i18n="nav_accueil">Accueil</a></li>
-          <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
-          <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
-          <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
-          <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
-          <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
-          <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
-          <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
-          <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
-        </ul>
-      </nav>
+      </div>
+    </div>
+    <div class="main-nav-bar">
+      <div class="container">
+        <nav id="main-nav">
+          <ul>
+            <li><a href="index.html" class="active" data-i18n="nav_accueil">Accueil</a></li>
+            <li><a href="actualites.html" data-i18n="nav_actualites">Actualit&eacute;s</a></li>
+            <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
+            <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+            <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+            <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
+            <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+            <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <section class="hero-slider" id="hero-slider">
-    <div id="slides-container"></div>
-    <button class="slider-btn prev" aria-label="Diapositive precedente">❮</button>
-    <button class="slider-btn next" aria-label="Diapositive suivante">❯</button>
-    <div class="slider-nav" id="slider-nav"></div>
-  </section>
-
-  <section class="section mission-section">
-    <div class="container mission-campaign-layout">
-      <div class="mission-banner">
-        <div class="mission-photo-wrap">
-          <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo" loading="lazy" decoding="async">
-        </div>
-        <div class="mission-text">
-          <h2 data-i18n="mission_title">Notre Mission</h2>
-          <p data-i18n="mission_text">Informer, sensibiliser et mobiliser les communautés congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
-          <p class="mission-sign" data-i18n="mission_sign">— <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
-        </div>
-      </div>
-      <div class="campaign-carousel-block">
-        <h3 class="campaign-carousel-title" data-i18n="campaign_title">Campagnes en cours</h3>
-        <div class="campaign-carousel" id="campaign-carousel">
-          <div class="campaign-slides" id="campaign-slides"></div>
-          <button class="campaign-prev">❮</button>
-          <button class="campaign-next">❯</button>
-          <div class="campaign-dots" id="campaign-dots"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
+  <main id="main-content">
     <div class="container">
-      <h2 class="section-title" data-i18n="latest_news">Dernières Actualités</h2>
-      <div class="cards-grid" id="home-articles-grid"></div>
-      <div style="text-align:center;margin-top:30px;">
-        <a href="actualites.html" class="btn btn-outline" data-i18n="view_all_news">Voir toutes les actualités</a>
+      <div class="breaking-ticker" aria-label="Derni&egrave;re heure">
+        <div class="breaking-label"><span aria-hidden="true">&#9889;</span> <span data-i18n="home_breaking">Derni&egrave;re heure</span></div>
+        <ul class="breaking-items" id="ticker-items"></ul>
+        <div class="breaking-controls">
+          <button class="ticker-prev" aria-label="Pr&eacute;c&eacute;dent">&#10094;</button>
+          <button class="ticker-next" aria-label="Suivant">&#10095;</button>
+        </div>
       </div>
     </div>
-  </section>
+
+    <section class="home-hero container" id="home-hero">
+      <div id="hero-feature"></div>
+      <aside class="hero-side" aria-label="&Agrave; la Une">
+        <div class="side-title" data-i18n="home_alaune">&Agrave; la Une</div>
+        <div class="side-list" id="side-list"></div>
+      </aside>
+    </section>
+
+    <div id="home-sections"></div>
+
+    <section class="section mission-section">
+      <div class="container mission-campaign-layout">
+        <div class="mission-banner">
+          <div class="mission-photo-wrap">
+            <img src="assets/images/james-photo.jpg" alt="James Mukeshaba" class="mission-photo" loading="lazy" decoding="async">
+          </div>
+          <div class="mission-text">
+            <h2 data-i18n="mission_title">Notre Mission</h2>
+            <p data-i18n="mission_text">Informer, sensibiliser et mobiliser les communaut&eacute;s congolaises en RDC et dans la diaspora. La Chronique de James Mukeshaba est votre source d'information fiable pour un monde meilleur.</p>
+            <p class="mission-sign" data-i18n="mission_sign">&mdash; <strong>James Mukeshaba</strong>, Coordonnateur principal</p>
+          </div>
+        </div>
+        <div class="campaign-carousel-block">
+          <h3 class="campaign-carousel-title" data-i18n="campaign_title">Campagnes en cours</h3>
+          <div class="campaign-carousel" id="campaign-carousel">
+            <div class="campaign-slides" id="campaign-slides"></div>
+            <button class="campaign-prev" aria-label="Pr&eacute;c&eacute;dent">&#10094;</button>
+            <button class="campaign-next" aria-label="Suivant">&#10095;</button>
+            <div class="campaign-dots" id="campaign-dots"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <section class="newsletter-section">
     <div class="container newsletter-inner">
       <div class="newsletter-text">
-        <h3 data-i18n="newsletter_title">Restez informé</h3>
-        <p data-i18n="newsletter_desc">Abonnez-vous à notre newsletter et recevez les dernières actualités directement dans votre boîte mail.</p>
+        <h3 data-i18n="newsletter_title">Restez inform&eacute;</h3>
+        <p data-i18n="newsletter_desc">Abonnez-vous &agrave; notre newsletter et recevez les derni&egrave;res actualit&eacute;s directement dans votre bo&icirc;te mail.</p>
       </div>
       <form class="newsletter-form" id="newsletter-form">
         <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
@@ -119,20 +138,20 @@
       <div class="footer-grid">
         <div>
           <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
-          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">Média d'information en ligne, sensibilisation et projets communautaires. Basé à Bukavu avec une présence internationale.</p>
+          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">M&eacute;dia d'information en ligne, sensibilisation et projets communautaires. Bas&eacute; &agrave; Bukavu avec une pr&eacute;sence internationale.</p>
           <div class="footer-social">
             <a href="#" aria-label="Facebook">f</a>
-            <a href="#" aria-label="X (Twitter)">𝕏</a>
+            <a href="#" aria-label="X (Twitter)">X</a>
           </div>
         </div>
         <div>
           <h4 data-i18n="footer_pages">Pages</h4>
           <ul>
-            <li><a href="actualites.html" data-i18n="nav_actualites">Actualités</a></li>
+            <li><a href="actualites.html" data-i18n="nav_actualites">Actualit&eacute;s</a></li>
             <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
             <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
             <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
-            <li><a href="heritage.html" data-i18n="nav_heritage">Héritage</a></li>
+            <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
           </ul>
         </div>
@@ -152,92 +171,29 @@
         </div>
       </div>
       <div style="text-align:center;margin-bottom:10px;">
-        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">📲 Installer l'application</button>
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">&#128241; Installer l'application</button>
       </div>
       <div class="footer-bottom">
-        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits réservés.</span>
+        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits r&eacute;serv&eacute;s.</span>
       </div>
     </div>
   </footer>
 
+  <div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Recherche">
+    <div class="search-panel">
+      <div class="qrow">
+        <span aria-hidden="true">&#128269;</span>
+        <input type="search" id="search-input" placeholder="Rechercher un article..." autocomplete="off" data-i18n="home_search_ph">
+        <button id="search-close" aria-label="Fermer">&#10005;</button>
+      </div>
+      <div class="search-results" id="search-results"><div class="search-empty" data-i18n="home_search_hint">Tapez pour rechercher un article&hellip;</div></div>
+    </div>
+  </div>
+
   <script src="js/main.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/i18n.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var grid = document.getElementById('home-articles-grid');
-      var articles;
-      var useServer = window.location.protocol !== 'file:';
-      var siteLang = (typeof localStorage!=='undefined'?localStorage.getItem('cms_lang'):null) || 'fr';
-      function loadFromServer() {
-        if (!useServer) { loadLocal(); return; }
-        fetch('/api/articles/lite?lang='+siteLang).then(function(r){return r.json()}).then(function(d){
-          if (d && d.length) { articles = d; render(); }
-          else loadLocal();
-        }).catch(function(){loadLocal();});
-      }
-      function loadLocal() {
-        articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
-        if (articles.length === 0) {
-          articles = [
-            { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Le média annonce son expansion au Canada avec l\'ouverture d\'un bureau à Alberta.', image: '', date: '2026-06-20', author: 'James Mukeshaba' },
-            { id: 2, title: 'Campagne : Ensemble contre les violences faites aux femmes', category: 'Sensibilisation', excerpt: 'Une nouvelle campagne de sensibilisation est lancée à Bukavu.', image: '', date: '2026-06-18', author: 'Équipe Sensibilisation' },
-            { id: 3, title: 'Projet d\'assainissement : Bukavu ville propre', category: 'Projets', excerpt: 'Découvrez notre nouveau projet communautaire.', image: '', date: '2026-06-15', author: 'James Mukeshaba' }
-          ];
-          localStorage.setItem('admin_articles', JSON.stringify(articles));
-        }
-        if (siteLang !== 'fr') { applyLocalLang(articles); }
-        render();
-      }
-      function applyLocalLang(list) {
-        list.forEach(function(a){
-          ['title','content','excerpt'].forEach(function(f){
-            var k = f+'_'+siteLang;
-            if (a[k]) a[f] = a[k];
-          });
-        });
-      }
-      document.addEventListener('langchange', function(){
-        siteLang = (typeof localStorage!=='undefined'?localStorage.getItem('cms_lang'):null) || 'fr';
-        loadFromServer();
-      });
-
-      function render() {
-      var sliderContainer = document.getElementById('slides-container');
-      var sliderNav = document.getElementById('slider-nav');
-      var slidesHtml = '';
-      var dotsHtml = '';
-      var sliderArticles = articles.filter(function(a) { return a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http')); });
-      if (sliderArticles.length === 0) sliderArticles = articles.slice(0, 3);
-      sliderArticles.slice(0, 5).forEach(function(a, i) {
-        var bg = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http')) ? a.image : '';
-        slidesHtml += '<div class="slide' + (i === 0 ? ' active' : '') + '" style="background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.6))' + (bg ? ',url(\'' + bg + '\')' : '') + ';background-size:cover;background-position:center;">' +
-          '<div class="slide-overlay">' +
-          '<h2>' + a.title + '</h2>' +
-          '<a href="/article?id=' + a.id + '" class="btn btn-accent">'+(typeof t==='function'?t('hero_read_article'):'Lire l\'article')+'</a>' +
-          '</div></div>';
-        dotsHtml += '<button class="slider-dot' + (i === 0 ? ' active' : '') + '"></button>';
-      });
-      sliderContainer.innerHTML = slidesHtml;
-      sliderNav.innerHTML = dotsHtml;
-      if (typeof initSlider === 'function') initSlider();
-
-      grid.innerHTML = articles.slice(0, 6).map(function(a) {
-        var imgHtml = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
-          ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" loading="lazy" decoding="async" style="object-fit:cover;">'
-          : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
-        return '<div class="card">' + imgHtml +
-          '<div class="card-body">' +
-          '<div class="card-category">' + a.category + '</div>' +
-          '<h3 class="card-title"><a href="/article?id=' + a.id + '">' + a.title + '</a></h3>' +
-          '<p class="card-text">' + a.excerpt + '</p>' +
-          '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
-          '</div></div>';
-      }).join('');
-      }
-      loadFromServer();
-    });
-  </script>
+  <script src="js/home.js"></script>
   <script>
     // ===== Campagne Carrousel (independant, ne bloque pas le reste) =====
     (function(){
