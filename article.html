@@ -313,9 +313,14 @@ function renderShare(article) {
         } else gal.style.display = 'none';
 
         var vids = document.getElementById('article-videos');
-        if (Array.isArray(article.videos) && article.videos.length) {
+        var videoList = [];
+        if (Array.isArray(article.videos) && article.videos.length) videoList = article.videos;
+        if (article.videoUrl && !videoList.some(function (v2) { return String(v2) === String(article.videoUrl); })) {
+          videoList = videoList.concat([article.videoUrl]);
+        }
+        if (videoList.length) {
           vids.style.display = 'grid';
-          vids.innerHTML = article.videos.map(function (v) {
+          vids.innerHTML = videoList.map(function (v) {
             var m = String(v).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]+)/);
             var src = m ? 'https://www.youtube.com/embed/' + m[1] : v;
             return '<iframe src="' + esc(src) + '" loading="lazy" allowfullscreen title="Vidéo"></iframe>';
@@ -341,7 +346,7 @@ function renderShare(article) {
 
         renderShare(article);
         var ogImg = article.image && !article.image.startsWith('data:') ? article.image : window.location.origin + '/assets/images/logo.png';
-        setOG(article.title, article.excerpt || '', ogImg);
+        setOG(article.seoTitle || article.title, article.seoDescription || article.excerpt || '', ogImg);
         document.getElementById('comments-list').dataset.articleId = articleId;
         document.getElementById('comment-form').dataset.articleId = articleId;
         loadComments();
