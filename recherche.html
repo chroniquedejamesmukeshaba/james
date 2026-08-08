@@ -23,7 +23,7 @@
 <body>
   <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:-9999px;background:var(--primary);color:#fff;padding:10px 20px;border-radius:6px;z-index:99999;" onfocus="this.style.left='10px';this.style.top='10px';" onblur="this.style.left='-9999px';this.style.top='-9999px';">Aller au contenu principal</a>
 
-  <div class="top-bar">
+    <div class="top-bar">
     <div class="container">
       <div class="social-links" style="margin:0 auto;">
         <a href="#" aria-label="Facebook">f</a>
@@ -61,7 +61,7 @@
             <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
-            <li><a href="soutenir.html" data-i18n="nav_donation">Donation</a></li>
+            <li><a href="soutenir.html" data-i18n="nav_donation">Soutenir</a></li>
           </ul>
         </nav>
       </div>
@@ -102,20 +102,40 @@
       <div class="pagination" id="sr-pager"></div>
     </section>
   </main>
+  <section class="newsletter-section" id="notif-block">
+    <div class="container newsletter-inner notif-inner">
+      <div class="newsletter-text">
+        <h3 class="ntf-title">Recevez les derni&egrave;res actualit&eacute;s</h3>
+        <p class="ntf-desc">Activez les notifications pour &ecirc;tre alert&eacute; d&egrave;s la publication d'un article ou d'une Breaking News.</p>
+        <div class="ntf-prefs">
+          <label><input type="checkbox" data-pref="news" checked> <span data-pref-label="label_news">Derni&egrave;res actualit&eacute;s</span></label>
+          <label><input type="checkbox" data-pref="breaking" checked> <span data-pref-label="label_breaking">Breaking News</span></label>
+          <label><input type="checkbox" data-pref="rdc" checked> <span data-pref-label="label_rdc">Actualit&eacute;s de la RDC</span></label>
+          <label><input type="checkbox" data-pref="intl"> <span data-pref-label="label_intl">Actualit&eacute;s internationales</span></label>
+        </div>
+      </div>
+      <div class="ntf-cta">
+        <input type="text" class="ntf-name" placeholder="Votre nom (optionnel)" autocomplete="name" style="display:none;">
+        <input type="email" class="ntf-email" placeholder="Votre adresse email (optionnel)" autocomplete="email" style="display:none;">
+        <button type="button" class="btn btn-accent ntf-btn">Activer les notifications</button>
+      </div>
+    </div>
+  </section>
 
   <section class="newsletter-section">
     <div class="container newsletter-inner">
       <div class="newsletter-text">
         <h3 data-i18n="newsletter_title">Restez inform&eacute;</h3>
-        <p data-i18n="newsletter_desc">Abonnez-vous &agrave; notre newsletter et recevez les derni&egrave;res actualit&eacute;s directement dans votre bo&icirc;te mail.</p>
+        <p data-i18n="newsletter_desc">Recevez les principales actualit&eacute;s directement dans votre bo&icirc;te mail.</p>
       </div>
       <form class="newsletter-form" id="newsletter-form">
+        <input type="text" name="nl-name" class="nl-name" placeholder="Votre nom" autocomplete="name">
         <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
+        <div class="nl-cats" role="group" aria-label="Cat&eacute;gories pr&eacute;f&eacute;r&eacute;es"></div>
         <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
       </form>
     </div>
   </section>
-
   <footer>
     <div class="container">
       <div class="footer-grid">
@@ -136,6 +156,7 @@
             <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+            <li><a href="soutenir.html" data-i18n="nav_donation">Soutenir</a></li>
           </ul>
         </div>
         <div>
@@ -153,16 +174,32 @@
           </ul>
         </div>
       </div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">&#128241; Installer l'application</button>
+      </div>
       <div class="footer-bottom">
         <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits r&eacute;serv&eacute;s.</span>
       </div>
     </div>
   </footer>
+  <div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Recherche">
+    <div class="search-panel">
+      <div class="qrow">
+        <span aria-hidden="true">&#128269;</span>
+        <input type="search" id="search-input" placeholder="Rechercher un article..." autocomplete="off" data-i18n="home_search_ph">
+        <button id="search-close" aria-label="Fermer">&#10005;</button>
+      </div>
+      <div class="search-results" id="search-results"><div class="search-empty" data-i18n="home_search_hint">Tapez pour rechercher un article&hellip;</div></div>
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/search.js"></script>
-  <script>
+  <script src="js/notify.js"></script>
+
+<script>
     (function () {
       var p = {};
       (window.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
@@ -192,5 +229,26 @@
       });
     })();
   </script>
+  <script>window.NotifUI && window.NotifUI.init(document.getElementById('notif-block'));</script>
+  <script>
+    (function () {
+      var overlay = document.getElementById('search-overlay');
+      var input = document.getElementById('search-input');
+      var openBtn = document.getElementById('search-open');
+      var closeBtn = document.getElementById('search-close');
+      if (!overlay || !openBtn) return;
+      openBtn.onclick = function () { overlay.classList.add('open'); setTimeout(function () { if (input) input.focus(); }, 60); };
+      var closeIt = function () { overlay.classList.remove('open'); if (input) input.value = ''; };
+      if (closeBtn) closeBtn.onclick = closeIt;
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeIt(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeIt(); });
+      if (window.LiveSearch && input) {
+        window.LiveSearch.bind(input, document.getElementById('search-results'), {
+          onEnter: function (q) { if (q) window.location.href = '/recherche?q=' + encodeURIComponent(q); },
+          onEscape: closeIt,
+          onPick: closeIt
+        });
+      }
+    })();
+  </script>
 </body>
-</html>
