@@ -30,7 +30,8 @@ html[data-theme="dark"] {
 }
 html[data-theme="dark"] body { background: var(--bg); }
 html[data-theme="dark"] html { background: #0a0d13; }
-html[data-theme="dark"] .top-bar { background: #0a1929; }
+html[data-theme="dark"] .top-bar { background: #0a1929; color: #c9d6e6; }
+html[data-theme="dark"] .top-bar a { color: #c9d6e6; }
 html[data-theme="dark"] .logo-text h1 { color: var(--primary); }
 html[data-theme="dark"] :where(.card-body, .stat-card, .admin-table tr, .faq-item, .team-member, .comments-section, .comment, .article-body, .dash-card, .editor-toolbar, .media-card, .share-btn, .reaction-btn, .pg-btn, .pop-card, .r-card, .home-card, .sr-searchbox, .live-panel, .filters-extras label, .img-upload-area) { background: var(--white); }
 html[data-theme="dark"] .admin-table th, html[data-theme="dark"] .admin-table tr:hover { background: #21262d; }
@@ -40,6 +41,179 @@ html[data-theme="dark"] .article-content img, html[data-theme="dark"] .article-g
 html[data-theme="dark"] .theme-toggle { background: #21262d; border-color: #30363d; color: #e3b341; }
 html[data-theme="dark"] .theme-toggle:hover { background: #30363d; }
 html[data-theme="dark"] .footer { background: #0a0d13; border-top-color: #21262d; }
+
+/* ===== MODE SOMBRE : TOUTES LES PAGES PUBLIQUES (header moderne inclus) ===== */
+html[data-theme="dark"] .site-header { background: #0d1117; box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 18px rgba(0,0,0,0.35); }
+html[data-theme="dark"] .header-main { border-bottom-color: #1f2630; }
+html[data-theme="dark"] .main-nav-bar { border-top-color: #1f2630; }
+html[data-theme="dark"] .header-row { background: #0d1117; }
+html[data-theme="dark"] .top-meta { background: #0a1929; color: #c9d3e0; }
+html[data-theme="dark"] .top-meta .social-links a { color: #c9d6e6; }
+html[data-theme="dark"] .logo-text h1 { color: #79c0ff; }
+html[data-theme="dark"] .logo-text span { color: #8b949e; }
+html[data-theme="dark"] .icon-btn {
+  background: #161b22; border-color: #30363d; color: #79c0ff;
+}
+html[data-theme="dark"] .icon-btn:hover, html[data-theme="dark"] .icon-btn.active {
+  background: #1f3d5f; color: #fff; border-color: #79c0ff;
+}
+html[data-theme="dark"] .menu-toggle { color: #79c0ff; }
+html[data-theme="dark"] .main-nav-bar ul a { color: #c9d1d9; }
+html[data-theme="dark"] .main-nav-bar ul a:hover, html[data-theme="dark"] .main-nav-bar ul a.active { color: #79c0ff; border-bottom-color: #79c0ff; }
+html[data-theme="dark"] .lng-switch span { color: #8b949e; }
+
+/* Cartes/boîtes à fond blanc en dur */
+html[data-theme="dark"] .breaking-ticker,
+html[data-theme="dark"] .breaking-controls button,
+html[data-theme="dark"] .search-panel,
+html[data-theme="dark"] .search-hit img,
+html[data-theme="dark"] .side-item img,
+html[data-theme="dark"] .breadcrumb,
+html[data-theme="dark"] .reaction-btn,
+html[data-theme="dark"] .pagination button,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card-banner,
+html[data-theme="dark"] article,
+html[data-theme="dark"] .wcard,
+html[data-theme="dark"] .wcard-body,
+html[data-theme="dark"] .article-row,
+html[data-theme="dark"] .gal-thumb {
+  background: #161b22; color: #c9d1d9;
+}
+html[data-theme="dark"] .breaking-ticker { border-color: #30363d; border-left-color: var(--secondary); }
+html[data-theme="dark"] .breaking-controls button { border-color: #30363d; color: #79c0ff; }
+html[data-theme="dark"] .breaking-controls button:hover { background: #21262d; }
+html[data-theme="dark"] .hero-side { background: #161b22; border-color: #30363d; }
+html[data-theme="dark"] .side-item { border-bottom-color: #21262d; }
+html[data-theme="dark"] .side-item:hover { background: #1c222b; }
+html[data-theme="dark"] .search-panel { box-shadow: 0 24px 80px rgba(0,0,0,0.6); }
+html[data-theme="dark"] .search-panel .qrow { border-bottom-color: #30363d; }
+html[data-theme="dark"] .search-hit:hover { background: #1c222b; }
+html[data-theme="dark"] .breadcrumb { border-bottom-color: #21262d; }
+html[data-theme="dark"] .home-card { border-color: #30363d; }
+html[data-theme="dark"] .home-card .foot { border-top-color: #21262d; }
+html[data-theme="dark"] .home-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.45); }
+html[data-theme="dark"] .article-card { background: #161b22; border-color: #30363d; }
+html[data-theme="dark"] .r-card { background: #161b22; }
+
+/* Cartes campagne/bannière primaires claires */
+html[data-theme="dark"] .hero-feature { background: #0c1b30; }
+html[data-theme="dark"] .hero-feature .fade { background: linear-gradient(rgba(10,25,40,0.35), transparent 40%, rgba(5,12,22,0.95)); }
+html[data-theme="dark"] .thumb { background: #0d2036; }
+html[data-theme="dark"] .home-card .thumb { background: linear-gradient(135deg, #234a70, #16314d); }
+html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .campaign-cta,
+html[data-theme="dark"] .donation-card .card-head { background: linear-gradient(135deg, #12283f, #0c1724); }
+html[data-theme="dark"] .newsletter-section, html[data-theme="dark"] .page-header {
+  background: linear-gradient(135deg, #12283f, #0a1420); color: #e6edf3;
+}
+html[data-theme="dark"] .page-header h1, html[data-theme="dark"] .newsletter-text h3 { color: #f0f6fc; }
+html[data-theme="dark"] .campaign-slide-text h4 { color: #79c0ff; }
+html[data-theme="dark"] .campaign-prev, html[data-theme="dark"] .campaign-next { color: #e6edf3; }
+html[data-theme="dark"] .campaign-dot { border-color: #e6edf3; }
+html[data-theme="dark"] .campaign-dot.active { background: #e6edf3; }
+html[data-theme="dark"] .campaign-prev:hover, html[data-theme="dark"] .campaign-next:hover { background: #21262d; }
+html[data-theme="dark"] .mission-banner { color: #e6edf3; }
+html[data-theme="dark"] .filters-bar { background: linear-gradient(135deg, #12283f, #0a1420); }
+
+/* Boutons et fonds primaires (bleu clair -> bleu foncé lisible) */
+html[data-theme="dark"] :where(.btn-primary, .btn-outline:hover, .btn-cta, .btn-support) {
+  background: #1f6feb; border-color: #1f6feb; color: #fff;
+}
+html[data-theme="dark"] .btn-primary:hover, html[data-theme="dark"] .btn-support:hover { background: #388bfd; border-color: #388bfd; }
+html[data-theme="dark"] .btn-support { box-shadow: 0 4px 14px rgba(31,111,235,0.35); }
+html[data-theme="dark"] .btn-outline { color: #79c0ff; border-color: #58a6ff; }
+html[data-theme="dark"] .logo-img { background: #1f3a52; color: #fff; }
+html[data-theme="dark"] nav ul li a:hover, html[data-theme="dark"] nav ul li a.active,
+html[data-theme="dark"] nav .dropdown:hover > a, html[data-theme="dark"] nav .active {
+  background: #1f3a52; color: #fff;
+}
+html[data-theme="dark"] .badge, html[data-theme="dark"] .cat-chip.end, html[data-theme="dark"] .cat-chip.high { background: #1f6feb; color: #fff; }
+html[data-theme="dark"] .tag:hover { background: #1f6feb; color: #fff; }
+html[data-theme="dark"] .cat-chip.active { background: #1f6feb; border-color: #58a6ff; color: #fff; }
+html[data-theme="dark"] .pg-btn.active { background: #1f6feb; border-color: #58a6ff; color: #fff; }
+html[data-theme="dark"] .donation-amount:hover, html[data-theme="dark"] .donation-pop .selected,
+html[data-theme="dark"] .amount-btn.active, html[data-theme="dark"] .donation-btn-active { background: #1f6feb; border-color: #58a6ff; color: #fff; }
+html[data-theme="dark"] .progress-fill { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+
+/* Chips/statuts clairs */
+html[data-theme="dark"] .lf-status.trouve { background: #0f2a1a; color: #3fb950; border: 1px solid rgba(63,185,80,0.4); }
+html[data-theme="dark"] .lf-status.perdu { background: #2d150f; color: #ff7b72; border: 1px solid rgba(255,123,114,0.4); }
+html[data-theme="dark"] .lf-status.retrouve { background: #12263a; color: #58a6ff; border: 1px solid rgba(88,166,255,0.4); }
+html[data-theme="dark"] .lf-status.attente { background: #2d220f; color: #e3b341; border: 1px solid rgba(227,179,65,0.4); }
+html[data-theme="dark"] .reaction-btn.active, html[data-theme="dark"] .reaction-btn.active:hover { background: #2c2410; color: #e3b341; }
+html[data-theme="dark"] .obj-found { background: #0f2a1a; color: #3fb950; }
+html[data-theme="dark"] .obj-lost-tag { color: #ff7b72; border-color: #ff7b72; }
+
+/* Formulaires + champs partout */
+html[data-theme="dark"] .form-input,
+html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="search"], html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="submit"], html[data-theme="dark"] input[type="tel"],
+html[data-theme="dark"] textarea, html[data-theme="dark"] select {
+  background: #0d1117; border-color: #30363d; color: #e6edf3;
+}
+html[data-theme="dark"] .form-input::placeholder, html[data-theme="dark"] textarea::placeholder { color: #8b949e; }
+html[data-theme="dark"] .form-input:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
+html[data-theme="dark"] .sr-searchbox input, html[data-theme="dark"] .live-chat-input,
+html[data-theme="dark"] .newsletter-form input { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+html[data-theme="dark"] .newsletter-form input::placeholder { color: #8b949e; }
+html[data-theme="dark"] .filters-extras label { border-color: #30363d; }
+html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; }
+
+/* Textes en dur restants */
+html[data-theme="dark"] .article-title a, html[data-theme="dark"] .post-title a,
+html[data-theme="dark"] .entry-title a, html[data-theme="dark"] .widget-title,
+html[data-theme="dark"] .sidebar-title, html[data-theme="dark"] .faq-item h3,
+html[data-theme="dark"] .team-member h3, html[data-theme="dark"] .rr-heading,
+html[data-theme="dark"] .obj-title, html[data-theme="dark"] .objet-title,
+html[data-theme="dark"] .home-card .body h3 a, html[data-theme="dark"] .sidebar h3 { color: #f0f6fc; }
+html[data-theme="dark"] .article-date, html[data-theme="dark"] .post-date,
+html[data-theme="dark"] .post-meta, html[data-theme="dark"] .article-meta { color: #8b949e; }
+html[data-theme="dark"] .sr-sub, html[data-theme="dark"] .hero-sub,
+html[data-theme="dark"] .subtitle, html[data-theme="dark"] .page-lead { color: #9aa4b2; }
+html[data-theme="dark"] .theme-toggle { box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+
+/* Citation/encadrés */
+html[data-theme="dark"] .citate-box, html[data-theme="dark"] blockquote, html[data-theme="dark"] .quote-block {
+  background: #161b22; border-left-color: #58a6ff; color: #c9d1d9;
+}
+html[data-theme="dark"] .citate, html[data-theme="dark"] .paste { background: #161b22; }
+
+/* Bouton retour haut + survol de tableaux admin (sans les casser) */
+html[data-theme="dark"] .sr-btn { background: #0d1117; color: #c9d1d9; }
+
+/* Recherche intelligente + catégories + pagination + plus lus */
+html[data-theme="dark"] .sr-hero { background: linear-gradient(135deg, #12283f, #0a1420); }
+html[data-theme="dark"] .sr-searchbox > span { color: #79c0ff; }
+html[data-theme="dark"] .sg-item:hover, html[data-theme="dark"] .sg-item.active { background: #21262d; }
+html[data-theme="dark"] .sg-thumb { background: #21262d; }
+html[data-theme="dark"] .sg-thumb .noimg { color: #79c0ff; }
+html[data-theme="dark"] .sg-footer { background: #1f6feb; }
+html[data-theme="dark"] .sg-footer:hover { background: #388bfd; }
+html[data-theme="dark"] .tag { background: #21262d; color: #79c0ff; border: 1px solid #30363d; }
+html[data-theme="dark"] .cat-chip { background: #161b22; border-color: #30363d; color: #79c0ff; }
+html[data-theme="dark"] .cat-count { background: #1c2c42; color: #79c0ff; }
+html[data-theme="dark"] .cat-side .side-item { border-bottom-color: #21262d; }
+html[data-theme="dark"] .pagination .pg-btn, html[data-theme="dark"] .pop-tab { background: #161b22; border-color: #30363d; color: #c9d1d9; }
+html[data-theme="dark"] .pop-metrics span { background: #21262d; }
+html[data-theme="dark"] .nl-cat-label { background: #161b22; border-color: #30363d; color: #c9d1d9; }
+html[data-theme="dark"] .donation-amount { background: #161b22; border-color: #30363d; }
+html[data-theme="dark"] .search-overlay { background: rgba(3, 8, 14, 0.72); }
+
+/* Élément <footer> (fond var(--primary) en dur) */
+html[data-theme="dark"] footer { background: #0a0d13; color: #c9d1d9; }
+html[data-theme="dark"] footer h3, html[data-theme="dark"] footer h4 { color: #f0f6fc; }
+html[data-theme="dark"] .footer-social a { color: #c9d1d9; background: rgba(255,255,255,0.08); }
+html[data-theme="dark"] .footer-bottom { border-top-color: rgba(255,255,255,0.08); }
+
+/* Vieux hero slider (overlay sombre : blanc en dur) */
+html[data-theme="dark"] .slide-overlay { color: #f0f6fc; }
+html[data-theme="dark"] .slider-dot.active { background: #f0f6fc; }
+html[data-theme="dark"] .slider-btn { color: #f0f6fc; background: rgba(0,0,0,0.6); }
+
+/* Logo : ne pas peindre un fond sur les images */
+html[data-theme="dark"] .logo img.logo-img,
+html[data-theme="dark"] .logo-block img.logo-img { background: none; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
