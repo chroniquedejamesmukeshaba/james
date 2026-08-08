@@ -1,10 +1,10 @@
-const CACHE = 'chronique-v3';
+const CACHE = 'chronique-v4';
 const STATIC = [
-  '/', '/index.html', '/actualites.html',
+  '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
   '/objets-perdus.html', '/heritage.html', '/faq.html', '/donation.html',
-  '/page.html',
-  '/css/style.css', '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js',
+  '/page.html', '/article.html',
+  '/css/style.css', '/css/home.css', '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/home.js',
   '/manifest.json', '/assets/images/logo.png',
   '/assets/images/icon-192.png', '/assets/images/icon-512.png'
 ];

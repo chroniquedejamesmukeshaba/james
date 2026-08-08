@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat&eacute;gorie - Chronique de James Mukeshaba</title>
+  <meta name="description" content="Tous les articles de la catégorie.">
+  <meta property="og:title" content="Cat&eacute;gorie - Chronique de James Mukeshaba">
+  <meta property="og:description" content="Tous les articles de la catégorie.">
+  <meta property="og:image" content="assets/images/logo.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#1a3a5c">
+  <meta name="robots" content="index, follow">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:-9999px;background:var(--primary);color:#fff;padding:10px 20px;border-radius:6px;z-index:99999;" onfocus="this.style.left='10px';this.style.top='10px';" onblur="this.style.left='-9999px';this.style.top='-9999px';">Aller au contenu principal</a>
+
+  <div class="top-bar">
+    <div class="container">
+      <div class="social-links" style="margin:0 auto;">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="X (Twitter)">X</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="header-main">
+      <div class="container header-row">
+        <a href="index.html" class="logo-block">
+          <img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" class="logo-img">
+          <div class="logo-text">
+            <h1 data-i18n="logo_title">Chronique de James Mukeshaba</h1>
+            <span data-i18n="logo_tagline">Informations &bull; Sensibilisation &bull; Projets</span>
+          </div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" id="search-open" aria-label="Rechercher" aria-haspopup="dialog">&#128269;</button>
+          <a href="donation.html" class="btn-support"><span aria-hidden="true">&#10084;&#65039;</span><span class="txt" data-i18n="home_support">Soutenir nos actions</span></a>
+          <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">&#9776;</button>
+        </div>
+      </div>
+    </div>
+    <div class="main-nav-bar">
+      <div class="container">
+        <nav id="main-nav">
+          <ul>
+            <li><a href="index.html" data-i18n="nav_accueil">Accueil</a></li>
+            <li><a href="actualites.html" class="active" data-i18n="nav_actualites">Actualit&eacute;s</a></li>
+            <li><a href="qui-sommes-nous.html" data-i18n="nav_qui_sommes_nous">Qui sommes-nous</a></li>
+            <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+            <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+            <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
+            <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+            <li><a href="donation.html" data-i18n="nav_donation">Donation</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="container breadcrumb cat-breadcrumb" id="cat-bread"></div>
+    <section class="cat-hero container" id="cat-hero"></section>
+    <section class="container cat-layout">
+      <div class="cat-main">
+        <div class="sr-searchbox cp-search">
+          <span aria-hidden="true">&#128269;</span>
+          <input type="search" id="cp-search" placeholder="Rechercher un article..." autocomplete="off" aria-label="Rechercher dans la Chronique">
+          <div class="live-panel" id="cp-panel" role="listbox" aria-label="Suggestions"></div>
+        </div>
+        <div class="cat-grid" id="cat-list"></div>
+        <div class="pagination" id="cat-pager"></div>
+      </div>
+      <aside class="cat-side" id="cat-side"></aside>
+    </section>
+  </main>
+
+  <section class="newsletter-section">
+    <div class="container newsletter-inner">
+      <div class="newsletter-text">
+        <h3 data-i18n="newsletter_title">Restez inform&eacute;</h3>
+        <p data-i18n="newsletter_desc">Abonnez-vous &agrave; notre newsletter et recevez les derni&egrave;res actualit&eacute;s directement dans votre bo&icirc;te mail.</p>
+      </div>
+      <form class="newsletter-form" id="newsletter-form">
+        <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
+        <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
+          <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">M&eacute;dia d'information en ligne, sensibilisation et projets communautaires. Bas&eacute; &agrave; Bukavu avec une pr&eacute;sence internationale.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="X (Twitter)">X</a>
+          </div>
+        </div>
+        <div>
+          <h4 data-i18n="footer_pages">Pages</h4>
+          <ul>
+            <li><a href="actualites.html" data-i18n="nav_actualites">Actualit&eacute;s</a></li>
+            <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
+            <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
+            <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
+            <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
+            <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 data-i18n="footer_contact">Contact</h4>
+          <ul>
+            <li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li>
+            <li data-i18n="footer_phone_rdc">+243 971460415</li>
+            <li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 data-i18n="footer_admin">Administration</h4>
+          <ul>
+            <li><a href="admin/login.html" data-i18n="footer_admin_link">Espace administrateur</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits r&eacute;serv&eacute;s.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/search.js"></script>
+  <script>
+    (function () {
+      var slug = (window.location.pathname || '').replace(/^\/categorie\//, '').replace(/\.html$/, '').replace(/\//g, '');
+      var si = document.getElementById('cp-search');
+      if (si) window.LiveSearch.bind(si, document.getElementById('cp-panel'));
+      var openBtn = document.getElementById('search-open');
+      if (openBtn && si) openBtn.onclick = function () { si.focus(); si.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+      window.LiveSearch.category({
+        slug: slug,
+        hero: document.getElementById('cat-hero'),
+        list: document.getElementById('cat-list'),
+        side: document.getElementById('cat-side'),
+        pager: document.getElementById('cat-pager'),
+        bread: document.getElementById('cat-bread')
+      });
+    })();
+  </script>
+</body>
+</html>

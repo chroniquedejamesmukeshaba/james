@@ -245,7 +245,14 @@
       function displayArticle(article) {
         document.getElementById('article-title').textContent = article.title;
         document.getElementById('article-breadcrumb-title').textContent = article.title;
-        document.getElementById('article-category').textContent = article.category || 'Actualité';
+        var catEl = document.getElementById('article-category');
+        if (catEl) {
+          catEl.textContent = article.category || 'Actualité';
+          catEl.style.cursor = article.cat ? 'pointer' : 'default';
+          catEl.addEventListener('click', function () {
+            if (article.cat) window.location.href = '/categorie/' + article.cat;
+          });
+        }
 
         var pb = document.getElementById('article-priority');
         if (article.priority === 'breaking') {

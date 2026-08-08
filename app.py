@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata
 from io import BytesIO
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory, redirect, Response
@@ -112,6 +112,94 @@ def apply_lang(a, lang):
                 a[f] = a[k]
     return a
 
+# --- RECHERCHE & CATEGORIES ---
+def fold(s):
+    """Normalise un texte pour la recherche (minuscules, sans accents ni signes)."""
+    s = unicodedata.normalize('NFKD', s or '')
+    s = s.encode('ascii', 'ignore').decode('ascii', 'ignore')
+    return re.sub(r'[^a-z0-9]', '', s.lower())
+
+CAT_ALIAS = {
+    'social': 'societe', 'societe': 'societe',
+    'sante': 'sante', 'education': 'education',
+    'national': 'national', 'nationale': 'national',
+    'sport': 'sport', 'international': 'international',
+    'environnement': 'environnement', 'securite': 'securite',
+    'insecurite': 'securite', 'politique': 'politique',
+    'culture': 'culture', 'enfance': 'enfance', 'medias': 'medias',
+    'religion': 'religion', 'humanitaire': 'humanitaire',
+}
+
+CATEGORIES = {
+    'societe': ('Société', "Les faits divers, la vie sociale et les initiatives de la communauté."),
+    'sante': ('Santé', "Épidémies, campagnes de prévention et actualité des structures de santé."),
+    'national': ('Nationale', "L'actualité du pays : institutions, éducation et gestion publique."),
+    'education': ('Éducation', "Écoles, examens d'État et vie académique des jeunes congolais."),
+    'sport': ('Sport', "Football, Coupe du Monde et toutes les disciplines sportives."),
+    'international': ('International', "L'actualité du monde vue depuis la RDC et les Grands Lacs."),
+    'environnement': ('Environnement', "Climat, nature et initiatives de protection de l'environnement."),
+    'securite': ('Sécurité', "Sécurité publique, insécurité et mesures des autorités."),
+    'politique': ('Politique', "La vie politique et les décisions des institutions du pays."),
+    'culture': ('Culture', "Kermesses, arts, patrimoine et événements culturels."),
+    'enfance': ('Enfance', "La protection des droits de l'enfant et les campagnes associées."),
+    'medias': ('Médias', "L'actualité des médias et la lutte contre la désinformation."),
+    'religion': ('Religion', "Vie religieuse et communautés de foi."),
+    'humanitaire': ('Humanitaire', "L'action humanitaire et la crise dans l'Est de la RDC."),
+}
+
+
+def cat_slug(cat):
+    key = fold(cat)
+    slug = CAT_ALIAS.get(key, key)
+    return slug
+
+
+def cat_display(slug, raw):
+    if slug in CATEGORIES:
+        return CATEGORIES[slug][0]
+    return (raw or slug).strip().title()
+
+
+def cat_desc(slug, raw):
+    return CATEGORIES.get(slug, (None, ''))[1] or "Articles de la catégorie « " + ((raw or slug).strip()) + " »."
+
+
+def popularities():
+    try:
+        reactions = read_obj('reactions', {})
+    except Exception:
+        reactions = {}
+    try:
+        visits = read_json('visits')
+    except Exception:
+        visits = []
+    score = {}
+    for aid, slot in reactions.items():
+        score[aid] = sum(int(v) for v in slot.values()) * 25
+    for v in visits:
+        if isinstance(v, dict) and v.get('articleId'):
+            aid = str(v['articleId'])
+            score[aid] = score.get(aid, 0) + 1
+    return score
+
+
+def article_lite(a, lang='fr'):
+    cp = dict(a)
+    cp.pop('content', None)
+    for k in list(cp):
+        if k.startswith('content_'):
+            cp.pop(k, None)
+    img = cp.get('image') or ''
+    if img.startswith('data:'):
+        cp['image'] = ''
+    cp['cat'] = cat_slug(cp.get('category'))
+    if lang and lang != 'fr':
+        for f in ('title', 'excerpt'):
+            k = f + '_' + lang
+            if k in cp and cp[k]:
+                cp[f] = cp[k]
+    return cp
+
 # --- ARTICLES ---
 @app.route('/api/articles', methods=['GET'])
 def get_articles():
@@ -196,9 +284,132 @@ def delete_article(aid):
 def list_categories():
     cats = {}
     for a in read_json('articles'):
-        c = (a.get('category') or '').strip()
-        if c: cats[c] = cats.get(c, 0) + 1
-    return jsonify([{'name': k, 'count': v} for k, v in sorted(cats.items(), key=lambda x: -x[1])])
+        slug = cat_slug(a.get('category'))
+        cats[slug] = cats.get(slug, 0) + 1
+    out = []
+    for slug, count in sorted(cats.items(), key=lambda x: (-x[1], x[0])):
+        raw = ''
+        for a in read_json('articles'):
+            if cat_slug(a.get('category')) == slug:
+                raw = a.get('category') or ''
+                break
+        out.append({'slug': slug, 'name': cat_display(slug, raw), 'count': count})
+    return jsonify(out)
+
+
+@app.route('/api/category/<slug>')
+def get_category(slug):
+    lang = request.args.get('lang', 'fr')
+    articles = read_json('articles')
+    members = []
+    for a in articles:
+        if cat_slug(a.get('category')) == slug:
+            members.append(a)
+    if not members:
+        return jsonify({'error': 'categorie inconnue'}), 404
+    raw = ''
+    for m in members:
+        if m.get('category'):
+            raw = m['category']
+            break
+    sorted_members = sorted(members, key=lambda x: -(x.get('id') or 0))
+    pop = popularities()
+    by_pop = sorted(members, key=lambda x: (-pop.get(str(x.get('id')), 0), -(x.get('id') or 0)))
+    principal = None
+    for m in sorted_members:
+        if str(m.get('priority', '')).lower() in ('breaking', 'important'):
+            principal = m
+            break
+    if principal is None:
+        for m in sorted_members:
+            if m.get('image'):
+                principal = m
+                break
+    if principal is None and sorted_members:
+        principal = sorted_members[0]
+    cats = {}
+    for a in articles:
+        s2 = cat_slug(a.get('category'))
+        cats[s2] = cats.get(s2, 0) + 1
+    all_cats = [{'slug': s2, 'name': cat_display(s2, ''), 'count': c}
+                for s2, c in sorted(cats.items(), key=lambda x: (-x[1], x[0]))]
+    return jsonify({
+        'slug': slug,
+        'name': cat_display(slug, raw),
+        'description': cat_desc(slug, raw),
+        'count': len(members),
+        'principal': article_lite(principal, lang) if principal else None,
+        'articles': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in sorted_members],
+        'popular': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in by_pop[:5]],
+        'categories': all_cats
+    })
+
+
+@app.route('/api/search')
+def search_articles():
+    lang = request.args.get('lang', 'fr')
+    q = (request.args.get('q') or '').strip()
+    limit = int(request.args.get('limit', 20))
+    fq = fold(q)
+    articles = read_json('articles')
+    pop = popularities()
+    results = []
+    cat_hits = {}
+    if fq:
+        for a in articles:
+            slug = cat_slug(a.get('category'))
+            haystacks = {
+                'title': a.get('title') or '',
+                'content': a.get('content') or '',
+                'excerpt': a.get('excerpt') or '',
+                'category': cat_display(slug, a.get('category')),
+                'author': a.get('author') or '',
+                'date': a.get('date') or '',
+                'keywords': ' '.join([
+                    str(a.get(k, '')) for k in ('tags', 'keywords', 'key', 'theme')
+                    if a.get(k)
+                ]),
+            }
+            score = 0
+            matched = []
+            for field, text in haystacks.items():
+                if fq in fold(text):
+                    w = {'title': 8, 'excerpt': 3, 'content': 1, 'category': 2,
+                         'author': 2, 'date': 1, 'keywords': 3}[field]
+                    score += w
+                    matched.append(field)
+            if score:
+                results.append((score, a, matched))
+                cat_hits[slug] = cat_hits.get(slug, 0) + 1
+        results.sort(key=lambda x: (-x[0], -(x[1].get('id') or 0)))
+        results = results[:limit]
+    else:
+        results = [(0, a, []) for a in sorted(articles, key=lambda x: -(x.get('id') or 0))[:8]]
+    recent_all = sorted(articles, key=lambda x: -(x.get('id') or 0))[:5]
+    popular_all = sorted(articles, key=lambda x: (-pop.get(str(x.get('id')), 0), -(x.get('id') or 0)))[:5]
+    cat_list = []
+    seen = set()
+    for slug, cnt in sorted(cat_hits.items(), key=lambda x: -x[1]):
+        if slug in seen:
+            continue
+        seen.add(slug)
+        cat_list.append({'slug': slug, 'name': cat_display(slug, ''), 'count': cnt})
+    cat_list = cat_list[:4]
+    cats_all = {}
+    for a in articles:
+        s2 = cat_slug(a.get('category'))
+        cats_all[s2] = cats_all.get(s2, 0) + 1
+    all_cats = [{'slug': s2, 'name': cat_display(s2, ''), 'count': c}
+                for s2, c in sorted(cats_all.items(), key=lambda x: (-x[1], x[0]))]
+    return jsonify({
+        'query': q,
+        'total': len(results),
+        'results': [dict(article_lite(a, lang), matched=matched, score=sc, pop=pop.get(str(a.get('id')), 0)) for sc, a, matched in results],
+        'categories': cat_list,
+        'recent': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in recent_all],
+        'popular': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in popular_all],
+        'all_categories': all_cats
+    })
 
 # --- PAGES ---
 @app.route('/api/pages', methods=['GET'])
@@ -704,6 +915,13 @@ def sitemap():
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for p, _d in pages:
         lines.append('<url><loc>' + base + p + '</loc></url>')
+    lines.append('<url><loc>' + base + '/recherche</loc></url>')
+    seen_cats = set()
+    for a in read_json('articles'):
+        slug = cat_slug(a.get('category'))
+        if slug and slug not in seen_cats:
+            seen_cats.add(slug)
+            lines.append('<url><loc>' + base + '/categorie/' + slug + '</loc></url>')
     for a in read_json('articles'):
         aid = a.get('id')
         d = a.get('date', '') or ''
@@ -778,6 +996,14 @@ def serve_article_og():
 @app.route('/')
 def serve_index():
     return send_from_directory(BASE, 'index.html')
+
+@app.route('/recherche')
+def serve_search_page():
+    return send_from_directory(BASE, 'recherche.html')
+
+@app.route('/categorie/<slug>')
+def serve_categorie_page(slug):
+    return send_from_directory(BASE, 'categorie.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
