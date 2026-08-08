@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
+﻿import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
@@ -201,19 +201,19 @@ CAT_ALIAS = {
 }
 
 CATEGORIES = {
-    'societe': ('Société', "Les faits divers, la vie sociale et les initiatives de la communauté."),
-    'sante': ('Santé', "Épidémies, campagnes de prévention et actualité des structures de santé."),
-    'national': ('Nationale', "L'actualité du pays : institutions, éducation et gestion publique."),
-    'education': ('Éducation', "Écoles, examens d'État et vie académique des jeunes congolais."),
+    'societe': ('SociÃ©tÃ©', "Les faits divers, la vie sociale et les initiatives de la communautÃ©."),
+    'sante': ('SantÃ©', "Ã‰pidÃ©mies, campagnes de prÃ©vention et actualitÃ© des structures de santÃ©."),
+    'national': ('Nationale', "L'actualitÃ© du pays : institutions, Ã©ducation et gestion publique."),
+    'education': ('Ã‰ducation', "Ã‰coles, examens d'Ã‰tat et vie acadÃ©mique des jeunes congolais."),
     'sport': ('Sport', "Football, Coupe du Monde et toutes les disciplines sportives."),
-    'international': ('International', "L'actualité du monde vue depuis la RDC et les Grands Lacs."),
+    'international': ('International', "L'actualitÃ© du monde vue depuis la RDC et les Grands Lacs."),
     'environnement': ('Environnement', "Climat, nature et initiatives de protection de l'environnement."),
-    'securite': ('Sécurité', "Sécurité publique, insécurité et mesures des autorités."),
-    'politique': ('Politique', "La vie politique et les décisions des institutions du pays."),
-    'culture': ('Culture', "Kermesses, arts, patrimoine et événements culturels."),
-    'enfance': ('Enfance', "La protection des droits de l'enfant et les campagnes associées."),
-    'medias': ('Médias', "L'actualité des médias et la lutte contre la désinformation."),
-    'religion': ('Religion', "Vie religieuse et communautés de foi."),
+    'securite': ('SÃ©curitÃ©', "SÃ©curitÃ© publique, insÃ©curitÃ© et mesures des autoritÃ©s."),
+    'politique': ('Politique', "La vie politique et les dÃ©cisions des institutions du pays."),
+    'culture': ('Culture', "Kermesses, arts, patrimoine et Ã©vÃ©nements culturels."),
+    'enfance': ('Enfance', "La protection des droits de l'enfant et les campagnes associÃ©es."),
+    'medias': ('MÃ©dias', "L'actualitÃ© des mÃ©dias et la lutte contre la dÃ©sinformation."),
+    'religion': ('Religion', "Vie religieuse et communautÃ©s de foi."),
     'humanitaire': ('Humanitaire', "L'action humanitaire et la crise dans l'Est de la RDC."),
 }
 
@@ -231,7 +231,7 @@ def cat_display(slug, raw):
 
 
 def cat_desc(slug, raw):
-    return CATEGORIES.get(slug, (None, ''))[1] or "Articles de la catégorie « " + ((raw or slug).strip()) + " »."
+    return CATEGORIES.get(slug, (None, ''))[1] or "Articles de la catÃ©gorie Â« " + ((raw or slug).strip()) + " Â»."
 
 
 def popularities():
@@ -269,6 +269,91 @@ def article_lite(a, lang='fr'):
             if k in cp and cp[k]:
                 cp[f] = cp[k]
     return cp
+
+# --- MEDIATHEQUE : upload / listing / suppression d'images ---
+MEDIA_DIR = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
+
+def _media_meta():
+    meta = {}
+    try:
+        if os.path.exists(os.path.join(BASE, 'server_data', 'media.json')):
+            meta = json.load(open(os.path.join(BASE, 'server_data', 'media.json'), 'r', encoding='utf-8'))
+    except Exception:
+        meta = {}
+    return meta
+
+def _save_media_meta(meta):
+    try:
+        with open(os.path.join(BASE, 'server_data', 'media.json'), 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+@app.route('/api/media', methods=['POST'])
+@admin_required
+def media_upload():
+    d = request.get_json(silent=True) or {}
+    b64 = str(d.get('image') or '')
+    if not b64 or ',' not in b64:
+        return jsonify({'error': 'donnee image invalide'}), 400
+    head, data = b64.split(',', 1)
+    try:
+        raw = base64.b64decode(data)
+    except Exception:
+        return jsonify({'error': 'base64 invalide'}), 400
+    fmt = 'jpg'
+    if 'png' in head: fmt = 'png'
+    elif 'webp' in head: fmt = 'webp'
+    elif 'gif' in head: fmt = 'gif'
+    if len(raw) > 16 * 1024 * 1024:
+        return jsonify({'error': 'fichier trop lourd (max 16 Mo)'}), 413
+    fname = uuid.uuid4().hex + '.' + fmt
+    os.makedirs(MEDIA_DIR, exist_ok=True)
+    path = os.path.join(MEDIA_DIR, fname)
+    try:
+        with open(path, 'wb') as f:
+            f.write(raw)
+    except Exception as e:
+        return jsonify({'error': 'ecriture impossible: ' + str(e)}), 500
+    meta = _media_meta()
+    meta[fname] = {'url': '/media/' + fname, 'name': fname, 'type': fmt,
+                   'size': len(raw), 'created': time.time()}
+    _save_media_meta(meta)
+    return jsonify({'ok': True, 'url': '/media/' + fname})
+
+@app.route('/api/media', methods=['GET'])
+@admin_required
+def media_list():
+    q = (request.args.get('q') or '').strip().lower()
+    media = []
+    for fn, info in _media_meta().items():
+        fnl = fn.lower()
+        if q and q not in fnl:
+            continue
+        media.append(info)
+    media.sort(key=lambda m: -m.get('created', 0))
+    return jsonify(media)
+
+@app.route('/api/media/<fname>', methods=['DELETE'])
+@admin_required
+def media_delete(fname):
+    fname = os.path.basename(fname or '')
+    if not fname:
+        return jsonify({'error': 'fichier inconnu'}), 404
+    path = os.path.join(MEDIA_DIR, fname)
+    if os.path.exists(path):
+        try:
+            os.remove(path)
+        except Exception:
+            pass
+    meta = _media_meta()
+    meta.pop(fname, None)
+    _save_media_meta(meta)
+    return jsonify({'ok': True})
+
+@app.route('/media/<path:fname>')
+def media_serve(fname):
+    return send_from_directory(MEDIA_DIR, os.path.basename(fname))
 
 # --- STATUTS ARTICLES (publie / brouillon / programme / corbeille) ---
 def _norm_status(a):
@@ -1938,7 +2023,7 @@ def serve_article_og():
         def safe(s):
             return s.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
         stitle = safe(title)
-        sdesc = safe(desc or "Chronique de James Mukeshaba - MÃ©dia d'information")
+        sdesc = safe(desc or "Chronique de James Mukeshaba - MÃƒÂ©dia d'information")
         site = request.host_url.rstrip('/')
         ld = {
             '@context': 'https://schema.org',

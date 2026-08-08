@@ -83,8 +83,37 @@
             <textarea id="art-excerpt_es" class="form-input lang-field" data-lang="_es" placeholder="Résumé en espagnol" rows="2" style="display:none;"></textarea>
           </div>
           <div class="form-group">
-            <label>Contenu <span class="lang-label">(Français)</span></label>
-            <textarea id="art-content" class="form-input" placeholder="Contenu complet en français..." rows="8" required></textarea>
+            <label>Contenu <span class="lang-label">(Français)</span>
+              <span style="float:right;font-size:0.8rem;">
+                <button type="button" class="btn btn-sm editor-preview-toggle" data-preview="0" style="padding:2px 10px;font-size:0.78rem;">👁️ Aperçu</button>
+              </span>
+            </label>
+            <div class="editor-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;background:#f7f7f7;border:1px solid #e0e0e0;border-bottom:none;padding:6px 8px;border-radius:6px 6px 0 0;">
+              <button type="button" class="editor-btn" data-wrap="**" title="Gras">B</button>
+              <button type="button" class="editor-btn" data-wrap="*" title="Italique" style="font-style:italic;">I</button>
+              <button type="button" class="editor-btn" data-line="## " title="Titre H2">H2</button>
+              <button type="button" class="editor-btn" data-line="### " title="Titre H3">H3</button>
+              <button type="button" class="editor-btn" data-prefix="- " title="Liste à puces">• Liste</button>
+              <button type="button" class="editor-btn" data-prefix="&gt; " title="Citation">❝ Citation</button>
+              <button type="button" class="editor-btn" data-link="1" title="Insérer un lien">🔗 Lien</button>
+              <button type="button" class="editor-btn" id="editor-media-btn" title="Insérer une image depuis la médiathèque">🖼️ Image</button>
+              <span style="flex:1;"></span>
+              <span style="font-size:0.72rem;color:#999;align-self:center;">Formatage simple : **gras**, *italique*, ## titre, - liste, &gt; citation</span>
+            </div>
+            <textarea id="art-content" class="form-input" placeholder="Contenu complet en français..." rows="8" required style="border-radius:0 0 6px 6px;min-height:240px;"></textarea>
+            <div id="art-content-preview" class="editor-preview-pane" style="display:none;border:1px solid #e0e0e0;border-radius:0 0 6px 6px;padding:16px;min-height:200px;background:#fff;font-size:0.95rem;line-height:1.6;"></div>
+            <div id="media-picker" style="display:none;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-top:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                <strong style="color:var(--primary);">🖼️ Médiathèque</strong>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input type="text" id="media-search" class="form-input" placeholder="Rechercher..." style="width:180px;padding:4px 10px;font-size:0.8rem;">
+                  <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">⬆️ Importer
+                    <input type="file" id="media-upload-input" accept="image/*" style="display:none;">
+                  </label>
+                </div>
+              </div>
+              <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>
+            </div>
             <textarea id="art-content_en" class="form-input lang-field" data-lang="_en" placeholder="Contenu complet en anglais" rows="8" style="display:none;"></textarea>
             <textarea id="art-content_sw" class="form-input lang-field" data-lang="_sw" placeholder="Contenu complet en swahili" rows="8" style="display:none;"></textarea>
             <textarea id="art-content_es" class="form-input lang-field" data-lang="_es" placeholder="Contenu complet en espagnol" rows="8" style="display:none;"></textarea>

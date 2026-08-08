@@ -1,3 +1,32 @@
+// ===== mini-rendu apercu d'article (markdown leger) =====
+function editorPreview(src) {
+  if (!src) return '<p style="color:#bbb;">Aperçu vide.</p>';
+  function esc(x) {
+    return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function inline(x) {
+    x = esc(x);
+    x = x.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    x = x.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    x = x.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+    x = x.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;">');
+    return x;
+  }
+  var lines = String(src).split(/\r?\n/);
+  var html = [], i, ln;
+  for (i = 0; i < lines.length; i++) {
+    ln = lines[i];
+    if (/^###\s+/.test(ln)) { html.push('<h3>' + inline(ln.replace(/^###\s+/, '')) + '</h3>'); }
+    else if (/^##\s+/.test(ln)) { html.push('<h2>' + inline(ln.replace(/^##\s+/, '')) + '</h2>'); }
+    else if (/^#\s+/.test(ln)) { html.push('<h1>' + inline(ln.replace(/^#\s+/, '')) + '</h1>'); }
+    else if (/^>\s?/.test(ln)) { html.push('<blockquote style="border-left:4px solid #ffb703;margin:8px 0;padding:4px 14px;color:#555;background:#fdf3d8;">' + inline(ln.replace(/^>\s?/, '')) + '</blockquote>'); }
+    else if (/^[-*]\s+/.test(ln)) { html.push('<li style="margin-left:20px;">' + inline(ln.replace(/^[-*]\s+/, '')) + '</li>'); }
+    else if (!ln.trim()) { html.push('<br>'); }
+    else { html.push('<p style="margin:6px 0;">' + inline(ln) + '</p>'); }
+  }
+  return html.join('');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
   // ===== LOGIN (authentification securisee : token serveur + 2FA) =====
@@ -107,6 +136,122 @@ function forceLogin() {
       window.location.href = 'login.html';
     });
   }
+
+  // ===== EDITEUR : barre de formatage + apercu + mediathèque =====
+    var editorContent = document.getElementById('art-content');
+    if (editorContent) {
+      // apercu
+      var previewPane = document.getElementById('art-content-preview');
+      var previewToggles = document.querySelectorAll('.editor-preview-toggle');
+      previewToggles.forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var show = previewPane.style.display === 'none';
+          previewPane.style.display = show ? 'block' : 'none';
+          editorContent.style.display = show ? 'none' : '';
+          btn.textContent = show ? '✏️ Édition' : '👁️ Aperçu';
+          if (show) previewPane.innerHTML = editorPreview(editorContent.value);
+        });
+      });
+      editorContent.addEventListener('input', function(){
+        if (previewPane.style.display !== 'none') previewPane.innerHTML = editorPreview(editorContent.value);
+      });
+
+      // boutons de la barre d'outils
+      document.querySelectorAll('.editor-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var wrap = btn.dataset.wrap, line = btn.dataset.line, prefix = btn.dataset.prefix, link = btn.dataset.link;
+          if (wrap) {
+            var s = editorContent.selectionStart, e = editorContent.selectionEnd;
+            var sel = editorContent.value.slice(s, e) || 'texte';
+            editorContent.value = editorContent.value.slice(0, s) + wrap + sel + wrap + editorContent.value.slice(e);
+            editorContent.focus();
+            editorContent.setSelectionRange(s + wrap.length, e + wrap.length + sel.length);
+          } else if (line) {
+            var cur = editorContent.value;
+            var selStart = editorContent.selectionStart;
+            var lineStart = cur.lastIndexOf('\n', selStart - 1) + 1;
+            editorContent.value = cur.slice(0, lineStart) + line + cur.slice(lineStart);
+            editorContent.selectionStart = editorContent.selectionEnd = lineStart + line.length;
+            editorContent.focus();
+          } else if (prefix) {
+            var c = editorContent.value;
+            var selSt = editorContent.selectionStart;
+            var lnSt = c.lastIndexOf('\n', selSt - 1) + 1;
+            editorContent.value = c.slice(0, lnSt) + prefix + c.slice(lnSt);
+            editorContent.focus();
+          } else if (link) {
+            var url = prompt('Adresse du lien (https://...) :');
+            if (!url) return;
+            var s2 = editorContent.selectionStart, e2 = editorContent.selectionEnd;
+            var txt = editorContent.value.slice(s2, e2) || 'texte du lien';
+            var mark = '[' + txt + '](' + url + ')';
+            editorContent.value = editorContent.value.slice(0, s2) + mark + editorContent.value.slice(e2);
+            editorContent.focus();
+          }
+        });
+      });
+
+      window.editorInsertImage = function(url) {
+        var s = editorContent.selectionStart, e = editorContent.selectionEnd;
+        var mark = '\n![image](' + url + ')\n';
+        editorContent.value = editorContent.value.slice(0, s) + mark + editorContent.value.slice(e);
+        editorContent.focus();
+      };
+
+      // ---- Mediatheque intégrée ----
+      var mediaPicker = document.getElementById('media-picker');
+      var mediaGrid = document.getElementById('media-grid');
+      var mediaSearch = document.getElementById('media-search');
+      var mediaUploadInput = document.getElementById('media-upload-input');
+      var editorMediaBtn = document.getElementById('editor-media-btn');
+      window.loadedMediaPicker = function(){ mediaFilterAndDraw(); };
+      function mediaFilterAndDraw() {
+        apiGet('/media').then(function(media){
+          if (!mediaGrid) return;
+          var q = (mediaSearch ? mediaSearch.value : '').toLowerCase();
+          var items = (media || []).filter(function(m){ return !q || (m.name || '').toLowerCase().indexOf(q) !== -1; });
+          if (!items.length) { mediaGrid.innerHTML = '<div style="color:#999;font-size:0.85rem;grid-column:1/-1;">Aucune image. Utilisez « Importer » pour en ajouter.</div>'; return; }
+          mediaGrid.innerHTML = items.map(function(m){
+            return '<div style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fafafa;">' +
+              '<img src="' + m.url + '" alt="" style="width:100%;height:65px;object-fit:cover;cursor:pointer;" onclick="editorInsertImage(\'' + m.url + '\')">' +
+              '<div style="padding:3px 6px;display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-size:0.62rem;color:#888;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (m.name || '') + '</span>' +
+              '<button onclick="deleteMediaItem(\'' + m.url + '\')" style="border:none;background:none;cursor:pointer;color:#c0392b;font-size:0.8rem;padding:0;">🗑</button>' +
+              '</div></div>';
+          }).join('');
+        });
+      }
+      if (editorMediaBtn) editorMediaBtn.addEventListener('click', function(){
+        if (!mediaPicker) return;
+        var show = mediaPicker.style.display === 'none';
+        mediaPicker.style.display = show ? 'block' : 'none';
+        if (show) window.loadedMediaContent();
+      });
+      if (mediaSearch) mediaSearch.addEventListener('input', function(){
+        clearTimeout(window._mpT);
+        window._mpT = setTimeout(function(){ window.loadedMediaContent(); }, 300);
+      });
+      if (mediaUploadInput) mediaUploadInput.addEventListener('change', function(e){
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev){
+          apiPost('/media', { image: ev.target.result }).then(function(res){
+            if (res && res.url) { window.loadedMediaContent(); showToast('Image importée dans la médiathèque.'); }
+            else showToast('Import impossible.', 'error');
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      window.deleteMediaItem = function(url) {
+        if (!confirm('Supprimer ce fichier de la médiathèque ?')) return;
+        var name = url.split('/').pop();
+        fetch('/api/media/' + encodeURIComponent(name), { method: 'DELETE', headers: authHeaders() }).then(function(r){
+          if (r.status === 401) { forceLogin(); return; }
+          if (r.ok) { window.loadedMediaContent(); showToast('Fichier supprimé.'); }
+        });
+      };
+    }
 
   // ===== LOAD ARTICLES =====
   const articlesTable = document.getElementById('articles-table-body');
