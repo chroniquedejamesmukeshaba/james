@@ -938,7 +938,14 @@ function forceLogin() {
       });
     }
     function render(d) {
-      if (!d) return;
+      if (!d) {
+        ['visits','uniques','readers','readsec','articles','comments','shares','subs'].forEach(function (k) {
+          var el = els[k];
+          if (el) el.textContent = '—';
+        });
+        if (els.chart && els.chart.getContext) Dash.line(els.chart, [], []);
+        return;
+      }
       var t = d.totals || {};
       els.visits.textContent = Dash.fmt(t.visits || 0);
       els.sub.textContent = periodLabel[period] || '';
@@ -949,6 +956,7 @@ function forceLogin() {
       els.articles.textContent = Dash.fmt(t.articles || 0);
       els.comments.textContent = Dash.fmt(t.comments || 0);
       els.shares.textContent = Dash.fmt(t.shares || 0);
+      els.subs.textContent = Dash.fmt(t.subs || 0);
       els.topHint.textContent = '(' + periodLabel[period] + ')';
       var s = d.series || {};
       var hasData = (s.visits || []).some(function (v) { return v > 0; });

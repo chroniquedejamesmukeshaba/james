@@ -1851,23 +1851,26 @@ def analytics_overview():
     now = time.time()
     today_start = now - (now % 86400)
     labels, sv, su = [], [], []
+    # index des visites par jour (un seul passage au lieu de jours x visites)
+    day_visits = {}
+    for v in visits:
+        if not isinstance(v, dict):
+            continue
+        e = _visit_epoch(v)
+        if e is None:
+            continue
+        key = int(e // 86400)
+        day_visits.setdefault(key, {'cnt': 0, 'ips': set()})
+        day_visits[key]['cnt'] += 1
+        ip = (v.get('ip') or '').strip()
+        if ip:
+            day_visits[key]['ips'].add(ip)
     for i in range(days - 1, -1, -1):
         start = today_start - i * 86400
-        end = start + 86400
         labels.append(time.strftime('%d/%m', time.gmtime(start)))
-        cnt, ips = 0, set()
-        for v in visits:
-            if not isinstance(v, dict):
-                continue
-            e = _visit_epoch(v)
-            if e is None or e < start or e >= end:
-                continue
-            cnt += 1
-            ip = (v.get('ip') or '').strip()
-            if ip:
-                ips.add(ip)
-        sv.append(cnt)
-        su.append(len(ips))
+        d = day_visits.get(int(start // 86400))
+        sv.append(d['cnt'] if d else 0)
+        su.append(len(d['ips']) if d else 0)
     return jsonify({
         'period': period,
         'totals': {
