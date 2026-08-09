@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('admin_logged', 'true');
         localStorage.setItem('admin_name', res.name || '');
         localStorage.setItem('admin_token', res.token || '');
+        localStorage.removeItem('admin_redirecting');
         window.location.href = 'index.html';
       }
       if (window.location.protocol !== 'file:') {
@@ -104,8 +105,12 @@ function apiDel(path) {
   }).catch(function(){return false});
 }
 function forceLogin() {
-  if (window.location.protocol === 'file:' || localStorage.getItem('admin_redirecting')) return;
-  localStorage.setItem('admin_redirecting', '1');
+  if (window.location.protocol === 'file:') return;
+  var last = parseInt(localStorage.getItem('admin_redirecting') || '0', 10);
+  var now = Date.now();
+  // anti-boucle : max 1 redirection / 3 s (le flag n'est plus permanent)
+  if (now - last < 3000) return;
+  localStorage.setItem('admin_redirecting', String(now));
   localStorage.removeItem('admin_logged');
   localStorage.removeItem('admin_name');
   localStorage.removeItem('admin_token');
@@ -909,6 +914,7 @@ function forceLogin() {
       comments: document.getElementById('db-comments'),
       shares: document.getElementById('db-shares'),
       subs: document.getElementById('db-subs'),
+      donations: document.getElementById('db-donations'),
       sub: document.getElementById('db-visits-sub'),
       top: document.getElementById('db-top-body'),
       topHint: document.getElementById('db-top-hint'),
@@ -939,7 +945,7 @@ function forceLogin() {
     }
     function render(d) {
       if (!d) {
-        ['visits','uniques','readers','readsec','articles','comments','shares','subs'].forEach(function (k) {
+        ['visits','uniques','readers','readsec','articles','comments','shares','subs','donations'].forEach(function (k) {
           var el = els[k];
           if (el) el.textContent = '—';
         });
@@ -957,6 +963,7 @@ function forceLogin() {
       els.comments.textContent = Dash.fmt(t.comments || 0);
       els.shares.textContent = Dash.fmt(t.shares || 0);
       els.subs.textContent = Dash.fmt(t.subs || 0);
+      if (els.donations) els.donations.textContent = Dash.fmt(t.donations || 0);
       els.topHint.textContent = '(' + periodLabel[period] + ')';
       var s = d.series || {};
       var hasData = (s.visits || []).some(function (v) { return v > 0; });

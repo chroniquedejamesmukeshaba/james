@@ -1360,7 +1360,8 @@ def _find_donation(txn_id):
     return None
 
 def _valid_donation_payload(data, required_key=True):
-    """Validation serveur d'un don : montant borne, infos obligatoires."""
+    """Validation serveur d'un don : montant borne, infos obligatoires.
+    Si anonymous est vrai, nom/email/telephone ne sont pas requis (jamais conserves)."""
     errors = {}
     try:
         amount = float(data.get('amount'))
@@ -1370,9 +1371,14 @@ def _valid_donation_payload(data, required_key=True):
         amount = round(amount, 2)
         if not (1 <= amount <= 100000):
             errors['amount'] = 'Le montant doit etre compris entre 1 et 100000 USD.'
-    for field, label in (('campaignId', 'campagne'), ('name', 'nom'), ('email', 'email'), ('method', 'methode de paiement')):
+    anonymous = bool(data.get('anonymous'))
+    for field, label in (('campaignId', 'campagne'), ('method', 'methode de paiement')):
         if not str(data.get(field) or '').strip():
             errors[field] = 'Le champ "%s" est obligatoire.' % label
+    if not anonymous:
+        for field, label in (('name', 'nom'), ('email', 'email')):
+            if not str(data.get(field) or '').strip():
+                errors[field] = 'Le champ "%s" est obligatoire.' % label
     if required_key and not str(data.get('idempotency_key') or '').strip():
         errors['idempotency_key'] = 'Cle d idempotence manquante.'
     email = str(data.get('email') or '')
@@ -1419,14 +1425,17 @@ def add_donation():
         return jsonify({'ok': False, 'errors': {'method': 'Moyen de paiement inconnu.'}}), 400
 
     txn_id = 'DON-' + time.strftime('%Y%m%d%H%M%S', time.gmtime()) + '-' + uuid.uuid4().hex[:10].upper()
+    anonymous = bool(data.get('anonymous'))
     donation = {
         'txn_id': txn_id,
         'idempotency_key': idem,
         'amount': amount,
         'currency': 'USD',
-        'name': str(data.get('name') or '').strip()[:120],
-        'email': str(data.get('email') or '').strip()[:200],
-        'message': str(data.get('message') or '').strip()[:1000],
+        'anonymous': anonymous,
+        'name': 'Anonyme' if anonymous else str(data.get('name') or '').strip()[:120],
+        'email': '' if anonymous else str(data.get('email') or '').strip()[:200],
+        'phone': '' if anonymous else str(data.get('phone') or '').strip()[:30],
+        'message': '' if anonymous else str(data.get('message') or '').strip()[:1000],
         'method': method,
         'campaignId': campaign_id,
         'status': 'pending',
@@ -1441,6 +1450,114 @@ def add_donation():
     pay.log_event(read_json, write_json, 'donation_intent', {'txn_id': txn_id, 'amount': amount, 'method': method,
                                                   'campaign_id': donation['campaignId']})
     return jsonify({'ok': True, 'txn_id': txn_id, 'idempotency_key': idem})
+
+@app.route('/api/donations/stats', methods=['GET'])
+@admin_required
+def donation_stats():
+    """Statistiques de gestion : totaux, periodes, par campagne, par methode.
+    Seuls les dons confirmes (statut 'confirmed') comptent dans les montants."""
+    dons = read_json('donations')
+    now = time.time()
+    today0 = time.strftime('%Y-%m-%d', time.gmtime(now))
+    week0 = time.strftime('%Y-%m-%d', time.gmtime(now - 7 * 86400))
+    month0 = time.strftime('%Y-%m-01', time.gmtime(now))
+    total = 0.0
+    donors = set()
+    today = 0.0
+    week = 0.0
+    month = 0.0
+    by_campaign = {}
+    by_method = {}
+    for d in dons:
+        if d.get('status') != 'confirmed':
+            continue
+        amt = float(d.get('amount') or 0)
+        total += amt
+        daystr = (d.get('confirmedAt') or d.get('createdAt') or '')[:10]
+        if daystr == today0:
+            today += amt
+        if daystr >= week0:
+            week += amt
+        if daystr >= month0:
+            month += amt
+        identity = str(d.get('email') or '').strip() or str(d.get('name') or '').strip()
+        if identity:
+            donors.add(identity)
+        cid = d.get('campaignId')
+        by_campaign[str(cid)] = round(by_campaign.get(str(cid), 0) + amt, 2)
+        meth = d.get('method') or 'inconnu'
+        by_method[meth] = round(by_method.get(meth, 0) + amt, 2)
+    camps = {str(c['id']): c.get('title', '') for c in read_json('campaigns')}
+    by_campaign = {camps.get(k, 'Campagne #' + k): v for k, v in by_campaign.items()}
+    return jsonify({
+        'ok': True,
+        'total': round(total, 2),
+        'donors': len(donors),
+        'today': round(today, 2),
+        'week': round(week, 2),
+        'month': round(month, 2),
+        'by_campaign': by_campaign,
+        'by_method': by_method,
+    })
+
+@app.route('/api/donations/<txn_id>/status', methods=['POST'])
+@admin_required
+def set_donation_status(txn_id):
+    """Changement de statut d'un don par l'admin (en attente, reussi, echoue, annule, rembourse).
+    Le credit de la campagne est ajuste selon le statut (confirmed <-> autre)."""
+    allowed = {'pending', 'confirmed', 'failed', 'cancelled', 'refunded'}
+    status = str((request.json or {}).get('status') or '').strip()
+    if status not in allowed:
+        return jsonify({'ok': False, 'error': 'Statut inconnu.'}), 400
+    dons = read_json('donations')
+    don = next((d for d in dons if d.get('txn_id') == txn_id), None)
+    if not don:
+        return jsonify({'ok': False, 'error': 'Don introuvable.'}), 404
+    old = don.get('status')
+    if old == status:
+        return jsonify({'ok': True})
+    amt = float(don.get('amount') or 0)
+    if amt:
+        campaigns = read_json('campaigns')
+        camp = next((c for c in campaigns if c['id'] == don.get('campaignId')), None)
+        if camp is not None:
+            was_credited = (old == 'confirmed')
+            will_credit = (status == 'confirmed')
+            if was_credited and not will_credit:
+                camp['collected'] = max(0.0, round(float(camp.get('collected') or 0) - amt, 2))
+            elif will_credit and not was_credited:
+                camp['collected'] = round(float(camp.get('collected') or 0) + amt, 2)
+            write_json('campaigns', campaigns)
+    don['status'] = status
+    if status == 'confirmed':
+        don['confirmedAt'] = don.get('confirmedAt') or time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    write_json('donations', dons)
+    pay.log_event(read_json, write_json, 'donation_status_changed', {'txn_id': txn_id, 'from': old, 'to': status})
+    return jsonify({'ok': True})
+
+def _send_donation_email(don, subject, body):
+    """Envoi d'un email (ex. reçu de don) si un SMTP est configure via les
+    variables d'environnement SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS/SMTP_FROM.
+    Sans SMTP, l'envoi est silencieusement ignore (aucune erreur au visiteur)."""
+    host = os.environ.get('SMTP_HOST')
+    if not host or not don.get('email'):
+        return False
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['Subject'] = subject
+        msg['From'] = os.environ.get('SMTP_FROM') or os.environ.get('SMTP_USER') or 'noreply@chroniquedejamesmukeshaba.org'
+        msg['To'] = don['email']
+        with smtplib.SMTP(host, int(os.environ.get('SMTP_PORT') or 587), timeout=15) as s:
+            if os.environ.get('SMTP_USER'):
+                s.starttls()
+                s.login(os.environ['SMTP_USER'], os.environ.get('SMTP_PASS') or '')
+            s.send_message(msg)
+        pay.log_event(read_json, write_json, 'donation_receipt_email_sent', {'txn_id': don.get('txn_id')})
+        return True
+    except Exception:
+        return False
 
 def _confirm_donation(txn_id, provider_status='confirmed', provider_txn_id=''):
     """Confirmation COTE SERVEUR d'un don. Idempotent : la campagne n'est
@@ -1468,7 +1585,72 @@ def _confirm_donation(txn_id, provider_status='confirmed', provider_txn_id=''):
     write_json('campaigns', campaigns)
     pay.log_event(read_json, write_json, 'donation_confirmed', {'txn_id': txn_id, 'amount': don.get('amount'),
                                                      'campaign_id': don.get('campaignId')})
+    if don.get('email'):
+        _send_donation_email(don,
+            'Reçu de don - Chronique de James Mukeshaba',
+            'Bonjour,\n\nMerci pour votre soutien ! Votre contribution aide nos actions communautaires.\n\n'
+            'Reçu électronique de votre don :\n'
+            '  Référence : ' + str(don.get('txn_id') or '') + '\n'
+            '  Montant : ' + ('%.2f' % float(don.get('amount') or 0)) + ' USD\n'
+            '  Date : ' + str(don.get('confirmedAt') or '') + '\n'
+            '  Méthode : ' + str(don.get('method') or '') + '\n\n'
+            'Votre don est comptabilisé et sera affecté à la campagne correspondante.\n'
+            'Merci pour votre confiance.\n\nChronique de James Mukeshaba')
     return {'ok': True}
+
+# --- RAPPORTS DE TRANSPARENCE (publics ; publication par l'admin) ---
+@app.route('/api/reports', methods=['GET'])
+def list_reports():
+    reports = read_json('reports')
+    if request.headers.get('X-Admin-Token') and admin_ok():
+        return jsonify(reports)
+    return jsonify([r for r in reports if r.get('published')])
+
+@app.route('/api/reports', methods=['POST'])
+@admin_required
+def add_report():
+    data = request.json or {}
+    title = str(data.get('title') or '').strip()[:200]
+    if not title:
+        return jsonify({'ok': False, 'errors': {'title': 'Le titre est obligatoire.'}}), 400
+    reports = read_json('reports')
+    rid = max([r.get('id', 0) for r in reports], default=0) + 1
+    reports.append({
+        'id': rid,
+        'title': title,
+        'date': str(data.get('date') or '').strip()[:40] or time.strftime('%Y-%m-%d', time.gmtime()),
+        'category': str(data.get('category') or '').strip()[:80],
+        'body': str(data.get('body') or '').strip()[:10000],
+        'published': bool(data.get('published')),
+        'createdAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+    })
+    write_json('reports', reports)
+    return jsonify({'ok': True, 'id': rid})
+
+@app.route('/api/reports/<int:rid>', methods=['PUT', 'DELETE'])
+@admin_required
+def update_report(rid):
+    reports = read_json('reports')
+    report = next((r for r in reports if r.get('id') == rid), None)
+    if not report:
+        return jsonify({'ok': False, 'error': 'Rapport introuvable.'}), 404
+    if request.method == 'DELETE':
+        reports = [r for r in reports if r.get('id') != rid]
+        write_json('reports', reports)
+        return jsonify({'ok': True})
+    data = request.json or {}
+    if 'title' in data:
+        report['title'] = str(data.get('title') or '').strip()[:200]
+    if 'date' in data:
+        report['date'] = str(data.get('date') or '').strip()[:40]
+    if 'category' in data:
+        report['category'] = str(data.get('category') or '').strip()[:80]
+    if 'body' in data:
+        report['body'] = str(data.get('body') or '').strip()[:10000]
+    if 'published' in data:
+        report['published'] = bool(data.get('published'))
+    write_json('reports', reports)
+    return jsonify({'ok': True})
 
 # --- PAIEMENTS : initiation, webhooks, verification, configuration ---
 @app.route('/api/payments/methods', methods=['GET'])
@@ -1877,7 +2059,7 @@ def analytics_overview():
             'visits': len(visits), 'uniques': len(uniq), 'readers': read_n,
             'readSeconds': read_sec, 'avgReadSec': round(read_sec / read_n) if read_n else 0,
             'shares': shares_n, 'reactions': reactions_total, 'comments': comments_total,
-            'subs': len(read_json('newsletter')), 'donations': len(read_json('donations')),
+            'subs': len(read_json('newsletter')), 'donations': len([d for d in read_json('donations') if d.get('status') == 'confirmed']),
             'articles': len(art_list),
         },
         'series': {'labels': labels, 'visits': sv, 'uniques': su},

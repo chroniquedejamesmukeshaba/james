@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
   <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Donations &amp; Paiements - Administration</title>
+  <title>Gestion des dons - Administration</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="admin-body">
@@ -25,7 +25,7 @@
       <a href="articles.html">📝 Gestion des articles</a>
       <a href="pages.html">📄 Gestion des pages</a>
       <a href="campaigns.html">📢 Gestion des campagnes</a>
-      <a href="donations.html" class="active">💳 Donations &amp; Paiements</a>
+      <a href="donations.html" class="active">💳 Gestion des dons</a>
       <a href="comments.html">💬 Modération des commentaires</a>
       <a href="analytics.html">📈 Analytiques</a>
       <a href="security.html">🔐 Sécurité</a>
@@ -34,24 +34,88 @@
       <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <h2 style="color:var(--primary);margin-bottom:25px;">Donations &amp; Paiements</h2>
+      <h2 style="color:var(--primary);margin-bottom:25px;">Gestion des dons</h2>
 
       <div id="pay-msg" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-size:0.92rem;"></div>
 
-      <div style="display:flex;gap:10px;margin-bottom:15px;">
-        <button class="btn btn-outline" id="pay-filter-all">Toutes</button>
+      <h3 style="color:var(--primary);margin-bottom:15px;">Vue d'ensemble</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:15px;">
+        <div class="stat-card">
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Total collecté</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-total">—</p>
+        </div>
+        <div class="stat-card">
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Donateurs</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-donors">—</p>
+        </div>
+        <div class="stat-card">
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Dons aujourd'hui</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-today">—</p>
+        </div>
+        <div class="stat-card">
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Cette semaine</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-week">—</p>
+        </div>
+        <div class="stat-card">
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Ce mois</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-month">—</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:30px;">
+        <div class="stat-card">
+          <p style="font-size:0.85rem;font-weight:600;margin:0 0 10px;color:var(--primary);">Par campagne</p>
+          <div id="don-by-campaign" style="font-size:0.88rem;line-height:1.9;">Chargement&hellip;</div>
+        </div>
+        <div class="stat-card">
+          <p style="font-size:0.85rem;font-weight:600;margin:0 0 10px;color:var(--primary);">Par méthode de paiement</p>
+          <div id="don-by-method" style="font-size:0.88rem;line-height:1.9;">Chargement&hellip;</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
+        <button class="btn btn-outline active" id="pay-filter-all">Toutes</button>
         <button class="btn btn-outline" id="pay-filter-pending">En attente</button>
-        <button class="btn btn-outline" id="pay-filter-confirmed">Confirmés</button>
+        <button class="btn btn-outline" id="pay-filter-confirmed">Réussis</button>
         <button class="btn btn-outline" id="pay-filter-failed">Échecs / Annulés</button>
+        <button class="btn btn-outline" id="pay-filter-refunded">Remboursés</button>
       </div>
 
       <div class="admin-table" style="margin-bottom:35px;">
         <table>
-          <thead><tr><th>Référence</th><th>Donateur</th><th>Montant</th><th>Méthode</th><th>Campagne</th><th>Statut</th><th>Créé le</th><th>Confirmé le</th></tr></thead>
+          <thead><tr><th>Date</th><th>Donateur</th><th>Campagne</th><th>Montant</th><th>Méthode</th><th>Statut</th><th>Transaction</th></tr></thead>
           <tbody id="donations-body">
-            <tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Chargement&hellip;</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Chargement&hellip;</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <h3 style="color:var(--primary);margin-bottom:15px;">Rapports de transparence</h3>
+      <div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
+          Publiez ici vos rapports financiers, rapports d'activités et résultats. Ils sont affichés publiquement sur la page « Nos actions communautaires » dès qu'ils sont publiés.
+        </p>
+        <div id="reports-list" style="margin-bottom:18px;font-size:0.9rem;">Chargement&hellip;</div>
+        <div style="border-top:1px solid #e2e8f0;padding-top:18px;">
+          <p style="font-weight:600;margin:0 0 12px;">Ajouter un rapport</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;">
+            <input type="text" id="rep-title" class="form-input" placeholder="Titre du rapport *">
+            <input type="date" id="rep-date" class="form-input">
+            <select id="rep-category" class="form-input">
+              <option value="Financier">Rapport financier</option>
+              <option value="Activites">Rapport d'activités</option>
+              <option value="Resultats">Résultats</option>
+              <option value="Autre">Autre</option>
+            </select>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;white-space:nowrap;">
+              <input type="checkbox" id="rep-published" checked> Publié immédiatement
+            </label>
+          </div>
+          <textarea id="rep-body" class="form-input" rows="4" placeholder="Contenu du rapport (utilisation des fonds, résultats, photos, etc.)"></textarea>
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" id="rep-add">➕ Ajouter le rapport</button>
+            <span id="rep-status" style="font-size:0.85rem;color:var(--text-light);"></span>
+          </div>
+        </div>
       </div>
 
       <h3 style="color:var(--primary);margin-bottom:15px;">Moyens de paiement (prestataires officiels)</h3>
@@ -109,6 +173,9 @@
       vodacom_mpesa: 'Vodacom M-Pesa RDC (API officielle)',
       card: 'Carte Visa / Mastercard (passerelle agrégée)'
     };
+    var METHOD_SHORT = { paypal: 'PayPal', card: 'Visa / Mastercard', airtel_money: 'Airtel Money', orange_money: 'Orange Money', vodacom_mpesa: 'Vodacom M-Pesa' };
+    var STATUS_LABELS = { pending: 'En attente', confirmed: 'Réussi', failed: 'Échoué', cancelled: 'Annulé', refunded: 'Remboursé' };
+    var STATUS_ALL = ['pending', 'confirmed', 'failed', 'cancelled', 'refunded'];
     var SECRET_FIELDS = ['client_secret', 'webhook_secret', 'api_key'];
 
     function fmtUSD(v) { return Number(v || 0).toLocaleString('en-US', {style:'currency', currency:'USD'}); }
@@ -127,44 +194,163 @@
       setTimeout(function(){ m.style.display = 'none'; }, 6000);
     }
 
+    function dateFmt(s) {
+      if (!s) return '—';
+      var clean = String(s).replace('T', ' ').slice(0, 19);
+      return clean;
+    }
+
+    /* ---------- Statistiques ---------- */
+    function loadStats() {
+      api('GET', '/api/donations/stats').then(function (s) {
+        if (!s || !s.ok) return;
+        document.getElementById('don-total').textContent = fmtUSD(s.total);
+        document.getElementById('don-donors').textContent = s.donors;
+        document.getElementById('don-today').textContent = fmtUSD(s.today);
+        document.getElementById('don-week').textContent = fmtUSD(s.week);
+        document.getElementById('don-month').textContent = fmtUSD(s.month);
+        document.getElementById('don-by-campaign').innerHTML = renderPairs(s.by_campaign);
+        document.getElementById('don-by-method').innerHTML = renderPairs(s.by_method, METHOD_SHORT);
+      });
+    }
+    function renderPairs(obj, labels) {
+      var keys = Object.keys(obj || {});
+      if (!keys.length) return '<span style="color:#999;">Aucun don confirmé.</span>';
+      return keys.sort(function (a, b) { return (obj[b] || 0) - (obj[a] || 0); }).map(function (k) {
+        var label = labels && labels[k] ? labels[k] : k;
+        return '<div style="display:flex;justify-content:space-between;gap:10px;"><span>'+esc(label)+'</span><strong>'+fmtUSD(obj[k])+'</strong></div>';
+      }).join('');
+    }
+
     /* ---------- Liste des transactions ---------- */
     var currentFilter = 'all';
+    var campaignTitles = {};
+    function loadCampaignTitles() {
+      fetch('/api/campaigns?_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
+        (list || []).forEach(function (c) { campaignTitles[c.id] = c.title; });
+      }).catch(function () {});
+    }
+    function statusBadge(status) {
+      var st = STATUS_LABELS[status] || '—';
+      var color = status === 'confirmed' ? 'color:#166534;background:#e7f6ec;'
+        : status === 'refunded' ? 'color:#1e40af;background:#dbeafe;'
+        : status === 'pending' ? 'color:#92400e;background:#fef3c7;'
+        : 'color:#b91c1c;background:#fde8e8;';
+      return '<span style="' + color + 'padding:2px 10px;border-radius:12px;white-space:nowrap;">' + esc(st) + '</span>';
+    }
+    function statusSelect(txn, status) {
+      if (!txn) return statusBadge(status);
+      return '<select class="don-status" data-txn="' + esc(txn) + '" style="padding:4px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.82rem;">' +
+        STATUS_ALL.map(function (s) {
+          return '<option value="' + s + '"' + (s === status ? ' selected' : '') + '>' + STATUS_LABELS[s] + '</option>';
+        }).join('') + '</select>';
+    }
     function loadDonations() {
       api('GET', '/api/donations').then(function(list) {
-        if (!Array.isArray(list)) { document.getElementById('donations-body').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Session expir&eacute;e ou acc&egrave;s refus&eacute;. Veuillez vous reconnecter via l\'espace administrateur.</td></tr>'; return; }
+        if (!Array.isArray(list)) { document.getElementById('donations-body').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Session expir&eacute;e ou acc&egrave;s refus&eacute;. Veuillez vous reconnecter via l\'espace administrateur.</td></tr>'; return; }
         var rows = list.filter(function(d){
-          if (currentFilter === 'pending') return d.status === 'pending';
+          if (currentFilter === 'pending') return (d.status || 'pending') === 'pending';
           if (currentFilter === 'confirmed') return d.status === 'confirmed';
           if (currentFilter === 'failed') return ['failed','cancelled'].indexOf(d.status) >= 0;
+          if (currentFilter === 'refunded') return d.status === 'refunded';
           return true;
         });
         if (!rows.length) {
-          document.getElementById('donations-body').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Aucune transaction.</td></tr>';
+          document.getElementById('donations-body').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Aucune transaction.</td></tr>';
           return;
         }
         document.getElementById('donations-body').innerHTML = rows.map(function(d){
-          var badge = d.status === 'confirmed' ? 'color:#166534;background:#e7f6ec;padding:2px 10px;border-radius:12px;'
-            : d.status === 'pending' ? 'color:#92400e;background:#fef3c7;padding:2px 10px;border-radius:12px;'
-            : 'color:#b91c1c;background:#fde8e8;padding:2px 10px;border-radius:12px;';
-          return '<tr><td><code style="font-size:0.78rem;">'+esc(d.txn_id)+'</code></td>' +
-            '<td>'+esc(d.name)+'<br><small style="color:#999;">'+esc(d.email)+'</small></td>' +
+          var status = d.status || 'pending';
+          var camp = campaignTitles[d.campaignId] || '—';
+          return '<tr>' +
+            '<td style="white-space:nowrap;">'+dateFmt(d.confirmedAt || d.createdAt || d.date)+'</td>' +
+            '<td>'+esc(d.name || '—')+(d.email ? '<br><small style="color:#999;">'+esc(d.email)+'</small>' : '')+'</td>' +
+            '<td style="font-size:0.8rem;">'+esc(camp)+'</td>' +
             '<td><strong>'+fmtUSD(d.amount)+'</strong></td>' +
-            '<td>'+esc((PROVIDER_LABELS[d.method]||d.method).split(' (')[0])+'</td>' +
-            '<td style="font-size:0.8rem;">'+esc(d.campaignId || '—')+'</td>' +
-            '<td><span style="'+badge+'">'+esc(d.status||'')+'</span></td>' +
-            '<td>'+(d.createdAt||'—').slice(0,19).replace('T',' ')+'</td>' +
-            '<td>'+(d.confirmedAt ? d.confirmedAt.slice(0,19).replace('T',' ') : '—')+'</td></tr>';
+            '<td>'+esc((PROVIDER_LABELS[d.method] || METHOD_SHORT[d.method] || d.method || '—').split(' (')[0])+'</td>' +
+            '<td>'+statusSelect(d.txn_id, status)+'</td>' +
+            '<td>'+(d.txn_id ? '<code style="font-size:0.75rem;">'+esc(d.txn_id)+'</code>' : '—')+'</td>' +
+            '</tr>';
         }).join('');
+        document.querySelectorAll('.don-status').forEach(function (sel) {
+          sel.addEventListener('change', function () {
+            api('POST', '/api/donations/' + encodeURIComponent(this.dataset.txn) + '/status', {status: this.value}).then(function (res) {
+              if (res && res.ok) { showMsg(true, 'Statut mis à jour.'); loadStats(); }
+              else { showMsg(false, 'Erreur lors de la mise à jour du statut.'); loadDonations(); }
+            });
+          });
+        });
       });
     }
 
-    ['all','pending','confirmed','failed'].forEach(function(f){
+    ['all','pending','confirmed','failed','refunded'].forEach(function(f){
       document.getElementById('pay-filter-'+f).addEventListener('click', function(){
         currentFilter = f;
-        ['all','pending','confirmed','failed'].forEach(function(x){
+        ['all','pending','confirmed','failed','refunded'].forEach(function(x){
           document.getElementById('pay-filter-'+x).classList.toggle('active', x === f);
         });
         loadDonations();
+      });
+    });
+
+    /* ---------- Rapports de transparence ---------- */
+    function renderReports(list) {
+      if (!Array.isArray(list)) { document.getElementById('reports-list').innerHTML = '<span style="color:#999;">Chargement&hellip;</span>'; return; }
+      if (!list.length) { document.getElementById('reports-list').innerHTML = '<span style="color:#999;">Aucun rapport publié pour le moment.</span>'; return; }
+      document.getElementById('reports-list').innerHTML = list.map(function (r) {
+        var badge = r.published ? 'color:#166534;background:#e7f6ec;padding:2px 10px;border-radius:12px;' : 'color:#92400e;background:#fef3c7;padding:2px 10px;border-radius:12px;';
+        return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:10px;">' +
+          '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">' +
+          '<div><strong>'+esc(r.title)+'</strong> <span style="color:#999;font-size:0.8rem;">('+esc(r.category||'')+', '+esc(r.date||'')+')</span><br>' +
+          '<small style="color:var(--text-light);">'+esc((r.body||'').slice(0,120))+(r.body && r.body.length > 120 ? '&hellip;' : '')+'</small></div>' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+          '<span style="'+badge+'">'+(r.published ? 'Publié' : 'Brouillon')+'</span>' +
+          '<button class="btn btn-outline" data-act="pub" data-id="'+r.id+'" style="padding:5px 12px;font-size:0.8rem;">'+(r.published ? 'Dépublier' : 'Publier')+'</button>' +
+          '<button class="btn btn-outline" data-act="del" data-id="'+r.id+'" style="padding:5px 12px;font-size:0.8rem;color:#b91c1c;">Supprimer</button>' +
+          '</div></div></div>';
+      }).join('');
+      document.querySelectorAll('#reports-list button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = this.dataset.id;
+          if (this.dataset.act === 'del') {
+            if (!confirm('Supprimer ce rapport ?')) return;
+            api('DELETE', '/api/reports/' + id).then(function (res) { if (res && res.ok) { showMsg(true, 'Rapport supprimé.'); loadReports(); } });
+            return;
+          }
+          api('GET', '/api/reports').then(function (all) {
+            var r = (all || []).find(function (x) { return String(x.id) === String(id); });
+            if (r) api('PUT', '/api/reports/' + id, {published: !r.published}).then(function (res) { if (res && res.ok) { showMsg(true, 'Publication mise à jour.'); loadReports(); } });
+          });
+        });
+      });
+    }
+    function loadReports() {
+      api('GET', '/api/reports').then(renderReports);
+    }
+    document.getElementById('rep-add').addEventListener('click', function () {
+      var title = document.getElementById('rep-title').value.trim();
+      if (!title) { document.getElementById('rep-status').textContent = 'Le titre est obligatoire.'; return; }
+      var payload = {
+        title: title,
+        date: document.getElementById('rep-date').value || '',
+        category: document.getElementById('rep-category').value,
+        body: document.getElementById('rep-body').value.trim(),
+        published: document.getElementById('rep-published').checked
+      };
+      var btn = document.getElementById('rep-add');
+      btn.disabled = true;
+      api('POST', '/api/reports', payload).then(function (res) {
+        btn.disabled = false;
+        document.getElementById('rep-status').textContent = '';
+        if (res && res.ok) {
+          showMsg(true, 'Rapport ajouté.');
+          document.getElementById('rep-title').value = '';
+          document.getElementById('rep-body').value = '';
+          document.getElementById('rep-date').value = '';
+          loadReports();
+        } else {
+          showMsg(false, 'Erreur lors de l\'ajout du rapport.');
+        }
       });
     });
 
@@ -261,9 +447,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+      loadStats();
+      loadCampaignTitles();
       loadDonations();
       loadConfig();
       loadLog();
+      loadReports();
     });
   </script>
 </body>

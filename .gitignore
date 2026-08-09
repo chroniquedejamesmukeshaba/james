@@ -19,3 +19,14 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# Donnees sensibles (comptes admin, tokens de session, secrets de paiement)
+server_data/admins.json
+server_data/admin_tokens.json
+server_data/payments_config.json
+
+# Donnees volatiles (regenerees par le serveur)
+server_data/visits.json
+server_data/payment_log.json
+server_data/media.json
+server_data/reports.json
