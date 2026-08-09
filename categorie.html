@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
+  <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catégorie - Chronique de James Mukeshaba</title>
   <meta name="description" content="Tous les articles de la catÃ©gorie.">
@@ -22,6 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/redesign.css">
   <meta property="og:site_name" content="Chronique de James Mukeshaba">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:type" content="website">
@@ -88,6 +90,14 @@
   <main id="main-content">
     <div class="container breadcrumb cat-breadcrumb" id="cat-bread"></div>
     <section class="cat-hero container" id="cat-hero"></section>
+    <section class="container cat-tools" id="cat-tools" aria-label="Tri des articles">
+      <span class="cat-tools-label">Trier par</span>
+      <div class="cat-tools-group" role="group" aria-label="Ordre des articles">
+        <button class="cat-sort-btn active" data-sort="recent">Plus r&eacute;cents</button>
+        <button class="cat-sort-btn" data-sort="popular">Plus lus</button>
+        <button class="cat-sort-btn" data-sort="commented">Plus comment&eacute;s</button>
+      </div>
+    </section>
     <section class="container cat-layout">
       <div class="cat-main">
         <div class="sr-searchbox cp-search">
@@ -224,7 +234,8 @@
         list: document.getElementById('cat-list'),
         side: document.getElementById('cat-side'),
         pager: document.getElementById('cat-pager'),
-        bread: document.getElementById('cat-bread')
+        bread: document.getElementById('cat-bread'),
+        tools: document.getElementById('cat-tools')
       });
     })();
   </script>
@@ -251,3 +262,4 @@
     })();
   </script>
 </body>
+</html>

@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/redesign.css">
   <meta property="og:site_name" content="Chronique de James Mukeshaba">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:type" content="website">
@@ -252,18 +253,40 @@
         loadFromServer();
       });
 
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+      var S = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+      var IC = {
+        clock: S + '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        eye: S + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        user: S + '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        arrow: S + '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+        newspaper: S + '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V7"/><line x1="10" y1="7" x2="18" y2="7"/><line x1="10" y1="11" x2="18" y2="11"/><line x1="10" y1="15" x2="14" y2="15"/></svg>'
+      };
       function render() {
-        grid.innerHTML = articles.map(function(a) {
-          var imgHtml = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
-            ? '<img class="card-img" src="' + a.image + '" alt="' + a.title + '" loading="lazy" decoding="async" style="object-fit:cover;">'
-            : '<div class="card-img" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:3rem;">📰</div>';
-          return '<div class="card">' + imgHtml +
-            '<div class="card-body">' +
-            '<div class="card-category">' + a.category + '</div>' +
-            '<h2 class="card-title"><a href="/article?id=' + a.id + '">' + a.title + '</a></h2>' +
-            '<p class="card-text">' + a.excerpt + '</p>' +
-            '<div class="card-footer"><span>' + a.date + '</span><span>' + a.author + '</span></div>' +
-            '</div></div>';
+        var list = articles.slice().sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
+        grid.innerHTML = list.map(function (a) {
+          var img = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
+            ? '<img src="' + esc(a.image) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">'
+            : '<span class="no-thumb">' + IC.newspaper + '</span>';
+          var mins = parseInt(a.readMins || 0, 10) > 0 ? parseInt(a.readMins, 10) : 2;
+          var views = parseInt(a.views, 10) > 0 ? parseInt(a.views, 10) : 0;
+          var comments = parseInt(a.comments, 10) > 0 ? parseInt(a.comments, 10) : 0;
+          return '<article class="home-card">' +
+            '<a class="thumb" href="/article?id=' + esc(a.id) + '" tabindex="-1" aria-hidden="true">' + img + '</a>' +
+            '<div class="body">' +
+            '<div class="cat"><a href="/categorie/' + esc(a.cat || '') + '">' + esc(a.category || '') + '</a></div>' +
+            '<h3><a href="/article?id=' + esc(a.id) + '">' + esc(a.title) + '</a></h3>' +
+            (a.excerpt ? '<p class="p-summary">' + esc(a.excerpt) + '</p>' : '') +
+            '<div class="foot">' +
+            '<span class="fc">' + IC.clock + '<span>' + mins + ' min</span></span>' +
+            '<span class="fc">' + IC.eye + '<span>' + views + '</span></span>' +
+            (comments > 0 ? '<span class="fc">' + IC.user + '<span>' + comments + '</span></span>' : '') +
+            '<a class="read-link" href="/article?id=' + esc(a.id) + '">' + (typeof t === 'function' ? t('home_view') : 'Lire') + ' ' + IC.arrow + '</a>' +
+            '</div></div></article>';
         }).join('');
       }
       loadFromServer();
@@ -292,3 +315,4 @@
     })();
   </script>
 </body>
+</html>

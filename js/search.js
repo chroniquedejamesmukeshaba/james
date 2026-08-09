@@ -21,6 +21,7 @@
     sort_relevance: 'Pertinence',
     sort_recent: 'Plus r\u00e9cents',
     sort_popular: 'Plus populaires',
+    sort_commented: 'Plus comment\u00e9s',
     filter_category: 'Cat\u00e9gorie',
     all_cats: 'Toutes',
     clear: 'Effacer les filtres',
@@ -63,6 +64,22 @@
   }
   function linkOf(a) { return '/article?id=' + esc(a.id); }
   function catLink(slug) { return '/categorie/' + esc(slug); }
+  var S = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
+  var ICONS = {
+    clock: S + '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    eye: S + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    arrow: S + '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'
+  };
+  function readMinOf(a) {
+    var m = parseInt(a.readMins || a.readMin || 0, 10);
+    return m > 0 ? m : 2;
+  }
+  function statsOf(a) {
+    var v = parseInt(a.views, 10);
+    var html = '<span class="r-stat">' + ICONS.clock + ' ' + readMinOf(a) + ' min</span>';
+    if (!isNaN(v) && v > 0) html += '<span class="r-stat">' + ICONS.eye + ' ' + v + '</span>';
+    return html;
+  }
   function metaOf(a) {
     var html = '';
     if (a.category) html += '<a class="r-cat" href="' + catLink(a.cat || '') + '">' + esc(a.category) + '</a>';
@@ -79,8 +96,8 @@
       '<div class="r-meta">' + metaOf(a) + '</div>' +
       '<h3><a href="' + linkOf(a) + '">' + esc(a.title) + '</a></h3>' +
       (a.excerpt ? '<p class="r-excerpt">' + esc(a.excerpt) + '</p>' : '') +
-      '<a class="r-link" href="' + linkOf(a) + '">' + L('results') + ' &#10148;</a>' +
-      '</div></article>';
+      '<div class="r-foot">' + statsOf(a) + '<a class="r-link" href="' + linkOf(a) + '">' + L('results') + ' ' + ICONS.arrow + '</a>' +
+      '</div></div></article>';
   }
 
   function miniRow(a) {
@@ -222,9 +239,10 @@
         defaultEl = els.default, clearBtn = els.clear, countEl = els.count;
 
     function currentFilters() {
+      var chip = catsEl ? catsEl.querySelector('.cat-chip.active') : null;
       return {
         q: input.value.trim(),
-        cat: catsEl ? (catsEl.querySelector('.cat-chip.active') || {}).dataset.cat || '' : '',
+        cat: chip && chip.dataset ? chip.dataset.cat || '' : '',
         from: fromEl ? fromEl.value : '',
         to: toEl ? toEl.value : '',
         author: authorEl ? authorEl.value.trim() : '',
@@ -379,10 +397,24 @@
   // ================= PAGE CATEGORIE =================
   function CategoryPage(els) {
     var slug = (els.slug || '').replace(/[^a-z0-9\-]/g, '');
-    var heroEl = els.hero, listEl = els.list, sideEl = els.side, pagerEl = els.pager, breadEl = els.bread;
+    var heroEl = els.hero, listEl = els.list, sideEl = els.side, pagerEl = els.pager,
+        breadEl = els.bread, toolsEl = els.tools;
+    var sort = 'recent';
+
+    function sortList(articles) {
+      var list = articles.slice();
+      if (sort === 'popular') {
+        list.sort(function (x, y) { return ((y.pop || 0) - (x.pop || 0)) || ((y.id || 0) - (x.id || 0)); });
+      } else if (sort === 'commented') {
+        list.sort(function (x, y) { return ((y.comments || 0) - (x.comments || 0)) || ((y.id || 0) - (x.id || 0)); });
+      } else {
+        list.sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
+      }
+      return list;
+    }
 
     function renderList(articles, page) {
-      var list = articles.slice().sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
+      var list = sortList(articles);
       var total = Math.max(1, Math.ceil(list.length / PER_PAGE));
       var start = (page - 1) * PER_PAGE;
       var slice = list.slice(start, start + PER_PAGE);
@@ -403,7 +435,7 @@
           b.addEventListener('click', function () {
             if (b.classList.contains('disabled')) return;
             renderList(articles, parseInt(b.dataset.pg, 10));
-            window.scrollTo({ top: listEl.offsetTop - 80, behavior: 'smooth' });
+            window.scrollTo({ top: (toolsEl || listEl).offsetTop - 80, behavior: 'smooth' });
           });
         });
       }
@@ -425,6 +457,7 @@
           '<h2><a href="' + linkOf(p) + '">' + esc(p.title) + '</a></h2>' +
           (p.excerpt ? '<p>' + esc(p.excerpt) + '</p>' : '') +
           '<div class="r-meta">' + metaOf(p) + '</div>' +
+          '<div class="r-foot">' + statsOf(p) + '</div>' +
           '</div></div>' : '');
       document.title = d.name + ' - Chronique de James Mukeshaba';
       renderList(d.articles, 1);
@@ -444,12 +477,25 @@
           }).join('') + '</div>';
       }
       sideEl.innerHTML = side || '';
+      if (toolsEl) {
+        var lbl = toolsEl.querySelector('.cat-tools-label');
+        if (lbl) lbl.textContent = L('sort');
+        toolsEl.querySelectorAll('.cat-sort-btn').forEach(function (b) {
+          b.textContent = b.dataset.sort === 'popular' ? L('sort_popular') : (b.dataset.sort === 'commented' ? L('sort_commented') : L('sort_recent'));
+          b.addEventListener('click', function () {
+            sort = b.dataset.sort || 'recent';
+            toolsEl.querySelectorAll('.cat-sort-btn').forEach(function (x) { x.classList.toggle('active', x === b); });
+            renderList(d.articles, 1);
+          });
+        });
+      }
     }
 
     get('/api/category/' + slug + '?lang=' + langParam())
       .then(function (d) { render(d); })
       .catch(function () {
         heroEl.innerHTML = '<div class="sg-note">' + esc(L('notfound')) + '</div>';
+        if (toolsEl) toolsEl.style.display = 'none';
       });
   }
 

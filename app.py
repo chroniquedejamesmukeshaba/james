@@ -372,12 +372,71 @@ def article_lite(a, lang='fr'):
     if img.startswith('data:'):
         cp['image'] = ''
     cp['cat'] = cat_slug(cp.get('category'))
+    cp['views'] = _article_views(str(a.get('id')))
+    cp['comments'] = _article_comments(a.get('id'))
+    cp['readMins'] = _article_read_mins(cp.get('content') or a.get('content') or '')
     if lang and lang != 'fr':
         for f in ('title', 'excerpt'):
             k = f + '_' + lang
             if k in cp and cp[k]:
                 cp[f] = cp[k]
     return cp
+
+
+def _article_views(aid):
+    try:
+        visits = read_json('visits')
+        c = 0
+        for v in visits:
+            if isinstance(v, dict) and str(v.get('articleId')) == str(aid):
+                c += 1
+        return c
+    except Exception:
+        return 0
+
+
+def _article_read_mins(content):
+    try:
+        text = str(content or '').replace('\n', ' ')
+        words = len([w for w in text.split(' ') if w.strip()])
+        return max(1, int(round(words / 200.0)))
+    except Exception:
+        return 1
+
+
+_COMMENT_COUNTS = None
+
+
+def _comment_counts():
+    global _COMMENT_COUNTS
+    if _COMMENT_COUNTS is not None:
+        return _COMMENT_COUNTS
+    counts = {}
+    try:
+        d = os.path.join(BASE, 'server_data')
+        for fname in os.listdir(d):
+            if fname.startswith('comments_') and fname.endswith('.json'):
+                aid = fname[len('comments_'):-len('.json')]
+                try:
+                    arr = json.load(open(os.path.join(d, fname), 'r', encoding='utf-8'))
+                except Exception:
+                    continue
+                n = 0
+                for c in arr:
+                    if isinstance(c, dict) and not c.get('pending'):
+                        n += 1
+                if n:
+                    counts[aid] = n
+    except Exception:
+        pass
+    return counts
+
+
+def _article_comments(aid):
+    try:
+        return int(_comment_counts().get(str(aid), 0))
+    except Exception:
+        return 0
 
 # --- MEDIATHEQUE : upload / listing / suppression d'images ---
 MEDIA_DIR = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
@@ -535,21 +594,7 @@ def get_articles():
 @app.route('/api/articles/lite')
 def get_articles_lite():
     lang = request.args.get('lang', 'fr')
-    out = []
-    for a in _public_articles():
-        cp = dict(a)
-        cp.pop('content', None)
-        for k in list(cp):
-            if k.startswith('content_'): cp.pop(k, None)
-        img = cp.get('image') or ''
-        if img.startswith('data:'):
-            cp['image'] = ''
-        if lang and lang != 'fr':
-            for f in ('title', 'excerpt'):
-                k = f + '_' + lang
-                if k in cp and cp[k]: cp[f] = cp[k]
-        out.append(cp)
-    return jsonify(out)
+    return jsonify([article_lite(a, lang) for a in _public_articles()])
 
 @app.route('/api/articles/<int:aid>')
 def get_article(aid):

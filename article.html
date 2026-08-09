@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/redesign.css">
   <meta property="og:site_name" content="Chronique de James Mukeshaba">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:type" content="article">
@@ -88,7 +89,8 @@
   </section>
 
   <section class="section">
-    <div class="container">
+    <div class="container layout-with-side">
+      <div class="side-main">
       <article class="article-detail">
         <div class="article-kicker">
           <span class="chip" id="article-category" style="background:rgba(192,57,43,0.08);color:var(--secondary);border-color:transparent;">ActualitÃ©</span>
@@ -129,6 +131,23 @@
         <div class="reactions" id="reactions" aria-label="RÃ©actions"></div>
       </article>
 
+      <nav class="article-pager" aria-label="Navigation entre articles">
+        <a id="prev-article" class="pager-card" href="#" aria-label="Article précédent">
+          <span class="pager-dir">&larr; <span data-i18n="prev_article">Article précédent</span></span>
+          <span class="pager-title" id="prev-article-title"></span>
+        </a>
+        <a id="next-article" class="pager-card" href="#" aria-label="Article suivant">
+          <span class="pager-dir"><span data-i18n="next_article">Article suivant</span> &rarr;</span>
+          <span class="pager-title" id="next-article-title"></span>
+        </a>
+      </nav>
+
+      <section class="related-section" id="related-section" aria-label="Articles recommandés" style="display:none;">
+        <h2 class="related-title" data-i18n="related_title">À lire ensuite</h2>
+        <div class="section-grid related-grid" id="related-grid"></div>
+        <div class="line-clamp"><a class="head-link" href="actualites.html" data-i18n="home_view_more">Voir plus d'articles</a></div>
+      </section>
+
       <div class="comments-section">
         <h2 data-i18n="comments_title">Commentaires</h2>
         <div id="comments-list" data-article-id=""></div>
@@ -143,6 +162,30 @@
           <button type="submit" class="btn btn-primary" data-i18n="comment_submit">Publier le commentaire</button>
         </form>
       </div>
+      </div>
+
+      <aside class="widget-stack" aria-label="À côté de l'article">
+        <div class="widget" data-widget="alaune">
+          <h3 data-i18n="home_alaune">À la Une</h3>
+          <div class="widget-list"></div>
+        </div>
+        <div class="widget" data-widget="popular">
+          <h3 data-i18n="popular_title">Les plus lus</h3>
+          <div class="widget-list"></div>
+        </div>
+        <div class="widget" data-widget="categories">
+          <h3 data-i18n="nav_categories">Catégories</h3>
+          <div class="widget-cats"></div>
+        </div>
+        <div class="widget widget-newsletter" data-widget="newsletter">
+          <h3 data-i18n="newsletter_title">Newsletter</h3>
+          <p data-i18n="newsletter_desc">Recevez les principales actualités directement dans votre boîte mail.</p>
+          <form class="widget-nl-form">
+            <input type="email" placeholder="Votre adresse email" required aria-label="Adresse email" autocomplete="email">
+            <button type="submit" class="btn btn-primary btn-sm" data-i18n="newsletter_button">S'abonner</button>
+          </form>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -451,12 +494,55 @@ function renderShare(article) {
         window.scrollTo(0, 0);
       }
 
+      function loadNavAndRelated() {
+        if (window.location.protocol === 'file:') return;
+        var wrap = document.getElementById('related-grid');
+        var sec = document.getElementById('related-section');
+        fetch('/api/articles/lite?lang=' + siteLang).then(function (r) { return r.json(); }).then(function (all) {
+          if (!all || !all.length) return;
+          var sortedAll = all.slice().sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
+          var idx = -1;
+          for (var i = 0; i < sortedAll.length; i++) { if (String(sortedAll[i].id) === String(articleId)) { idx = i; break; } }
+          if (idx === -1) return;
+          var cur = sortedAll[idx];
+          var prev = idx > 0 ? sortedAll[idx - 1] : null;
+          var next = idx < sortedAll.length - 1 ? sortedAll[idx + 1] : null;
+          if (prev) {
+            document.getElementById('prev-article').href = '/article?id=' + prev.id;
+            document.getElementById('prev-article-title').textContent = prev.title;
+          } else { document.getElementById('prev-article').style.visibility = 'hidden'; }
+          if (next) {
+            document.getElementById('next-article').href = '/article?id=' + next.id;
+            document.getElementById('next-article-title').textContent = next.title;
+          } else { document.getElementById('next-article').style.visibility = 'hidden'; }
+          var sameCat = all.filter(function (a) {
+            return String(a.id) !== String(articleId) && String(a.cat || '') === String(cur.cat || '');
+          });
+          var others = sameCat.concat(all.filter(function (a) { return String(a.id) !== String(articleId) && String(a.cat || '') !== String(cur.cat || ''); }));
+          var picks = others.slice(0, 4);
+          if (picks.length) {
+            sec.style.display = 'block';
+            wrap.innerHTML = '';
+            wrap.innerHTML = picks.map(function (a) {
+              var rd = parseInt(a.readMins || 0, 10) > 0 ? parseInt(a.readMins, 10) : 2;
+              var had = a.image && (a.image.indexOf('/') === 0 || a.image.indexOf('http') === 0);
+              return '<article class="rel-card home-card"><a class="thumb" href="/article?id=' + esc(a.id) + '" tabindex="-1" aria-hidden="true">' +
+                (had ? '<img src="' + esc(a.image) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '<span class="no-thumb">📰</span>') +
+                '</a><div class="body"><div class="cat">' + esc(a.cat || a.category || '') + '</div>' +
+                '<h3><a href="/article?id=' + esc(a.id) + '">' + esc(a.title) + '</a></h3>' +
+                '<div class="foot"><span>' + esc(a.date || '') + '</span><span>' + rd + ' min</span></div></div></div>';
+            }).join('');
+          }
+        }).catch(function () {});
+      }
+
       function loadArticle() {
         if (window.location.protocol !== 'file:') {
           fetch('/api/articles/' + articleId + '?lang=' + siteLang).then(function (r) { return r.ok ? r.json() : null; }).then(function (a) {
             if (a && a.content) displayArticle(a);
             else loadLocalArticle();
-          }).catch(function () { loadLocalArticle(); });
+            loadNavAndRelated();
+          }).catch(function () { loadLocalArticle(); loadNavAndRelated(); });
         } else loadLocalArticle();
       }
 
@@ -531,3 +617,4 @@ function renderShare(article) {
     })();
   </script>
 </body>
+</html>
