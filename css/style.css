@@ -317,6 +317,7 @@ h4 { font-size: 1.15rem; }
   gap: 8px;
 }
 .top-bar a { color: var(--white); text-decoration: none; }
+.top-bar .social-links { display: flex; align-items: center; }
 .top-bar .social-links a { margin-left: 12px; font-size: 1rem; opacity: 0.92; transition: opacity .15s; }
 .top-bar .social-links a:hover { opacity: 1; }
 .social-links a svg,
@@ -359,6 +360,7 @@ header {
 
 /* ===== NAVIGATION ===== */
 nav { display: flex; align-items: center; }
+nav.top-nav { display: block; }
 nav ul { display: flex; list-style: none; gap: 5px; }
 nav ul li a {
   padding: 8px 14px;
