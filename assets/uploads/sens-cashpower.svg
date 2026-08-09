@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#713f12"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="overlay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.75"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <g transform="translate(400,210)" fill="#fff" opacity="0.92">
+    <circle r="120" fill="none" stroke="#fff" stroke-width="14" opacity="0.9"/>
+    <circle r="78" fill="none" stroke="#fff" stroke-width="14" opacity="0.9"/>
+    <path d="M0 26 v-20 m0 66 v-18" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <path d="M-20 20 A 26 26 0 0 1 20 20" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <path d="M0 22 l26 0 M0 34 l-16 8" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <rect width="800" height="450" fill="url(#overlay)"/>
+  <text x="40" y="392" font-family="Arial, sans-serif" font-size="44" font-weight="800" fill="#fff">CASHPOWER : recharger son compteur SNEL</text>
+  <text x="40" y="426" font-family="Arial, sans-serif" font-size="24" fill="#fde68a">Achetez uniquement sur les canaux officiels, m&#xE9;fiez-vous des fraudeurs</text>
+</svg>

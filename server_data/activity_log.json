@@ -28,5 +28,35 @@
     "action": "connexion",
     "target": "connexion a la plateforme",
     "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786294102782,
+    "ts": 1786294102.7825606,
+    "date": "2026-08-09T18:48:22",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786298521980,
+    "ts": 1786298521.9800549,
+    "date": "2026-08-09T20:02:01",
+    "user": "?",
+    "role": "",
+    "action": "media ajoute",
+    "target": "3e7693ac47d14f5b8c1a9e47575803fe.png",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786298521995,
+    "ts": 1786298521.9952686,
+    "date": "2026-08-09T20:02:01",
+    "user": "?",
+    "role": "",
+    "action": "media supprime",
+    "target": "3e7693ac47d14f5b8c1a9e47575803fe.png",
+    "ip": "127.0.0.1"
   }
 ]

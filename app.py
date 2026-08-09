@@ -521,9 +521,47 @@ def media_delete(fname):
     log_activity('media supprime', fname)
     return jsonify({'ok': True})
 
+@app.route('/api/media/<fname>', methods=['PUT'])
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
+def media_update(fname):
+    """Met à jour les métadonnées (alt, caption) et/ou remplace le fichier image."""
+    fname = os.path.basename(fname or '')
+    if not fname:
+        return jsonify({'error': 'fichier inconnu'}), 404
+    meta = _media_meta()
+    if fname not in meta:
+        return jsonify({'error': 'fichier inconnu'}), 404
+    d = request.get_json(silent=True) or {}
+    if 'alt' in d:
+        meta[fname]['alt'] = str(d.get('alt') or '')[:300]
+    if 'caption' in d:
+        meta[fname]['caption'] = str(d.get('caption') or '')[:300]
+    b64 = str(d.get('image') or '')
+    if b64 and ',' in b64:
+        head, data = b64.split(',', 1)
+        try:
+            raw = base64.b64decode(data)
+        except Exception:
+            return jsonify({'error': 'base64 invalide'}), 400
+        if len(raw) > 16 * 1024 * 1024:
+            return jsonify({'error': 'fichier trop lourd (max 16 Mo)'}), 413
+        path = os.path.join(MEDIA_DIR, fname)
+        try:
+            with open(path, 'wb') as f:
+                f.write(raw)
+        except Exception as e:
+            return jsonify({'error': 'ecriture impossible: ' + str(e)}), 500
+        meta[fname]['size'] = len(raw)
+        meta[fname]['updated'] = time.time()
+        log_activity('media remplace', fname)
+    _save_media_meta(meta)
+    return jsonify({'ok': True, 'url': meta[fname].get('url')})
+
 @app.route('/media/<path:fname>')
 def media_serve(fname):
-    return send_from_directory(MEDIA_DIR, os.path.basename(fname))
+    resp = send_from_directory(MEDIA_DIR, os.path.basename(fname))
+    resp.headers['Cache-Control'] = 'public, max-age=604800, immutable'
+    return resp
 
 # --- STATUTS ARTICLES (publie / brouillon / programme / corbeille) ---
 def _norm_status(a):
@@ -3071,7 +3109,13 @@ def serve_static(path):
         return jsonify({'error': 'not found'}), 404
     full = os.path.join(BASE, path)
     if os.path.isfile(full):
-        return send_from_directory(BASE, path)
+        resp = send_from_directory(BASE, path)
+        ext = os.path.splitext(base_name)[1].lower()
+        if ext in ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.mp4', '.webm', '.mp3', '.ogg'):
+            resp.headers['Cache-Control'] = 'public, max-age=604800'
+        elif ext in ('.css', '.js', '.mjs', '.map'):
+            resp.headers['Cache-Control'] = 'public, max-age=3600'
+        return resp
     if '.' in base_name:
         return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')

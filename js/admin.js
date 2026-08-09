@@ -102,6 +102,14 @@ function apiDel(path) {
     return r.ok;
   }).catch(function(){return false});
 }
+function apiPut(path, data) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'PUT',headers:authHeaders(),body:JSON.stringify(data)})
+    .then(function(r){
+      if (r.status === 401) { forceLogin(); return null; }
+      return r.ok ? r.json() : null;
+    }).catch(function(){return null});
+}
 function forceLogin() {
   if (window.location.protocol === 'file:') return;
   var last = parseInt(localStorage.getItem('admin_redirecting') || '0', 10);

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7f1d1d"/>
+      <stop offset="1" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="overlay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.75"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <circle cx="660" cy="90" r="150" fill="#fff" opacity="0.08"/>
+  <circle cx="120" cy="390" r="120" fill="#fff" opacity="0.08"/>
+  <g fill="#fff" opacity="0.95">
+    <path d="M400 90c-38 0-66 30-66 66 0 52 66 120 66 120s66-68 66-120c0-36-28-66-66-66zm0 92c-16 0-28-12-28-27s12-27 28-27 28 12 28 27-12 27-28 27z"/>
+    <path d="M400 296l-10-9c-66-56-116-98-116-132a44 44 0 0 1 76-31 44 44 0 0 1 76 31c0 34-50 76-116 132z" opacity="0.35"/>
+    <path d="M400 300c-28-14-60-20-92-18a40 40 0 0 0-28 62c16 18 42 24 66 20v66h108v-66c24 4 50-2 66-20a40 40 0 0 0-28-62c-32-2-64 4-92 18z" opacity="0.35"/>
+  </g>
+  <rect width="800" height="450" fill="url(#overlay)"/>
+  <text x="40" y="392" font-family="Arial, sans-serif" font-size="46" font-weight="800" fill="#fff">EBOLA : la pr&#xE9;vention sauve des vies</text>
+  <text x="40" y="426" font-family="Arial, sans-serif" font-size="24" fill="#fecaca">Lavage des mains, gestes barri&#xE8;res, vaccination, surveillance</text>
+</svg>

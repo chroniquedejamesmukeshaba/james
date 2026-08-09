@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4c1d95"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="overlay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.75"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <g fill="#fff" opacity="0.95">
+    <circle cx="400" cy="170" r="46"/>
+    <path d="M400 210c-80 0-130 52-140 120h280c-10-68-60-120-140-120z"/>
+    <path d="M320 250 q-20 90-80 170 h30 l40-90 40 90 h30 q-30-70-60-170z" opacity="0.5"/>
+  </g>
+  <circle cx="585" cy="105" r="26" fill="#fff" opacity="0.9"/>
+  <rect width="800" height="450" fill="url(#overlay)"/>
+  <text x="40" y="392" font-family="Arial, sans-serif" font-size="46" font-weight="800" fill="#fff">Violences bas&#xE9;es sur le genre : brisons le silence</text>
+  <text x="40" y="426" font-family="Arial, sans-serif" font-size="24" fill="#fbcfe8">D&#xE9;noncez, accompagnez, soutenez les victimes de VBG</text>
+</svg>

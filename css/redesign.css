@@ -1,10 +1,10 @@
 /* ============================================================
-   REFONTE 2026 — DESIGN SYSTEM DE LA CHRONIQUE DE JAMES MUKESHABA
+   REFONTE 2026 â€” DESIGN SYSTEM DE LA CHRONIQUE DE JAMES MUKESHABA
    Couche de modernisation par-dessus style.css / home.css
    (aucune structure HTML obligatoire en moins ; classes nouvelles)
    ============================================================ */
 
-/* ---------- 16. COULEURS : tokens sémantiques complets ---------- */
+/* ---------- 16. COULEURS : tokens sÃ©mantiques complets ---------- */
 :root {
   --primary: #123a63;
   --primary-hover: #0e2f50;
@@ -75,7 +75,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: 6px;
 }
 
-/* ---------- 14. BOUTONS : hiérarchie + états ---------- */
+/* ---------- 14. BOUTONS : hiÃ©rarchie + Ã©tats ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -147,7 +147,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @keyframes btn-spin { to { transform: rotate(360deg); } }
 html[data-theme="dark"] .btn.is-loading::after { border-color: rgba(0, 0, 0, 0.25); border-top-color: currentColor; }
 
-/* Alias anciens boutons restylés */
+/* Alias anciens boutons restylÃ©s */
 .btn-support {
   background: var(--secondary);
   color: #fff;
@@ -204,7 +204,7 @@ html[data-theme="dark"] .site-header.is-scrolled { box-shadow: 0 6px 24px -12px 
 .header-actions { gap: 10px; }
 .menu-toggle { width: 44px; height: 44px; border-radius: 12px; }
 
-/* Navbar : onglets avec soulignement animé */
+/* Navbar : onglets avec soulignement animÃ© */
 .main-nav-bar {
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -256,7 +256,7 @@ html[data-theme="dark"] .site-header.is-scrolled { box-shadow: 0 6px 24px -12px 
 .top-nav .top-bar { font-size: 0.82rem; padding: 7px 0; }
 .tb-date { color: rgba(255, 255, 255, 0.82); font-weight: 500; }
 
-/* ---------- 12. MENU MOBILE : drawer animé ---------- */
+/* ---------- 12. MENU MOBILE : drawer animÃ© ---------- */
 @media (max-width: 1024px) {
   .menu-toggle { display: inline-flex; }
   #main-nav ul {
@@ -353,7 +353,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
   background: var(--surface);
 }
 
-/* ---------- 6. HERO HOMEPAGE : grille média professionnelle ---------- */
+/* ---------- 6. HERO HOMEPAGE : grille mÃ©dia professionnelle ---------- */
 .home-hero {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -612,13 +612,13 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .read-link:hover { gap: 8px; }
 .read-link:hover svg { transform: translateX(2px); }
 
-/* FeaturedNewsCard : grande carte (1ère de la section Dernières actualités) */
+/* FeaturedNewsCard : grande carte (1Ã¨re de la section DerniÃ¨res actualitÃ©s) */
 .home-card.nc-featured { grid-column: span 2; grid-row: span 2; }
 .home-card.nc-featured .thumb { aspect-ratio: 16 / 10; }
 .home-card.nc-featured h3 { font-size: 1.4rem; }
 .home-card.nc-featured .p-summary { -webkit-line-clamp: 3; font-size: 0.98rem; }
 
-/* TrendingNewsCard : liste numérotée (les plus lus) */
+/* TrendingNewsCard : liste numÃ©rotÃ©e (les plus lus) */
 .pop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .pop-card {
   position: relative;
@@ -707,7 +707,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .compact-card .cc-meta { font-size: 0.74rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
 .compact-card .cc-meta svg { width: 13px; height: 13px; }
 
-/* CategoryCard (widget catégories) */
+/* CategoryCard (widget catÃ©gories) */
 .category-chip {
   display: inline-flex;
   align-items: center;
@@ -1028,7 +1028,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .reaction-btn:hover { border-color: var(--secondary); color: var(--text); transform: translateY(-1px); }
 .reaction-btn.active { background: var(--secondary-soft); border-color: var(--secondary); color: var(--secondary); }
 
-/* Pager précedent / suivant */
+/* Pager prÃ©cedent / suivant */
 .article-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
 .pager-card {
   display: flex;
@@ -1086,7 +1086,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 #comment-form .form-input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 #comment-form textarea.form-input { min-height: 110px; resize: vertical; }
 
-/* ---------- 10. PAGE CATÉGORIE ---------- */
+/* ---------- 10. PAGE CATÃ‰GORIE ---------- */
 .cat-hero {
   background: linear-gradient(140deg, var(--primary), var(--primary-hover));
   border-radius: var(--radius-card);
@@ -1276,7 +1276,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .search-results { max-height: 60vh; overflow-y: auto; }
 .search-empty { padding: 26px; text-align: center; color: var(--muted); }
 
-/* ---------- 10b. RECHERCHE : page résultats ---------- */
+/* ---------- 10b. RECHERCHE : page rÃ©sultats ---------- */
 .search-hero {
   background: linear-gradient(140deg, var(--primary), var(--primary-hover));
   border-radius: var(--radius-card);
@@ -1290,7 +1290,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .search-filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; align-items: center; }
 .search-filters label { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* ---------- FOOTER modernisé ---------- */
+/* ---------- FOOTER modernisÃ© ---------- */
 footer {
   background: #0e2338;
   color: #c7d4e2;
@@ -1457,7 +1457,7 @@ html[data-theme="dark"] .search-panel, html[data-theme="dark"] .live-panel { bac
 html[data-theme="dark"] .cat-hero, html[data-theme="dark"] .search-hero { background: linear-gradient(140deg, #10233a, #0a1a2c); box-shadow: none; }
 html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { background: var(--surface); }
 
-/* ---------- Accessibilité : réduit mouvement ---------- */
+/* ---------- AccessibilitÃ© : rÃ©duit mouvement ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
@@ -1492,7 +1492,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
 .mne-cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .mne-support { width: 100%; justify-content: center; }
 
-/* ---------- Page catégorie : article principal ---------- */
+/* ---------- Page catÃ©gorie : article principal ---------- */
 .cat-hero-top { position: relative; z-index: 1; }
 .cat-principal {
   display: grid;
@@ -1530,7 +1530,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
   display: inline-block;
 }
 
-/* ---------- Page catégorie : sidebar ---------- */
+/* ---------- Page catÃ©gorie : sidebar ---------- */
 .cat-side {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1542,7 +1542,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
   gap: 8px;
 }
 
-/* ---------- Résultats (recherche / catégorie) : cartes harmonisées ---------- */
+/* ---------- RÃ©sultats (recherche / catÃ©gorie) : cartes harmonisÃ©es ---------- */
 .r-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; margin: 22px 0; }
 .r-card {
   background: var(--surface);
@@ -1613,7 +1613,7 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 .sr-block-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; margin: 26px 0 14px; display: flex; align-items: center; gap: 12px; }
 .sr-block-title::before { content: ""; width: 5px; height: 22px; border-radius: 3px; background: linear-gradient(180deg, var(--secondary), var(--secondary-hover)); }
 
-/* ---------- Chips catégories ---------- */
+/* ---------- Chips catÃ©gories ---------- */
 .cat-chip {
   display: inline-flex;
   align-items: center;
@@ -1636,7 +1636,7 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 .sg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .f-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-right: 6px; }
 
-/* ---------- Suggestions instantanées ---------- */
+/* ---------- Suggestions instantanÃ©es ---------- */
 .sg-note { padding: 18px; text-align: center; color: var(--muted); font-size: 0.9rem; }
 .sg-title { padding: 12px 14px 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
 .sg-item {
@@ -1672,6 +1672,190 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 }
 .widget-nl-form input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 
-/* ---------- Pages : contenu éditorial ---------- */
+/* ---------- Pages : contenu Ã©ditorial ---------- */
 .section-title { margin: 40px 0 20px; font-weight: 800; letter-spacing: -0.3px; }
 .page-content { font-size: 1.02rem; line-height: 1.8; color: var(--text); }
+
+/* =====================================================
+   AJUSTEMENTS DEMANDE CLIENT : top-bar transparent,
+   logo en majuscules, cartes newsletter, sÃ©lecteur langue
+   ===================================================== */
+
+/* ---------- TOP-BAR TRANSPARENT (au lieu du fond bleu) ---------- */
+.top-bar {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--color-border);
+  padding: 6px 0;
+}
+.top-bar .tb-date { color: var(--text); font-weight: 600; }
+.top-bar .social-links a { color: var(--muted); }
+.top-bar .social-links a:hover { background: var(--primary-soft); color: var(--primary); }
+
+/* ---------- HEADER LÃ‰GÃˆREMENT TRANSLUCIDE ---------- */
+.site-header {
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(20, 40, 70, 0.05), 0 6px 24px rgba(16, 40, 68, 0.06);
+}
+
+/* ---------- LOGO EN MAJUSCULES, STYLE PROFESSIONNEL ---------- */
+.logo-text h1 {
+  text-transform: uppercase;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 1.08rem;
+  letter-spacing: 1.6px;
+  color: var(--color-primary);
+  margin: 0;
+  line-height: 1.15;
+}
+.logo-text h1::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 3px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+  border-radius: 2px;
+}
+.logo-text span { font-size: 0.72rem; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; }
+footer h4[data-i18n="logo_title"], footer h4:first-child {
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* ---------- SÃ‰LECTEUR DE LANGUE MODERNE ---------- */
+.lang-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px;
+  margin: 0 6px;
+}
+.lang-selector .lang-btn {
+  background: transparent !important;
+  color: var(--muted) !important;
+  border: none !important;
+  border-radius: 999px;
+  padding: 4px 10px !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.lang-selector .lang-btn:hover { color: var(--primary) !important; }
+.lang-selector .lang-btn.active {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(26, 58, 92, 0.3);
+}
+
+/* ---------- CARTE NEWSLETTER Â« Abonnez-vous Â» ---------- */
+.newsletter-section { margin-top: 8px; }
+.newsletter-inner { display: block !important; }
+.nl-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background: linear-gradient(120deg, var(--color-surface), var(--color-surface-2));
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 26px 28px;
+  margin: 26px auto;
+  max-width: 100%;
+  box-shadow: var(--shadow-sm), 0 10px 30px rgba(16, 40, 68, 0.06);
+  flex-wrap: wrap;
+}
+.nl-card .nl-card-ico {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--color-accent), #e0685a);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(192, 57, 43, 0.3);
+}
+.nl-card .nl-card-ico svg { width: 24px; height: 24px; }
+.nl-card .nl-card-text { flex: 1; min-width: 220px; }
+.nl-card .nl-card-text h3 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: var(--text); }
+.nl-card .nl-card-text p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1.4;
+  min-width: 300px;
+}
+.newsletter-form .nl-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.newsletter-form input[type="text"], .newsletter-form input[type="email"] {
+  flex: 1;
+  min-width: 150px;
+  padding: 11px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.newsletter-form input:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--focus-ring); }
+.newsletter-form .nl-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+.newsletter-form .nl-cats label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.newsletter-form .nl-cats label:hover { border-color: var(--color-primary); color: var(--primary); }
+.newsletter-form .nl-cats input { accent-color: var(--color-accent); }
+.newsletter-form .btn { align-self: flex-start; }
+.newsletter-form .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ---------- CARTE NOTIFICATIONS Â« Recevez les derniÃ¨res actualitÃ©s Â» ---------- */
+.newsletter-inner.notif-inner { display: flex !important; align-items: center; gap: 22px; flex-wrap: wrap; }
+.ntf-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 6px; color: var(--text); }
+.ntf-desc { font-size: 0.88rem; color: var(--muted); margin: 0; line-height: 1.5; }
+.ntf-prefs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.ntf-prefs label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.ntf-prefs input { accent-color: var(--color-accent); }
+.ntf-cta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; justify-content: flex-end; min-width: 260px; }
+.ntf-cta input {
+  padding: 10px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 0.86rem;
+  background: var(--color-surface);
+  color: var(--text);
+}
+.ntf-btn { white-space: nowrap; }

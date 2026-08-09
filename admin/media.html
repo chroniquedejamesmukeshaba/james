@@ -6,16 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Médiathèque - Administration</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    .media-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-top:15px; }
-    .media-card { border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:#fff; }
-    .media-card img { width:100%; height:110px; object-fit:cover; display:block; }
-    .media-card .media-meta { padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
-    .media-card .media-name { font-size:0.72rem; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .media-card button { border:none; background:none; cursor:pointer; color:#c0392b; font-size:0.9rem; }
-    .media-url { width:100%; border:none; outline:none; font-size:0.7rem; color:#1565c0; background:#f5f7fa; padding:6px 8px; cursor:pointer; }
-  </style>
 </head>
 <body class="admin-body">
   <div class="admin-header">
@@ -27,71 +19,162 @@
     </div>
   </div>
   <div class="admin-layout">
-    <nav class="admin-sidebar">
+    <nav class="admin-sidebar" aria-label="Navigation administrateur">
       <a href="index.html">📊 Tableau de bord</a>
       <a href="articles.html">📝 Gestion des articles</a>
-      <a href="pages.html">📄 Gestion des pages</a>
-      <a href="campaigns.html">📢 Gestion des campagnes</a>
-
-      <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">💬 Modération des commentaires</a>
-      <a href="analytics.html">📈 Analytiques</a>
-      <a href="security.html">🔐 Sécurité</a>
-      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
-      <a href="media.html" class="active">🖼️ Médiathèque</a>
-      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-        <h2 style="color:var(--primary);">🖼️ Médiathèque</h2>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" id="media-search" class="form-input" placeholder="Rechercher une image..." style="width:220px;">
-          <label class="btn btn-primary" style="cursor:pointer;margin:0;">⬆️ Importer une image
+      <div class="admin-page-head">
+        <div>
+          <h2>🖼️ Médiathèque</h2>
+          <div class="adm-breadcrumb"><a href="index.html">Tableau de bord</a> / Médiathèque</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="search" id="media-search" class="form-input" placeholder="🔍 Rechercher une image..." style="width:220px;" aria-label="Rechercher une image">
+          <label class="btn btn-primary" style="cursor:pointer;margin:0;">📤 Importer une image
             <input type="file" id="media-upload-input" accept="image/*" style="display:none;">
           </label>
         </div>
       </div>
+
       <div id="media-grid" class="media-grid"></div>
-      <div id="media-empty" style="display:none;text-align:center;color:#999;padding:50px 0;">
-        Aucune image dans la médiathèque. Importez votre première image ci-dessus.
+      <div class="ui-state" id="media-loading" style="display:none;">
+        <div class="skeleton" style="height:140px;max-width:320px;margin:0 auto 14px;"></div>
+        <div class="ui-title">Chargement de la médiathèque…</div>
+      </div>
+      <div class="ui-state" id="media-empty" style="display:none;">
+        <div class="ui-ico">🖼️</div>
+        <div class="ui-title">Aucune image dans la médiathèque</div>
+        <div class="ui-msg">Importez votre première image ci-dessus.</div>
+      </div>
+      <div class="ui-state ui-error" id="media-error" style="display:none;">
+        <div class="ui-ico">⚠️</div>
+        <div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div>
       </div>
     </main>
   </div>
+
+  <div class="adm-lightbox" id="media-lightbox" role="dialog" aria-modal="true" aria-label="Aperçu de l'image">
+    <button type="button" class="lb-close" id="lb-close" aria-label="Fermer l'aperçu">✕</button>
+    <img id="lb-img" src="" alt="Aperçu agrandi">
+  </div>
+
   <script src="../js/main.js"></script>
+  <script src="../js/admin-layout.js"></script>
   <script src="../js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var grid = document.getElementById('media-grid');
       var empty = document.getElementById('media-empty');
+      var error = document.getElementById('media-error');
+      var loading = document.getElementById('media-loading');
       var search = document.getElementById('media-search');
       var upload = document.getElementById('media-upload-input');
+      var lightbox = document.getElementById('media-lightbox');
+      var lbImg = document.getElementById('lb-img');
+
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function showState(which) {
+        [empty, error, loading].forEach(function (el) { if (el) el.style.display = el === which ? 'block' : 'none'; });
+      }
 
       window.mediaPageLoad = function () {
+        grid.innerHTML = '';
+        showState(loading);
         apiGet('/media').then(function (media) {
-          if (!media) { grid.innerHTML = '<div style="color:#c0392b;">Impossible de charger la médiathèque.</div>'; return; }
-          empty.style.display = media.length ? 'none' : 'block';
+          if (!media) { showState(error); return; }
+          if (!media.length) { showState(empty); return; }
+          showState(null);
           var q = (search.value || '').toLowerCase();
           var items = q ? media.filter(function (m) { return (m.name || '').toLowerCase().indexOf(q) !== -1; }) : media;
+          if (!items.length) { showState(empty); return; }
           grid.innerHTML = items.map(function (m) {
             return '<div class="media-card">' +
-              '<img src="' + m.url + '" alt="' + (m.name || '') + '">' +
-              '<input class="media-url" value="' + m.url + '" readonly title="Cliquer pour copier" onclick="this.select();document.execCommand(\'copy\');showToast(\'URL copiée.\');">' +
+              '<div class="media-thumb" onclick="openLightbox(\'' + m.url + '\')" title="Agrandir">' +
+                '<img src="' + esc(m.url) + '" alt="' + esc(m.alt || m.name || '') + '" loading="lazy" decoding="async">' +
+                '<span class="zoom-hint" aria-hidden="true">🔍</span>' +
+              '</div>' +
+              '<input class="media-url" value="' + esc(m.url) + '" readonly title="Cliquer pour copier l’URL" onclick="this.select();document.execCommand(\'copy\');showToast(\'URL copiée.\');">' +
               '<div class="media-meta">' +
-              '<span class="media-name" title="' + (m.name || '') + '">' + (m.name || '') + '</span>' +
-              '<button onclick="mediaDelete(\'' + m.url + '\')" title="Supprimer">🗑</button>' +
+                '<span class="media-name" title="' + esc(m.name || '') + '">' + esc(m.name || '') + '</span>' +
+                '<button onclick="mediaDelete(\'' + esc(m.url) + '\')" title="Supprimer définitivement" aria-label="Supprimer ' + esc(m.name || '') + '">🗑</button>' +
+              '</div>' +
+              '<div class="media-edit">' +
+                '<input type="text" class="m-alt" value="' + esc(m.alt || '') + '" placeholder="Texte alternatif (alt)" aria-label="Texte alternatif">' +
+                '<input type="text" class="m-cap" value="' + esc(m.caption || '') + '" placeholder="Légende" aria-label="Légende">' +
+                '<div style="display:flex;gap:6px;">' +
+                  '<button type="button" class="btn btn-sm btn-outline m-save" data-url="' + esc(m.url) + '" style="flex:1;">💾 Enregistrer</button>' +
+                  '<label class="btn btn-sm btn-secondary m-replace" style="cursor:pointer;margin:0;flex:1;">🔄 Remplacer<input type="file" accept="image/*" style="display:none;" data-url="' + esc(m.url) + '"></label>' +
+                '</div>' +
               '</div></div>';
           }).join('');
-        });
+
+          grid.querySelectorAll('.m-save').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var card = btn.closest('.media-card');
+              var name = btn.dataset.url.split('/').pop();
+              var payload = {
+                alt: card.querySelector('.m-alt').value,
+                caption: card.querySelector('.m-cap').value
+              };
+              btn.classList.add('is-loading');
+              btn.disabled = true;
+              apiPut('/media/' + encodeURIComponent(name), payload).then(function (res) {
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+                if (res && res.ok) showToast('Métadonnées enregistrées.');
+                else showToast('Enregistrement impossible.', 'error');
+              });
+            });
+          });
+          grid.querySelectorAll('.m-replace input').forEach(function (inp) {
+            inp.addEventListener('change', function (e) {
+              var file = e.target.files[0];
+              if (!file) return;
+              var name = inp.dataset.url.split('/').pop();
+              var reader = new FileReader();
+              reader.onload = function (ev) {
+                apiPut('/media/' + encodeURIComponent(name), { image: ev.target.result }).then(function (res) {
+                  if (res && res.ok) { showToast('Image remplacée.'); window.mediaPageLoad(); }
+                  else showToast('Remplacement impossible.', 'error');
+                });
+              };
+              reader.readAsDataURL(file);
+            });
+          });
+        }).catch(function () { showState(error); });
       };
+
       window.mediaDelete = function (url) {
-        if (!confirm('Supprimer ce fichier définitivement ?')) return;
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier définitivement ?')) return;
         var name = url.split('/').pop();
         fetch('/api/media/' + encodeURIComponent(name), { method: 'DELETE', headers: authHeaders() })
           .then(function (r) {
             if (r.status === 401) { forceLogin(); return; }
             if (r.ok) { showToast('Fichier supprimé.'); window.mediaPageLoad(); }
+            else showToast('Suppression impossible.', 'error');
           });
       };
+
+      window.openLightbox = function (url) {
+        lbImg.src = url;
+        lbImg.alt = 'Aperçu agrandi';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      };
+      function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      document.getElementById('lb-close').addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', function (e) { if (e.target === lightbox) closeLightbox(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox(); });
+
       search.addEventListener('input', function () { clearTimeout(window._mt); window._mt = setTimeout(window.mediaPageLoad, 300); });
       upload.addEventListener('change', function (e) {
         var file = e.target.files[0];
@@ -104,6 +187,7 @@
           });
         };
         reader.readAsDataURL(file);
+        e.target.value = '';
       });
       window.mediaPageLoad();
     });

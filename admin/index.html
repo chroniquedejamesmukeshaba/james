@@ -9,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Administration</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body class="admin-body">
   <div class="admin-header">
@@ -71,10 +72,25 @@
           <div class="number" id="db-articles">0</div>
           <div class="label">Articles publiés</div>
         </div>
+        <div class="stat-card accent-warn">
+          <div class="number" id="db-drafts">0</div>
+          <div class="label">Brouillons</div>
+          <div class="sub"><a href="articles.html#brouillons" class="adm-link" style="font-size:0.78rem;">Voir les brouillons</a></div>
+        </div>
+        <div class="stat-card">
+          <div class="number" id="db-totalviews">0</div>
+          <div class="label">Vues d'articles</div>
+          <div class="sub">total cumulé</div>
+        </div>
         <div class="stat-card">
           <div class="number" id="db-comments">0</div>
           <div class="label">Commentaires</div>
           <div class="trend" id="db-comments-trend"></div>
+        </div>
+        <div class="stat-card accent-ok">
+          <div class="number" id="db-users">0</div>
+          <div class="label">Utilisateurs</div>
+          <div class="sub"><a href="security.html#comptes" class="adm-link" style="font-size:0.78rem;">Comptes &amp; rôles</a></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-shares">0</div>
@@ -148,6 +164,30 @@
         <div id="db-countries"></div>
       </div>
 
+      <div class="dash-card" style="margin-bottom:24px;">
+        <h3>Répartition des articles
+          <span class="hint">données réelles</span>
+        </h3>
+        <div id="db-status-dist" style="max-width:560px;"></div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom:24px;">
+        <h3>Contenus récents
+          <span class="hint" id="db-recent-hint"></span>
+        </h3>
+        <div class="admin-table">
+          <table>
+            <thead><tr><th>Titre</th><th>Catégorie</th><th>Statut</th><th>Vues</th><th>Date</th></tr></thead>
+            <tbody id="db-recent-body"></tbody>
+          </table>
+        </div>
+        <div class="ui-state" id="db-recent-empty" style="display:none;">
+          <div class="ui-ico">📄</div>
+          <div class="ui-title">Aucun article pour le moment</div>
+          <div class="ui-msg">Créez votre premier article depuis la gestion des articles.</div>
+        </div>
+      </div>
+
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
         <h3 style="color:var(--primary);margin-bottom:15px;">⚡ Breaking News</h3>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">Activez la barre d'actualité affichée en haut du site et choisissez l'article mis en avant. L'article doit être marqué « Breaking News » dans la gestion des articles.</p>
@@ -196,6 +236,8 @@
     </main>
   </div>
   <script src="../js/main.js"></script>
+  <script src="../js/admin-layout.js"></script>
   <script src="../js/admin.js"></script>
+  <script src="../js/admin-dashboard-extra.js"></script>
 </body>
 </html>

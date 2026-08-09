@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestion des articles - Administration</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
@@ -173,10 +174,12 @@
             <label>Galerie d'images (une URL par ligne)</label>
             <textarea id="art-gallery" class="form-input" placeholder="/assets/uploads/photo1.jpg&#10;/assets/uploads/photo2.jpg" rows="2"></textarea>
           </div>
-          <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 Enregistrer / publier</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">🚀 Enregistrer / publier</button>
+            <button type="button" class="btn btn-secondary" id="save-draft-btn">📝 Enregistrer le brouillon</button>
             <button type="button" class="btn btn-outline" id="cancel-article">Annuler</button>
           </div>
+          <div style="font-size:0.75rem;color:#999;margin-top:10px;">Astuce : « Enregistrer le brouillon » masque l'article du public tant qu'il n'est pas publié.</div>
         </form>
       </div>
 
@@ -205,9 +208,76 @@
           <tbody id="articles-table-body"></tbody>
         </table>
       </div>
+
+      <div class="panel" id="cats" style="margin-top:26px;">
+        <h3>🏷️ Catégories utilisées <span class="hint">déduites des articles existants</span></h3>
+        <div id="cats-wrap"><div class="skeleton" style="height:16px;margin:6px 0;"></div></div>
+      </div>
+
+      <div class="panel" id="auteurs" style="margin-top:20px;">
+        <h3>👤 Auteurs <span class="hint">déduits des articles existants</span></h3>
+        <div id="authors-wrap"><div class="skeleton" style="height:16px;margin:6px 0;"></div></div>
+      </div>
     </main>
   </div>
   <script src="../js/main.js"></script>
+  <script src="../js/admin-layout.js"></script>
   <script src="../js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      fetch('/api/admin/articles', { headers: { 'Cache-Control': 'no-cache' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (articles) {
+          var cats = document.getElementById('cats-wrap');
+          var auth = document.getElementById('authors-wrap');
+          if (!articles) {
+            if (cats) cats.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div></div>';
+            if (auth) auth.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div></div>';
+            return;
+          }
+          var byCat = {};
+          var byAuth = {};
+          articles.forEach(function (a) {
+            var c = (a.category || 'Sans catégorie').trim();
+            byCat[c] = (byCat[c] || 0) + 1;
+            var au = (a.author || 'Inconnu').trim();
+            byAuth[au] = (byAuth[au] || 0) + 1;
+          });
+          var catKeys = Object.keys(byCat).sort(function (x, y) { return byCat[y] - byCat[x]; });
+          var authKeys = Object.keys(byAuth).sort(function (x, y) { return byAuth[y] - byAuth[x]; });
+          if (cats) {
+            cats.innerHTML = catKeys.length
+              ? '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + catKeys.map(function (k) {
+                  return '<span class="badge badge-info">' + k + ' <strong>· ' + byCat[k] + '</strong></span>';
+                }).join('') + '</div>'
+              : '<div class="ui-state"><div class="ui-title">Aucun article pour le moment</div></div>';
+          }
+          if (auth) {
+            auth.innerHTML = authKeys.length
+              ? '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + authKeys.map(function (k) {
+                  return '<span class="badge badge-muted">' + k + ' <strong>· ' + byAuth[k] + '</strong></span>';
+                }).join('') + '</div>'
+              : '<div class="ui-state"><div class="ui-title">Aucun auteur pour le moment</div></div>';
+          }
+        })
+        .catch(function () {});
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var draftBtn = document.getElementById('save-draft-btn');
+      if (draftBtn) {
+        draftBtn.addEventListener('click', function () {
+          var st = document.getElementById('art-status');
+          if (!st) return;
+          st.value = 'brouillon';
+          var sched = document.getElementById('art-sched-wrap');
+          if (sched) sched.style.display = 'none';
+          var form = document.getElementById('article-form');
+          if (form) form.requestSubmit();
+        });
+      }
+    });
+  </script>
 </body>
 </html>

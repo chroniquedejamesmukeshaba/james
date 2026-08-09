@@ -192,37 +192,48 @@
   
   </main>
   <section class="newsletter-section" id="notif-block" aria-label="Notifications">
-    <div class="container newsletter-inner notif-inner">
-      <div class="newsletter-text">
-        <h2 class="ntf-title">Recevez les derni&egrave;res actualit&eacute;s</h2>
-        <p class="ntf-desc">Activez les notifications pour &ecirc;tre alert&eacute; d&egrave;s la publication d'un article ou d'une Breaking News.</p>
-        <div class="ntf-prefs">
-          <label><input type="checkbox" data-pref="news" checked> <span data-pref-label="label_news">Derni&egrave;res actualit&eacute;s</span></label>
-          <label><input type="checkbox" data-pref="breaking" checked> <span data-pref-label="label_breaking">Breaking News</span></label>
-          <label><input type="checkbox" data-pref="rdc" checked> <span data-pref-label="label_rdc">Actualit&eacute;s de la RDC</span></label>
-          <label><input type="checkbox" data-pref="intl"> <span data-pref-label="label_intl">Actualit&eacute;s internationales</span></label>
+    <div class="container">
+      <div class="nl-card">
+        <div class="nl-card-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </div>
-      </div>
-      <div class="ntf-cta">
-        <input type="text" class="ntf-name" placeholder="Votre nom (optionnel)" autocomplete="name" style="display:none;">
-        <input type="email" class="ntf-email" placeholder="Votre adresse email (optionnel)" autocomplete="email" style="display:none;">
-        <button type="button" class="btn btn-accent ntf-btn">Activer les notifications</button>
+        <div class="nl-card-text">
+          <h2 class="ntf-title">Recevez les dernières actualités</h2>
+          <p class="ntf-desc">Activez les notifications pour être alerté dès la publication d'un article ou d'une Breaking News.</p>
+          <div class="ntf-prefs">
+            <label><input type="checkbox" data-pref="news" checked> <span data-pref-label="label_news">Dernières actualités</span></label>
+            <label><input type="checkbox" data-pref="breaking" checked> <span data-pref-label="label_breaking">Breaking News</span></label>
+            <label><input type="checkbox" data-pref="rdc" checked> <span data-pref-label="label_rdc">Actualités de la RDC</span></label>
+            <label><input type="checkbox" data-pref="intl"> <span data-pref-label="label_intl">Actualités internationales</span></label>
+          </div>
+        </div>
+        <div class="ntf-cta">
+          <input type="text" class="ntf-name" placeholder="Votre nom (optionnel)" autocomplete="name" style="display:none;">
+          <input type="email" class="ntf-email" placeholder="Votre adresse email (optionnel)" autocomplete="email" style="display:none;">
+          <button type="button" class="btn btn-accent ntf-btn">Activer les notifications</button>
+        </div>
       </div>
     </div>
   </section>
-
   <section class="newsletter-section" aria-label="Newsletter">
-    <div class="container newsletter-inner">
-      <div class="newsletter-text">
-        <h3 data-i18n="newsletter_title">Restez inform&eacute;</h3>
-        <p data-i18n="newsletter_desc">Recevez les principales actualit&eacute;s directement dans votre bo&icirc;te mail.</p>
+    <div class="container">
+      <div class="nl-card">
+        <div class="nl-card-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 7l-10 6L2 7"></path></svg>
+        </div>
+        <div class="nl-card-text">
+          <h3 data-i18n="newsletter_title">Abonnez-vous à notre newsletter</h3>
+          <p data-i18n="newsletter_desc">Recevez les dernières actualités directement dans votre boîte mail.</p>
+        </div>
+        <form class="newsletter-form" id="newsletter-form">
+          <div class="nl-row">
+            <input type="text" name="nl-name" class="nl-name" placeholder="Votre nom" autocomplete="name">
+            <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
+          </div>
+          <div class="nl-cats" role="group" aria-label="Catégories préférées"></div>
+          <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
+        </form>
       </div>
-      <form class="newsletter-form" id="newsletter-form">
-        <input type="text" name="nl-name" class="nl-name" placeholder="Votre nom" autocomplete="name">
-        <input type="email" placeholder="Votre adresse email" required data-i18n="newsletter_placeholder">
-        <div class="nl-cats" role="group" aria-label="Cat&eacute;gories pr&eacute;f&eacute;r&eacute;es"></div>
-        <button type="submit" class="btn btn-accent" data-i18n="newsletter_button">S'abonner</button>
-      </form>
     </div>
   </section>
   <footer>
@@ -250,8 +261,7 @@
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
             <li><a href="soutenir.html" data-i18n="nav_donation">Soutenir</a></li>
             <li><a href="transparence.html">Nos actions</a></li>
-            <li><a href="donation.html">Faire un don</a></li>
-          </ul>
+            </ul>
         </div>
         <div>
           <h4 data-i18n="footer_contact">Contact</h4>
@@ -318,13 +328,43 @@
         var words = stripTags(content).trim().split(/\s+/).filter(Boolean).length;
         return Math.max(1, Math.round(words / 200));
       }
-      function setOG(title, desc, img) {
+      function setOG(title, desc, img, extra) {
         if (img && !img.startsWith('http://') && !img.startsWith('https://')) img = window.location.origin + '/' + img.replace(/^\/+/, '');
         var tags = { 'og:title': title, 'og:description': desc, 'og:image': img, 'og:url': window.location.href };
         for (var k in tags) {
           var el = document.querySelector('meta[property="' + k + '"]');
           if (!el) { el = document.createElement('meta'); el.setAttribute('property', k); document.head.appendChild(el); }
           el.setAttribute('content', tags[k]);
+        }
+        function ensure(sel, prop) {
+          var m = document.querySelector(sel);
+          if (!m) { m = document.createElement('meta'); m.setAttribute(prop === 'name' ? 'name' : 'property', prop === 'name' ? sel.split('"')[1] || prop : prop); document.head.appendChild(m); }
+          return m;
+        }
+        var md = ensure('meta[name="description"]', 'name');
+        md.setAttribute('content', desc || title);
+        var tw = { 'twitter:card': 'summary_large_image', 'twitter:title': title, 'twitter:description': desc, 'twitter:image': img };
+        for (var k2 in tw) {
+          var el2 = document.querySelector('meta[name="' + k2 + '"]');
+          if (!el2) { el2 = document.createElement('meta'); el2.setAttribute('name', k2); document.head.appendChild(el2); }
+          el2.setAttribute('content', tw[k2]);
+        }
+        if (window.location.protocol !== 'file:' && extra) {
+          var ld = document.getElementById('ld-article');
+          if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'ld-article'; document.head.appendChild(ld); }
+          var authorName = (extra.author || '').trim() || 'Rédaction';
+          ld.textContent = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: title,
+            description: desc || title,
+            image: img || [],
+            author: { '@type': 'Person', name: authorName },
+            publisher: { '@type': 'Organization', name: 'Chronique de James Mukeshaba' },
+            datePublished: extra.date || '',
+            dateModified: extra.date || '',
+            mainEntityOfPage: { '@type': 'WebPage', '@id': window.location.href }
+          });
         }
         document.title = title + ' - Chronique de James Mukeshaba';
       }
@@ -486,7 +526,10 @@ function renderShare(article) {
 
         renderShare(article);
         var ogImg = article.image && !article.image.startsWith('data:') ? article.image : window.location.origin + '/assets/images/logo.png';
-        setOG(article.seoTitle || article.title, article.seoDescription || article.excerpt || '', ogImg);
+        setOG(article.seoTitle || article.title, article.seoDescription || article.excerpt || '', ogImg, {
+          author: article.author || 'Rédaction',
+          date: article.date || ''
+        });
         document.getElementById('comments-list').dataset.articleId = articleId;
         document.getElementById('comment-form').dataset.articleId = articleId;
         loadComments();
