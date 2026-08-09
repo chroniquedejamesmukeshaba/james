@@ -4,13 +4,15 @@
     "text": "Ne voulons plus que les gens meurent,c'est difficile d'empêcher la machine",
     "date": "06/07/2026",
     "id": 1783371543565,
-    "pending": true
+    "pending": false,
+    "status": "visible"
   },
   {
     "name": "Raissa bahati",
     "text": "La chronique des James mukeshaba c’est notre média",
     "date": "07/07/2026",
     "id": 1783375856064,
-    "pending": true
+    "pending": false,
+    "status": "visible"
   }
 ]

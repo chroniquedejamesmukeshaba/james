@@ -72,7 +72,7 @@
                '<div class="card-banner" style="height:170px;background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
         '<div class="wcard-body" style="padding:20px;flex:1;display:flex;flex-direction:column;gap:10px;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
-        '<h3 style="margin:0;font-size:1.05rem;">' + esc(c.title) + '</h3>' + endBadge + '</div>' +
+        '<h2 style="margin:0;font-size:1.05rem;">' + esc(c.title) + '</h2>' + endBadge + '</div>' +
         '<p style="margin:0;font-size:0.92rem;opacity:0.8;flex:1;">' + esc(c.description || '') + '</p>' +
         '<div class="campaign-progress" style="margin-top:4px;">' +
         '  <div class="campaign-progress-bar"><div class="campaign-progress-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +

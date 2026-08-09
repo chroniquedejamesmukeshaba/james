@@ -664,7 +664,7 @@ function forceLogin() {
         }
         actions += '<button class="btn btn-sm btn-outline" onclick="blockCommentUser(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">🚫 Bloquer</button>';
         actions += ' <button class="btn btn-sm btn-secondary" onclick="rejectComment(' + c.articleId + ',' + c.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑</button>';
-        return '<tr' + row + '><td>' + c.name + '</td><td>' + badge + c.text.substring(0, 60) + (c.text.length > 60 ? '...' : '') + '</td><td>' + c.date + '</td><td>Article #' + c.articleId + '</td><td>' + actions + '</td></tr>';
+        return '<tr' + row + '><td>' + esc(c.name) + '</td><td>' + badge + esc(c.text.substring(0, 60)) + (c.text.length > 60 ? '...' : '') + '</td><td>' + esc(c.date) + '</td><td>Article #' + c.articleId + '</td><td>' + actions + '</td></tr>';
       }).join('');
     });
   }

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
 
@@ -46,12 +46,12 @@
       var box = $('actions-campaigns');
       var items = (list || []).filter(function (c) { return c.status !== 'archived'; });
       if (!items.length) {
-        box.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#999;">Aucune campagne en cours pour le moment. Revenez bient&ocirc;t !</p>';
+        box.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-light);">Aucune campagne en cours pour le moment. Revenez bient&ocirc;t !</p>';
         return;
       }
       box.innerHTML = items.map(campaignCard).join('');
     }).catch(function () {
-      $('actions-campaigns').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#999;">Impossible de charger les campagnes.</p>';
+      $('actions-campaigns').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-light);">Impossible de charger les campagnes.</p>';
     });
   }
 
@@ -60,7 +60,7 @@
     fetch('/api/reports?_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
       var box = $('reports-list');
       if (!Array.isArray(list) || !list.length) {
-        box.innerHTML = '<p style="text-align:center;color:#999;">Les rapports et r&eacute;sultats seront publi&eacute;s ici bient&ocirc;t.</p>';
+        box.innerHTML = '<p style="text-align:center;color:var(--text-light);">Les rapports et r&eacute;sultats seront publi&eacute;s ici bient&ocirc;t.</p>';
         return;
       }
       box.innerHTML = list.slice().sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); }).map(function (r) {
@@ -73,7 +73,7 @@
           '</div>';
       }).join('');
     }).catch(function () {
-      $('reports-list').innerHTML = '<p style="text-align:center;color:#999;">Impossible de charger les rapports.</p>';
+      $('reports-list').innerHTML = '<p style="text-align:center;color:var(--text-light);">Impossible de charger les rapports.</p>';
     });
   }
 

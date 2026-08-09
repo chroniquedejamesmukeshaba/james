@@ -47,8 +47,11 @@ var TRANSLATIONS = {
 
   // === ARTICLE DETAIL ===
   share_title:        { fr:'Partager cet article :', en:'Share this article:', sw:'Shiriki makala hii:', es:'Compartir este art\u00edculo:' },
-  share_facebook:     { fr:'\ud83d\udcd8 Partager sur Facebook', en:'\ud83d\udcd8 Share on Facebook', sw:'\ud83d\udcd8 Shiriki kwenye Facebook', es:'\ud83d\udcd8 Compartir en Facebook' },
-  share_x:            { fr:'\ud835\udd4f Partager sur X', en:'\ud835\udd4f Share on X', sw:'\ud835\udd4f Shiriki kwenye X', es:'\ud835\udd4f Compartir en X' },
+  share_facebook:     { fr:'Facebook', en:'Facebook', sw:'Facebook', es:'Facebook' },
+  share_whatsapp:     { fr:'WhatsApp', en:'WhatsApp', sw:'WhatsApp', es:'WhatsApp' },
+  share_x:            { fr:'X', en:'X', sw:'X', es:'X' },
+  share_linkedin:     { fr:'LinkedIn', en:'LinkedIn', sw:'LinkedIn', es:'LinkedIn' },
+  share_copy:         { fr:'Copier le lien', en:'Copy link', sw:'Nakili kiungo', es:'Copiar enlace' },
   comments_title:     { fr:'Commentaires', en:'Comments', sw:'Maoni', es:'Comentarios' },
   comment_form_title: { fr:'Laisser un commentaire', en:'Leave a comment', sw:'Acha maoni', es:'Dejar un comentario' },
   comment_name_placeholder:{ fr:'Votre nom', en:'Your name', sw:'Jina lako', es:'Su nombre' },

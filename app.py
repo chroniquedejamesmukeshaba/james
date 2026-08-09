@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar, html
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
@@ -38,12 +38,9 @@ def read_obj(name, default):
         return default
 
 # --- SECURITY (authentification securisee) ---
-_LEGACY_ADMINS = {
-    'Shine2026':    'YAGIRWA GEDEON GUIDE',
-    'Lufumica2026': 'LUFUNGULO MICHAEL',
-    'Sergio2026':   'SERGE IRENGE',
-    'Christvie2026':'MUKESHABA JAMES MPALA',
-}
+# NOTE: aucun mot de passe par defaut en dur dans le code source.
+# Le compte initial est cree a la premiere execution avec un mot de passe
+# aleatoire affiche une seule fois dans la console du serveur.
 TOKEN_TTL = 12 * 3600
 PBKDF2_ITER = 200000
 
@@ -67,19 +64,25 @@ def _new_token():
     return secrets.token_urlsafe(28)
 
 def load_admins():
-    """Charge les comptes admin. A la premiere execution, migre les comptes legacy (haches PBKDF2)."""
+    """Charge les comptes admin. A la premiere execution, cree un compte avec
+    un mot de passe aleatoire affiche une seule fois dans la console."""
     items = read_obj('admins', None)
     if items is None or not items.get('admins'):
-        accounts = []
-        for i, (pwd, name) in enumerate(_LEGACY_ADMINS.items(), 1):
-            accounts.append({
-                'id': i, 'user': 'admin', 'name': name,
-                'pass_hash': _hash(pwd), 'pass_changed': '',
-                'twofa': False, 'totp_secret': '',
-                'recovery_codes': [_hash(secrets.token_urlsafe(9)) for _ in range(3)],
-                'created': time.strftime('%Y-%m-%d'),
-            })
+        pwd = secrets.token_urlsafe(12)
+        accounts = [{
+            'id': 1, 'user': 'admin', 'name': 'Administrateur',
+            'pass_hash': _hash(pwd), 'pass_changed': '',
+            'twofa': False, 'totp_secret': '',
+            'recovery_codes': [_hash(secrets.token_urlsafe(9)) for _ in range(3)],
+            'created': time.strftime('%Y-%m-%d'),
+        }]
         write_json('admins', {'admins': accounts})
+        print('==================================================')
+        print('NOUVEAU COMPTE ADMIN CREE (premiere execution)')
+        print('  identifiant : admin')
+        print('  mot de passe: ' + pwd)
+        print('  CHANGEZ CE MOT DE PASSE APRES CONNEXION.')
+        print('==================================================')
         return accounts
     return items.get('admins')
 
@@ -141,6 +144,7 @@ def totp_valid(secret, code, drift=1):
     return any(totp_code(secret, (now + d) * 30) == code for d in range(-drift, drift + 1))
 
 RATE_CACHE = {}
+_RATE_MAX_KEYS = 10000
 def rate_limit(route, limit, window):
     def deco(f):
         @wraps(f)
@@ -153,6 +157,9 @@ def rate_limit(route, limit, window):
                 return jsonify({'ok': False, 'error': 'trop de requetes'}), 429
             items.append(now)
             RATE_CACHE[key] = items
+            if len(RATE_CACHE) > _RATE_MAX_KEYS:
+                cutoff = time.time() - 3600
+                RATE_CACHE.clear()
             return f(*args, **kwargs)
         return wrapper
     return deco
@@ -163,6 +170,7 @@ def security_headers(resp):
     resp.headers['X-Frame-Options'] = 'SAMEORIGIN'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     resp.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    resp.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     resp.headers['Content-Security-Policy'] = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://ipapi.co; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; connect-src 'self' https://ip-api.com https://ipapi.co; "
@@ -173,6 +181,8 @@ def security_headers(resp):
         resp.headers['Cache-Control'] = 'no-store'
     else:
         resp.headers['Cache-Control'] = 'no-cache'
+    if request.is_secure or request.headers.get('X-Forwarded-Proto', '') == 'https':
+        resp.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return resp
 
 def apply_lang(a, lang):
@@ -738,13 +748,13 @@ def get_comments(article_id):
 def add_comment(article_id):
     key = f'comments_{article_id}'
     data = request.json or {}
-    name = (data.get('name') or '').strip()[:40]
-    text = (data.get('text') or '').strip()[:2000]
+    name = html.escape((data.get('name') or '').strip()[:40])
+    text = html.escape((data.get('text') or '').strip()[:2000])
     if not name or not text:
         return jsonify({'ok': False, 'error': 'champs requis'}), 400
-    if not any(ch.isalpha() for ch in text):
+    if not any(ch.isalpha() for ch in html.unescape(text)):
         return jsonify({'ok': False, 'error': 'texte invalide'}), 400
-    if text.lower().count('http') > 2:
+    if html.unescape(text).lower().count('http') > 2:
         return jsonify({'ok': False, 'error': 'trop de liens'}), 400
     if name.lower() in read_obj('blocked', []):
         return jsonify({'ok': False, 'error': 'compte bloque'}), 403
@@ -2299,6 +2309,7 @@ def auth_password():
     return jsonify({'ok': True})
 
 @app.route('/api/auth/recovery', methods=['POST'])
+@rate_limit('auth_recovery', 10, 300)
 def auth_recovery():
     """Recuperation securisee : un code de recuperation a usage unique change le mot de passe."""
     d = request.json or {}
@@ -2516,17 +2527,27 @@ def serve_article_og():
                           'logo': {'@type': 'ImageObject', 'url': site + '/assets/images/logo.png'}},
             'mainEntityOfPage': site + '/article?id=' + str(aid)
         }
-        json_ld = '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + '</script>'
+        json_ld = '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False).replace('</', '<\\/') + '</script>'
         og = f'''
+<meta property="og:site_name" content="Chronique de James Mukeshaba">
+<meta property="og:locale" content="{lang or 'fr'}">
 <meta property="og:title" content="{stitle}">
 <meta property="og:description" content="{sdesc}">
 <meta property="og:image" content="{img}">
+<meta property="og:image:alt" content="{stitle}">
 <meta property="og:url" content="{site}/article?id={aid}">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{stitle}">
+<meta name="twitter:description" content="{sdesc}">
+<meta name="twitter:image" content="{img}">
 {json_ld}
 '''
-        html = html.replace('<title>Article - Chronique de James Mukeshaba</title>', '<title>' + stitle + ' - Chronique de James Mukeshaba</title>' + og)
+        html = html.replace('<title>Article - Chronique de James Mukeshaba</title>',
+                            '<title>' + stitle + ' - Chronique de James Mukeshaba</title>' + og)
+    else:
+        html = html.replace('<title>Article - Chronique de James Mukeshaba</title>',
+                            '<title>Article - Chronique de James Mukeshaba</title>')
     return html
 
 @app.route('/')
@@ -2546,12 +2567,28 @@ def serve_soutenir_page():
 def serve_categorie_page(slug):
     return send_from_directory(BASE, 'categorie.html')
 
+# Extensions autorisees en telechargement public (bloque .py, .json du serveur,
+# .git, logs, backups, etc.)
+SERVE_EXT_WHITELIST = {
+    '.html', '.htm', '.css', '.js', '.mjs', '.png', '.jpg', '.jpeg', '.gif',
+    '.webp', '.svg', '.ico', '.json', '.webmanifest', '.txt', '.xml', '.pdf',
+    '.mp4', '.webm', '.mp3', '.ogg', '.woff', '.woff2', '.ttf', '.otf', '.eot',
+    '.map', '.wasm'
+}
+SERVE_BLOCK_PREFIXES = ('server_data', '.git', '__pycache__', '.venv', 'venv', 'node_modules', '.cache', '.ipython', '.virtualenvs')
+
 @app.route('/<path:path>')
 def serve_static(path):
+    parts = path.replace('\\', '/').split('/')
+    if parts[0] in SERVE_BLOCK_PREFIXES or any(p.startswith('.') for p in parts):
+        return jsonify({'error': 'not found'}), 404
+    base_name = os.path.basename(path)
+    if '.' in base_name and os.path.splitext(base_name)[1].lower() not in SERVE_EXT_WHITELIST:
+        return jsonify({'error': 'not found'}), 404
     full = os.path.join(BASE, path)
     if os.path.isfile(full):
         return send_from_directory(BASE, path)
-    if '.' in os.path.basename(path):
+    if '.' in base_name:
         return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')
 
