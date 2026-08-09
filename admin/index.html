@@ -35,23 +35,32 @@
       <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <h2 style="color:var(--primary);margin-bottom:25px;">Tableau de bord</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:15px;">
+        <h2 style="color:var(--primary);margin:0;">Tableau de bord</h2>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span class="live-dot" id="db-live"><span class="live-pulse"></span> En direct</span>
+          <span id="db-refresh-time" style="font-size:0.75rem;color:var(--text-light);"></span>
+        </div>
+      </div>
 
       <div class="dash-grid">
         <div class="stat-card">
           <div class="number" id="db-visits">0</div>
           <div class="label">Visites</div>
           <div class="sub" id="db-visits-sub">période</div>
+          <div class="trend" id="db-visits-trend"></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-uniques">0</div>
           <div class="label">Visiteurs uniques</div>
           <div class="sub">adresses IP distinctes</div>
+          <div class="trend" id="db-uniques-trend"></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-readers">0</div>
           <div class="label">Lecteurs</div>
           <div class="sub">temps moyen : <span id="db-avg-read">—</span></div>
+          <div class="trend" id="db-readers-trend"></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-readsec">0</div>
@@ -65,10 +74,12 @@
         <div class="stat-card">
           <div class="number" id="db-comments">0</div>
           <div class="label">Commentaires</div>
+          <div class="trend" id="db-comments-trend"></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-shares">0</div>
           <div class="label">Partages</div>
+          <div class="trend" id="db-shares-trend"></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-subs">0</div>
@@ -77,6 +88,7 @@
         <div class="stat-card">
           <div class="number" id="db-donations">0</div>
           <div class="label">Dons confirmés</div>
+          <div class="trend" id="db-donations-trend"></div>
         </div>
       </div>
 
@@ -98,7 +110,10 @@
 
       <div class="dash-row">
         <div class="dash-card">
-          <h3>Top articles <span class="hint" id="db-top-hint"></span></h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+            <h3 style="margin:0;">Top articles <span class="hint" id="db-top-hint"></span></h3>
+            <input type="search" id="db-top-search" class="form-input" placeholder="🔍 Rechercher un article..." style="max-width:260px;padding:7px 12px;font-size:0.82rem;">
+          </div>
           <div class="admin-table">
             <table>
               <thead><tr><th>Article</th><th>Visites</th><th>Uniques</th><th>Lectures</th><th>Partages</th></tr></thead>
@@ -149,11 +164,33 @@
       </div>
 
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
-        <h3 style="color:var(--primary);margin-bottom:15px;">Actions rapides</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <a href="articles.html" class="btn btn-primary">➕ Nouvel article</a>
-          <a href="comments.html" class="btn btn-outline">💬 Modérer les commentaires</a>
-          <a href="newsletter.html" class="btn btn-outline">📧 Newsletter &amp; Notifications</a>
+        <h3 style="color:var(--primary);margin-bottom:6px;">⚡ Raccourcis rapides</h3>
+        <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:16px;">Travaillez plus vite : lancez directement les actions courantes.</p>
+        <div class="quick-actions">
+          <a href="articles.html" class="quick-action">
+            <span class="qa-ico">✍️</span><span>Nouvel article</span><small>Rédiger et publier</small>
+          </a>
+          <a href="articles.html#cats" class="quick-action">
+            <span class="qa-ico">🏷️</span><span>Nouvelle catégorie</span><small>Organiser les articles</small>
+          </a>
+          <a href="campaigns.html" class="quick-action">
+            <span class="qa-ico">📢</span><span>Nouvelle campagne</span><small>Lancer une collecte</small>
+          </a>
+          <a href="media.html" class="quick-action">
+            <span class="qa-ico">🖼️</span><span>Ajouter un média</span><small>Images et vidéos</small>
+          </a>
+          <a href="analytics.html" class="quick-action">
+            <span class="qa-ico">📈</span><span>Voir les statistiques</span><small>Audience détaillée</small>
+          </a>
+          <a href="comments.html" class="quick-action">
+            <span class="qa-ico">💬</span><span>Modérer les commentaires</span><small>Valider et filtrer</small>
+          </a>
+          <a href="donations.html" class="quick-action">
+            <span class="qa-ico">💰</span><span>Dons &amp; paiements</span><small>Suivre les transactions</small>
+          </a>
+          <a href="newsletter.html" class="quick-action">
+            <span class="qa-ico">📧</span><span>Newsletter</span><small>Abonnés et envois</small>
+          </a>
         </div>
       </div>
     </main>

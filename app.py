@@ -147,12 +147,64 @@ def _acct_by_name(name):
             return a
     return None
 
+def _admin_notify(kind, title, message, link=''):
+    """Crée une notification pour les administrateurs (cloche du tableau de bord)."""
+    items = read_obj('admin_notifications', [])
+    now = time.time()
+    items.append({
+        'id': int(now * 1000),
+        'ts': now,
+        'date': time.strftime('%Y-%m-%dT%H:%M:%S'),
+        'kind': kind,
+        'title': title[:120],
+        'message': message[:300],
+        'link': link[:300],
+        'read': False,
+    })
+    # dedupe: une seule notification par (kind, titre) dans les 24 h
+    kept = []
+    for n in reversed(items):
+        if len(kept) >= 500:
+            continue
+        dup = any(k.get('kind') == n.get('kind') and
+                  k.get('title') == n.get('title') and
+                  k.get('read') is False and
+                  k.get('ts', 0) >= now - 86400 for k in kept)
+        if not dup:
+            kept.append(n)
+    kept.reverse()
+    write_json('admin_notifications', kept)
+
 def _me():
     """Retourne (entry_token, compte_complet) pour la session courante."""
     entry = admin_ok()
     if not entry:
         return None, None
     return entry, _acct_by_name(entry.get('name'))
+
+@app.route('/api/admin/notifications', methods=['GET'])
+@admin_required
+def admin_notifications_list():
+    items = read_obj('admin_notifications', [])
+    items = sorted(items, key=lambda n: -n.get('ts', 0))
+    unread = sum(1 for n in items if not n.get('read'))
+    return jsonify({'ok': True, 'unread': unread, 'items': items[:100]})
+
+@app.route('/api/admin/notifications/read', methods=['POST'])
+@admin_required
+def admin_notifications_read():
+    d = request.json or {}
+    ids = set(d.get('ids') or [])
+    items = read_obj('admin_notifications', [])
+    if ids:
+        for n in items:
+            if n.get('id') in ids:
+                n['read'] = True
+    else:
+        for n in items:
+            n['read'] = True
+    write_json('admin_notifications', items)
+    return jsonify({'ok': True})
 
 def role_required(*roles):
     """Exige un role parmi la liste. Pour la hierarchie, passer les roles
@@ -872,6 +924,9 @@ def add_comment(article_id):
     }
     comments.append(entry)
     write_json(key, comments)
+    _admin_notify('commentaire', 'Nouveau commentaire',
+                  '%s a envoyé un commentaire sur l\'article %s.' % (name, article_id),
+                  '/admin/comments.html')
     return jsonify({'ok': True, 'id': entry['id']})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/approve', methods=['POST'])
@@ -1176,6 +1231,11 @@ def subscribe():
             break
     else:
         subs.append(entry)
+        _admin_notify('abonne', 'Nouvel abonné newsletter',
+                      '%s s\'est abonné (catégories : %s).' % (
+                          entry['email'],
+                          ', '.join(entry['categories'][:3]) if entry['categories'] else 'toutes'),
+                      '/admin/newsletter.html')
     write_json('newsletter', subs)
     return jsonify({'ok': True})
 
@@ -1572,6 +1632,10 @@ def add_donation():
     write_json('donations', dons)
     pay.log_event(read_json, write_json, 'donation_intent', {'txn_id': txn_id, 'amount': amount, 'method': method,
                                                   'campaign_id': donation['campaignId']})
+    _admin_notify('don', 'Nouveau don (%s $)' % amount,
+                  '%s — %s via %s.' % (donation['name'], campaign.get('title', 'Campagne'),
+                                       str(method).upper()),
+                  '/admin/donations.html')
     return jsonify({'ok': True, 'txn_id': txn_id, 'idempotency_key': idem})
 
 @app.route('/api/donations/stats', methods=['GET'])
@@ -1657,6 +1721,14 @@ def set_donation_status(txn_id):
     write_json('donations', dons)
     pay.log_event(read_json, write_json, 'donation_status_changed', {'txn_id': txn_id, 'from': old, 'to': status})
     log_activity('statut de don modifie', 'don %s : %s -> %s' % (txn_id, old, status))
+    if status == 'confirmed':
+        _admin_notify('paiement_ok', 'Paiement confirmé (%.2f $)' % amt,
+                      'Transaction %s — %s.' % (txn_id, don.get('name') or 'Anonyme'),
+                      '/admin/donations.html')
+    elif status in ('failed', 'cancelled', 'refunded'):
+        _admin_notify('paiement_ko', 'Paiement %s (%.2f $)' % (status, amt),
+                      'Transaction %s — %s.' % (txn_id, don.get('name') or 'Anonyme'),
+                      '/admin/donations.html')
     return jsonify({'ok': True})
 
 def _send_donation_email(don, subject, body):
@@ -1952,6 +2024,20 @@ def track_visit():
                    'ref': (data.get('ref') or '')[:300]})
     if len(visits) > 50000: visits = visits[-50000:]
     write_json('visits', visits)
+    # Article très performant : alerte quand un article dépasse un seuil de
+    # visites sur 24 h (dédupliquée sur 24 h par _admin_notify).
+    aid = (data.get('articleId') or '').strip()
+    if aid and visits:
+        cutoff = time.time() - 86400
+        count = sum(1 for v in visits if isinstance(v, dict) and v.get('articleId') == aid
+                    and (_visit_epoch(v) or 0) >= cutoff)
+        if count >= 30:
+            title = 'Article très performant'
+            arts = read_json('articles')
+            an = next((a for a in arts if str(a.get('id')) == str(aid)), None)
+            t = (an or {}).get('title') or ('Article #' + aid)
+            _admin_notify('top_article', title, '%s : %d visites en 24 h.' % (t, count),
+                          '/admin/analytics.html?article=' + str(aid))
     return jsonify({'ok': True})
 
 @app.route('/api/visits/analytics', methods=['GET'])
@@ -2177,6 +2263,65 @@ def analytics_overview():
         d = day_visits.get(int(start // 86400))
         sv.append(d['cnt'] if d else 0)
         su.append(len(d['ips']) if d else 0)
+    # --- Tendances : comparaison avec la période précédente (même durée) ---
+    trend_window = days * 86400
+    prev_from = cutoff - trend_window
+    pv_visits = pv_uniq = pv_reads = pv_shares = 0
+    pv_ips = set()
+    for v in raw_visits:
+        e = _visit_epoch(v)
+        if e is None or not (prev_from <= e < cutoff):
+            continue
+        pv_visits += 1
+        ip = (v.get('ip') or '').strip() if isinstance(v, dict) else ''
+        if ip:
+            pv_ips.add(ip)
+    pv_uniq = len(pv_ips)
+    for r in reads_all:
+        if prev_from <= float(r.get('t', 0)) < cutoff:
+            pv_reads += 1
+    for s in shares_all:
+        if prev_from <= float(s.get('t', 0)) < cutoff:
+            pv_shares += 1
+    pv_dons = 0
+    for d in read_json('donations'):
+        da = (d.get('createdAt') or '')[:19]
+        try:
+            if prev_from <= calendar.timegm(time.strptime(da, '%Y-%m-%dT%H:%M:%S')) < cutoff:
+                pv_dons += 1
+        except Exception:
+            pass
+    pv_comments = 0
+    for f in os.listdir(DATA_DIR):
+        if f.startswith('comments_'):
+            for c in read_json(f[:-5]):
+                cd = (c.get('date') or '').strip()
+                if not isinstance(cd, str) or not cd:
+                    continue
+                try:
+                    e = calendar.timegm(time.strptime(cd[:10], '%Y-%m-%d'))
+                except Exception:
+                    continue
+                if prev_from <= e < cutoff:
+                    pv_comments += 1
+
+    def _trend(cur, prev, labeled):
+        if prev <= 0 and cur <= 0:
+            return {'label': labeled, 'current': cur, 'prev': prev, 'pct': 0, 'delta': 0, 'up': False, 'flat': True}
+        if prev <= 0:
+            return {'label': labeled, 'current': cur, 'prev': prev, 'pct': None, 'delta': cur, 'up': True, 'flat': False}
+        pct = round((cur - prev) * 100.0 / prev, 1)
+        return {'label': labeled, 'current': cur, 'prev': prev, 'pct': pct, 'delta': cur - prev,
+                'up': cur >= prev, 'flat': cur == prev}
+
+    trends = {
+        'visits': _trend(len(visits), pv_visits, 'visites'),
+        'uniques': _trend(len(uniq), pv_uniq, 'visiteurs uniques'),
+        'readers': _trend(read_n, pv_reads, 'lectures'),
+        'shares': _trend(shares_n, pv_shares, 'partages'),
+        'donations': _trend(len([d for d in read_json('donations') if d.get('status') == 'confirmed']), pv_dons, 'dons confirmés'),
+        'comments': _trend(comments_total, pv_comments, 'commentaires'),
+    }
     return jsonify({
         'period': period,
         'totals': {
@@ -2186,6 +2331,7 @@ def analytics_overview():
             'subs': len(read_json('newsletter')), 'donations': len([d for d in read_json('donations') if d.get('status') == 'confirmed']),
             'articles': len(art_list),
         },
+        'trends': trends,
         'series': {'labels': labels, 'visits': sv, 'uniques': su},
         'topArticles': top,
         'topCategories': sorted([{'category': k, 'visits': v} for k, v in cat_visits.items()], key=lambda x: -x['visits'])[:8],
@@ -2884,6 +3030,17 @@ def serve_static(path):
     if '.' in base_name:
         return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')
+
+@app.errorhandler(500)
+def _internal_error(e):
+    """Notifie les administrateurs en cas de problème système (dédupliqué 24 h)."""
+    try:
+        _admin_notify('probleme', 'Problème système',
+                      'Une erreur interne est survenue sur le serveur (%s).' % (e.__class__.__name__ or '500'),
+                      '/admin/journal.html')
+    except Exception:
+        pass
+    return jsonify({'error': 'erreur interne'}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=int(os.environ.get('PORT', '5000')), debug=(os.environ.get('FLASK_DEBUG', '0') == '1'))

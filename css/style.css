@@ -1599,3 +1599,103 @@ html[data-theme="dark"] .pop-tab.active { background: #a93226; border-color: #a9
   font-size: 0.8rem; font-family: inherit; padding: 0; margin: 0 6px;
 }
 .footer-legal button.cookie-btn:hover { color: var(--primary, #1d4ed8); }
+
+/* ===== TABLEAU DE BORD : tendances, temps réel, raccourcis ===== */
+.admin-main .trend { margin-top: 8px; }
+.trend-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.78rem; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+}
+.trend-up { color: #3fb950; background: rgba(63, 185, 80, 0.12); }
+.trend-down { color: #f85149; background: rgba(248, 81, 73, 0.12); }
+.trend-flat { color: #8b949e; background: rgba(139, 148, 158, 0.12); }
+.live-dot {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.78rem; font-weight: 700; color: #3fb950;
+  background: rgba(63, 185, 80, 0.1); padding: 4px 12px; border-radius: 20px;
+}
+.live-pulse {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #3fb950; display: inline-block;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.55); }
+  50% { box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
+}
+.live-flash { transition: background 0.4s; }
+.quick-actions {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.quick-action {
+  display: flex; flex-direction: column; gap: 3px;
+  background: rgba(88, 166, 255, 0.05);
+  border: 1px solid rgba(88, 166, 255, 0.22);
+  border-radius: 10px; padding: 14px 16px;
+  color: #e6edf3; text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.quick-action:hover {
+  background: rgba(88, 166, 255, 0.14);
+  border-color: #58a6ff; transform: translateY(-2px);
+  color: var(--white, #fff);
+}
+.quick-action .qa-ico { font-size: 1.25rem; }
+.quick-action span { font-weight: 700; font-size: 0.9rem; }
+.quick-action small { color: #8b949e; font-size: 0.72rem; }
+/* cloche de notifications admin */
+.admin-bell { position: relative; display: inline-flex; margin-left: 14px; vertical-align: middle; }
+.bell-btn {
+  background: rgba(255, 255, 255, 0.12); border: none; cursor: pointer;
+  border-radius: 50%; width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; position: relative; transition: background 0.2s;
+}
+.bell-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.bell-badge {
+  position: absolute; top: -5px; right: -6px;
+  background: #f85149; color: #fff; font-size: 0.65rem; font-weight: 800;
+  min-width: 17px; height: 17px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; border: 2px solid #0d1117;
+}
+.bell-drop {
+  position: absolute; right: 0; top: 44px; z-index: 1200;
+  width: 340px; max-width: 90vw;
+  background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45); overflow: hidden;
+}
+.bell-drop[hidden] { display: none; }
+.bell-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid #30363d;
+  font-size: 0.85rem; color: #c9d1d9;
+}
+.bell-readall {
+  background: none; border: none; cursor: pointer;
+  color: #58a6ff; font-size: 0.75rem; font-weight: 700; padding: 2px 6px;
+}
+.bell-readall:hover { text-decoration: underline; }
+.bell-list { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; }
+.bell-item {
+  padding: 11px 14px; border-bottom: 1px solid rgba(48, 54, 61, 0.55);
+  cursor: pointer; transition: background 0.15s;
+}
+.bell-item:hover { background: rgba(88, 166, 255, 0.07); }
+.bell-item.read { opacity: 0.65; }
+.bell-item-head { display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: #e6edf3; }
+.bell-item-head strong { font-weight: 700; }
+.bell-new {
+  width: 7px; height: 7px; border-radius: 50%; background: #3fb950;
+  margin-left: auto; flex-shrink: 0;
+}
+.bell-item-msg { color: #8b949e; font-size: 0.76rem; margin-top: 3px; line-height: 1.4; }
+.bell-item-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  color: #6e7681; font-size: 0.68rem; margin-top: 6px;
+}
+.bell-item-meta a { color: #58a6ff; text-decoration: none; font-weight: 600; }
+.bell-item-meta a:hover { text-decoration: underline; }
+.bell-empty { padding: 18px 14px; text-align: center; color: #8b949e; font-size: 0.8rem; }
+.admin-header .container { position: relative; gap: 14px; }

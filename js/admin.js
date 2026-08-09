@@ -1006,6 +1006,7 @@ function pageAllowed(page, role) {
       sub: document.getElementById('db-visits-sub'),
       top: document.getElementById('db-top-body'),
       topHint: document.getElementById('db-top-hint'),
+      topSearch: document.getElementById('db-top-search'),
       chart: document.getElementById('db-line-chart'),
       cat: document.getElementById('db-cat-chart'),
       devs: document.getElementById('db-devices'),
@@ -1025,10 +1026,32 @@ function pageAllowed(page, role) {
         load();
       });
     });
+    var trendEls = {
+      visits: document.getElementById('db-visits-trend'),
+      uniques: document.getElementById('db-uniques-trend'),
+      readers: document.getElementById('db-readers-trend'),
+      comments: document.getElementById('db-comments-trend'),
+      shares: document.getElementById('db-shares-trend'),
+      donations: document.getElementById('db-donations-trend')
+    };
     function load() {
       apiGet('/analytics/overview?period=' + period).then(render).catch(function () {
         els.visits.textContent = '—';
         els.chart && els.chart.getContext && Dash.line(els.chart, [], []);
+      });
+    }
+    function trendBadge(tr) {
+      if (!tr) return '';
+      var cls = tr.flat ? 'trend-flat' : (tr.up ? 'trend-up' : 'trend-down');
+      var arrow = tr.flat ? '→' : (tr.up ? '↑' : '↓');
+      var txt = tr.pct == null ? (tr.delta > 0 ? '+' + Dash.fmt(tr.delta) : Dash.fmt(tr.delta)) : ((tr.pct > 0 ? '+' : '') + tr.pct + ' %');
+      return '<span class="trend-badge ' + cls + '">' + arrow + ' ' + txt + '</span>';
+    }
+    function renderTrends(d) {
+      var t = d.trends || {};
+      Object.keys(trendEls).forEach(function (k) {
+        var el = trendEls[k];
+        if (el) el.innerHTML = trendBadge(t[k]);
       });
     }
     function render(d) {
@@ -1059,15 +1082,8 @@ function pageAllowed(page, role) {
         { labels: s.labels || [], data: s.visits || [], name: 'Visites', color: '#58a6ff' },
         { labels: s.labels || [], data: s.uniques || [], name: 'Uniques', color: '#3fb950' }
       ], ['#58a6ff', '#3fb950']);
-      if (els.top) {
-        var arts = d.topArticles || [];
-        els.top.innerHTML = arts.length ? arts.map(function (a) {
-          return '<tr><td><strong>' + a.title + '</strong><br><span style="color:#8b949e;font-size:0.75rem;">' + a.category + '</span></td>' +
-            '<td>' + Dash.fmt(a.visits) + '</td><td>' + Dash.fmt(a.uniques) + '</td>' +
-            '<td>' + Dash.fmt(a.readers) + ' <span style="color:#8b949e;font-size:0.72rem;">(' + Dash.secs(a.avgReadSec) + ')</span></td>' +
-            '<td>' + Dash.fmt(a.shares) + '</td></tr>';
-        }).join('') : '<tr><td colspan="5" class="dash-empty" style="text-align:center;">Aucune visite d\'article.</td></tr>';
-      }
+      renderTop(d.topArticles || []);
+      renderTrends(d);
       var cats = (d.topCategories || []).map(function (c) { return { n: c.category, v: c.visits }; });
       var total = cats.reduce(function (a, b) { return a + b.v; }, 0);
       Dash.doughnut(els.cat, cats, total);
@@ -1076,10 +1092,125 @@ function pageAllowed(page, role) {
       els.bowsers.innerHTML = Dash.bars((d.browsers || []).map(function (x) { return { n: x.name, v: x.count }; }), colors[1]);
       els.sources.innerHTML = Dash.bars((d.sources || []).map(function (x) { return { n: x.name, v: x.count }; }), '#f0883e');
       els.countries.innerHTML = Dash.bars((d.countries || []).map(function (x) { return { n: x.country, v: x.visits }; }), '#a371f7');
+      var r = document.getElementById('db-refresh-time');
+      if (r) r.textContent = 'Actualisé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    var lastTop = [];
+    function renderTop(arts) {
+      lastTop = arts || [];
+      applyTopFilter(els.topSearch ? els.topSearch.value.toLowerCase() : '');
+    }
+    function applyTopFilter(q) {
+      if (!els.top) return;
+      var list = q ? lastTop.filter(function (a) {
+        return (a.title || '').toLowerCase().indexOf(q) !== -1 || (a.category || '').toLowerCase().indexOf(q) !== -1;
+      }) : lastTop;
+      els.top.innerHTML = list.length ? list.map(function (a) {
+        return '<tr><td><strong>' + a.title + '</strong><br><span style="color:#8b949e;font-size:0.75rem;">' + a.category + '</span></td>' +
+          '<td>' + Dash.fmt(a.visits) + '</td><td>' + Dash.fmt(a.uniques) + '</td>' +
+          '<td>' + Dash.fmt(a.readers) + ' <span style="color:#8b949e;font-size:0.72rem;">(' + Dash.secs(a.avgReadSec) + ')</span></td>' +
+          '<td>' + Dash.fmt(a.shares) + '</td></tr>';
+      }).join('') : '<tr><td colspan="5" class="dash-empty" style="text-align:center;">' +
+        (q ? 'Aucun article ne correspond à la recherche.' : 'Aucune visite d\'article.') + '</td></tr>';
+    }
+    if (els.topSearch) {
+      els.topSearch.addEventListener('input', function () { applyTopFilter(els.topSearch.value.toLowerCase()); });
     }
     load();
+    // Données en temps réel : rafraîchissement silencieux toutes les 60 s
+    var live = document.getElementById('db-live');
+    setInterval(function () {
+      if (document.hidden) return;
+      load();
+      if (live) {
+        live.classList.remove('live-flash');
+        void live.offsetWidth;
+        live.classList.add('live-flash');
+      }
+    }, 60000);
   }
   initDashboard();
+
+  // ===== CLOCHES NOTIFICATIONS ADMIN (toutes les pages admin) =====
+  function initAdminNotifications() {
+    var header = document.querySelector('.admin-header .container');
+    if (!header) return;
+    var logged = localStorage.getItem('admin_logged') === 'true';
+    if (!logged) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'admin-bell';
+    wrap.innerHTML =
+      '<button type="button" class="bell-btn" id="admin-bell-btn" aria-label="Notifications">' +
+        '<span class="bell-icon">🔔</span><span class="bell-badge" id="admin-bell-badge" style="display:none;">0</span>' +
+      '</button>' +
+      '<div class="bell-drop" id="admin-bell-drop" hidden>' +
+        '<div class="bell-head"><strong>Notifications</strong>' +
+          '<button type="button" id="bell-read-all" class="bell-readall">Tout marquer lu</button></div>' +
+        '<ul class="bell-list" id="admin-bell-list"><li class="bell-empty">Chargement…</li></ul>' +
+      '</div>';
+    header.appendChild(wrap);
+    var dropdown = wrap.querySelector('#admin-bell-drop');
+    var badge = wrap.querySelector('#admin-bell-badge');
+    var list = wrap.querySelector('#admin-bell-list');
+    var bellBtn = wrap.querySelector('#admin-bell-btn');
+    function fmtWhen(ts) {
+      var secs = Math.round((Date.now() / 1000) - (ts || 0));
+      if (secs < 60) return 'à l\'instant';
+      if (secs < 3600) return 'il y a ' + Math.floor(secs / 60) + ' min';
+      if (secs < 86400) return 'il y a ' + Math.floor(secs / 3600) + ' h';
+      return 'il y a ' + Math.floor(secs / 86400) + ' j';
+    }
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function refresh() {
+      apiGet('/admin/notifications').then(function (d) {
+        if (!d || !d.items) return;
+        var unread = d.unread || 0;
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'block' : 'none';
+        if (!d.items.length) {
+          list.innerHTML = '<li class="bell-empty">Aucune notification.</li>';
+          return;
+        }
+        list.innerHTML = d.items.map(function (n) {
+          var icons = { commentaire: '💬', don: '💰', paiement_ok: '✅', paiement_ko: '⚠️', abonne: '👥', top_article: '🔥', probleme: '🛠️' };
+          var body = '<li class="bell-item' + (n.read ? ' read' : '') + '" data-id="' + (n.id || '') + '">' +
+            '<div class="bell-item-head"><span class="bell-item-ico">' + (icons[n.kind] || '🔔') + '</span>' +
+            '<strong>' + esc(n.title) + '</strong>' + (n.read ? '' : '<span class="bell-new"></span>') + '</div>' +
+            '<div class="bell-item-msg">' + esc(n.message) + '</div>' +
+            '<div class="bell-item-meta"><span>' + fmtWhen(n.ts) + '</span>' +
+            (n.link ? '<a href="' + esc(n.link) + '">Ouvrir</a>' : '') + '</div></li>';
+          return body;
+        }).join('');
+      });
+    }
+    bellBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (dropdown.hidden) {
+        dropdown.hidden = false;
+        refresh();
+      } else {
+        dropdown.hidden = true;
+      }
+    });
+    wrap.querySelector('#bell-read-all').addEventListener('click', function (e) {
+      e.stopPropagation();
+      apiPost('/admin/notifications/read', {}).then(function () { refresh(); });
+    });
+    list.addEventListener('click', function (e) {
+      var item = e.target.closest('.bell-item');
+      if (!item) return;
+      var id = item.dataset.id;
+      if (id) apiPost('/admin/notifications/read', { ids: [Number(id)] }).then(function () { refresh(); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.admin-bell')) dropdown.hidden = true;
+    });
+    refresh();
+    setInterval(refresh, 45000);
+  }
+  initAdminNotifications();
 
   // ===== VISIT TRACKER (public pages) =====
   if (!document.querySelector('.admin-body')) {
