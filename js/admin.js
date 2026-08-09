@@ -30,13 +30,16 @@ function editorPreview(src) {
 document.addEventListener('DOMContentLoaded', function () {
 
   // ===== LOGIN (authentification securisee : token serveur + 2FA) =====
-  const ADMINS = { 'Shine2026':'YAGIRWA GEDEON GUIDE', 'Lufumica2026':'LUFUNGULO MICHAEL', 'Sergio2026':'SERGE IRENGE', 'Christvie2026':'MUKESHABA JAMES MPALA' };
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
     const totpWrap = document.getElementById('totp-wrap');
     const totpInput = document.getElementById('totp-code');
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (window.location.protocol === 'file:') {
+        showToast('La connexion nécessite le serveur (ouvrez le site via http://).', 'error');
+        return;
+      }
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const payload = { user: username, pass: password };
@@ -45,31 +48,26 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('admin_logged', 'true');
         localStorage.setItem('admin_name', res.name || '');
         localStorage.setItem('admin_token', res.token || '');
+        localStorage.setItem('admin_role', res.role || '');
         localStorage.removeItem('admin_redirecting');
         window.location.href = 'index.html';
       }
-      if (window.location.protocol !== 'file:') {
-        fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-          .then(function(r){ return r.json().then(function(b){ return {status:r.status, body:b}; }); })
-          .then(function(res){
-            if (res.body && res.body.ok && res.body.token) { grant(res.body); return; }
-            if (res.body && res.body.totp) {
-              if (totpWrap) {
-                totpWrap.style.display = 'block';
-                if (totpInput) totpInput.focus();
-                showToast('Entrez votre code de securite 2FA.', 'error');
-              }
-              return;
+      fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+        .then(function(r){ return r.json().then(function(b){ return {status:r.status, body:b}; }); })
+        .then(function(res){
+          if (res.body && res.body.ok && res.body.token) { grant(res.body); return; }
+          if (res.body && res.body.totp) {
+            if (totpWrap) {
+              totpWrap.style.display = 'block';
+              if (totpInput) totpInput.focus();
+              showToast('Entrez votre code de securite 2FA.', 'error');
             }
-            if (res.status === 429) { showToast('Trop de tentatives. Reessayez dans quelques minutes.', 'error'); return; }
-            showToast('Identifiants incorrects.', 'error');
-          })
-          .catch(function(){ showToast('Serveur injoignable. Vérifiez la connexion.', 'error'); });
-      } else if (username === 'admin' && Object.prototype.hasOwnProperty.call(ADMINS, password)) {
-        grant({ name: ADMINS[password], token: password });
-      } else {
-        showToast('Identifiants incorrects.', 'error');
-      }
+            return;
+          }
+          if (res.status === 429) { showToast('Trop de tentatives. Reessayez dans quelques minutes.', 'error'); return; }
+          showToast('Identifiants incorrects.', 'error');
+        })
+        .catch(function(){ showToast('Serveur injoignable. Vérifiez la connexion.', 'error'); });
     });
   }
 
@@ -117,6 +115,27 @@ function forceLogin() {
   window.location.href = 'login.html';
 }
 
+// ===== RBAC : roles et acces aux pages =====
+const ROLE_LABELS = { super_admin:'Super administrateur', admin:'Administrateur', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
+const ROLE_PAGES = {
+  'index.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
+  'articles.html': ['super_admin','admin','editeur','journaliste'],
+  'media.html': ['super_admin','admin','editeur','journaliste'],
+  'comments.html': ['super_admin','admin','moderateur'],
+  'analytics.html': ['super_admin','admin','analyste'],
+  'pages.html': ['super_admin','admin'],
+  'campaigns.html': ['super_admin','admin'],
+  'donations.html': ['super_admin','admin'],
+  'newsletter.html': ['super_admin','admin'],
+  'security.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
+  'journal.html': ['super_admin','admin']
+};
+function currentAdminRole() { return localStorage.getItem('admin_role') || ''; }
+function pageAllowed(page, role) {
+  var allowed = ROLE_PAGES[page] || [];
+  return allowed.indexOf(role) !== -1;
+}
+
 // ===== CHECK AUTH =====
   if (document.querySelector('.admin-body') && !document.querySelector('.login-page')) {
     if (localStorage.getItem('admin_logged') !== 'true') {
@@ -138,8 +157,74 @@ function forceLogin() {
       localStorage.removeItem('admin_logged');
       localStorage.removeItem('admin_name');
       localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_role');
       window.location.href = 'login.html';
     });
+
+    // rafraichit nom + role depuis le serveur (reflete les changements de role)
+    var curRole = currentAdminRole();
+    if (useServer && adminName) {
+      apiGet('/auth/status').then(function (st) {
+        if (!st) return;
+        localStorage.setItem('admin_name', st.name || '');
+        localStorage.setItem('admin_role', st.role || '');
+        var dsp = document.getElementById('admin-name-display');
+        if (dsp && st.name) {
+          dsp.textContent = st.name;
+          dsp.style.display = 'inline';
+        }
+        applyRoleUi();
+      });
+    } else {
+      applyRoleUi();
+    }
+    function applyRoleUi() {
+      var role = currentAdminRole();
+      var page = window.location.pathname.split('/').pop() || 'index.html';
+      if (page === 'login.html') return;
+      if (pageAllowed(page, role)) {
+        var label = ROLE_LABELS[role] || role;
+        var badge = document.createElement('span');
+        badge.id = 'admin-role-badge';
+        badge.textContent = label;
+        badge.style.cssText = 'font-size:0.75rem;background:rgba(255,255,255,0.10);padding:2px 10px;border-radius:20px;';
+        var nm = document.getElementById('admin-name-display');
+        if (nm && !document.getElementById('admin-role-badge')) nm.insertAdjacentElement('afterend', badge);
+      } else {
+        // acces refuse : retour au tableau de bord ou deconnexion
+        if (pageAllowed('index.html', role)) { window.location.href = 'index.html'; return; }
+        forceLogin();
+      }
+      // filtre la sidebar : masque les liens inaccesibles + injecte Comptes & Journal
+      var sidebar = document.querySelector('.admin-sidebar');
+      if (sidebar) {        sidebar.querySelectorAll('a[href$=".html"]').forEach(function (a) {
+          var href = a.getAttribute('href').split('/').pop();
+          if (href === '../index.html') href = 'index.html';
+          if (!pageAllowed(href, role)) a.style.display = 'none';
+        });
+        if (pageAllowed('journal.html', role) && !sidebar.querySelector('a[href="journal.html"]')) {
+          var li = document.createElement('a');
+          li.href = 'journal.html';
+          li.textContent = '📜 Journal d\'activités';
+          sidebar.insertBefore(li, sidebar.querySelector('a[href="security.html"]'));
+        }
+        if (pageAllowed('security.html', role) && !sidebar.querySelector('a[href="security.html#comptes"]')) {
+          var li2 = document.createElement('a');
+          li2.href = 'security.html#comptes';
+          li2.textContent = '👥 Comptes & rôles';
+          sidebar.insertBefore(li2, sidebar.querySelector('a[href="security.html"]'));
+        }
+      }
+      // journaliste : pas de changement de statut (brouillon force par le serveur)
+      if (role === 'journaliste') {
+        var stSel = document.getElementById('art-status');
+        if (stSel) { stSel.style.display = 'none'; }
+        var schedWrap = document.getElementById('art-sched-wrap');
+        if (schedWrap) { schedWrap.style.display = 'none'; }
+        var authorEl = document.getElementById('art-author');
+        if (authorEl) { authorEl.readOnly = true; }
+      }
+    }
   }
 
   // ===== EDITEUR : barre de formatage + apercu + mediathèque =====
@@ -273,7 +358,7 @@ function forceLogin() {
       resetImageUpload();
       document.getElementById('form-title').textContent = 'Nouvel article';
       document.getElementById('article-id').value = '';
-      var st = document.getElementById('art-status'); if (st) st.value = 'publie';
+      var st = document.getElementById('art-status'); if (st) st.value = currentAdminRole() === 'journaliste' ? 'brouillon' : 'publie';
       window.toggleArticleStatusFields ? toggleArticleStatusFields() : null;
       if (authorField && adminName) authorField.value = adminName;
       window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
@@ -456,6 +541,7 @@ function forceLogin() {
       return;
     }
     var statusLabels = { publie: '✅ Publié', brouillon: '📝 Brouillon', programme: '⏰ Programmé', corbeille: '🗑️ Corbeille' };
+    var isJournalist = currentAdminRole() === 'journaliste';
     tbody.innerHTML = visible.map(function(a) {
       var st = a.status || 'publie';
       var badge = '<span style="font-size:0.75rem;padding:2px 8px;border-radius:12px;background:' +
@@ -466,10 +552,12 @@ function forceLogin() {
                 ' <button class="btn btn-sm btn-secondary" onclick="deleteArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑️ Suppr. définitivement</button>';
       } else {
         btns += ' <button class="btn btn-sm btn-outline" onclick="duplicateArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">📄 Dupliquer</button>';
-        if (st !== 'publie') {
-          btns += ' <button class="btn btn-sm btn-outline" onclick="publishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#2e7d32;">✅ Publier</button>';
-        } else {
-          btns += ' <button class="btn btn-sm btn-outline" onclick="unpublishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#e65100;">⏸️ Dépublier</button>';
+        if (!isJournalist) {
+          if (st !== 'publie') {
+            btns += ' <button class="btn btn-sm btn-outline" onclick="publishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#2e7d32;">✅ Publier</button>';
+          } else {
+            btns += ' <button class="btn btn-sm btn-outline" onclick="unpublishArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;color:#e65100;">⏸️ Dépublier</button>';
+          }
         }
         btns += ' <button class="btn btn-sm btn-secondary" onclick="trashArticle(' + a.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑️ Corbeille</button>';
       }

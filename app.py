@@ -113,6 +113,13 @@ def admin_ok():
     # fenetre glissante
     entry['exp'] = time.time() + TOKEN_TTL
     write_json('admin_tokens', tokens)
+    # role dynamique lu depuis les comptes (reflete les changements immediatement)
+    role = 'analyste'
+    for a in load_admins():
+        if a.get('name') == entry.get('name') and a.get('user') == entry.get('account'):
+            role = a.get('role') or 'analyste'
+            break
+    entry['role'] = role
     return entry
 
 def admin_required(f):
@@ -122,6 +129,45 @@ def admin_required(f):
             return jsonify({'ok': False, 'error': 'non autorise'}), 401
         return f(*args, **kwargs)
     return wrapper
+
+# --- RBAC (controle des roles) ---
+ROLE_RANK = {'super_admin': 100, 'admin': 90, 'editeur': 60,
+             'moderateur': 50, 'journaliste': 40, 'analyste': 30}
+ROLE_LABELS = {'super_admin': 'Super administrateur', 'admin': 'Administrateur',
+               'editeur': 'Editeur', 'moderateur': 'Moderateur',
+               'journaliste': 'Journaliste', 'analyste': 'Analyste'}
+ROLE_ORDER = ('super_admin', 'admin', 'editeur', 'moderateur', 'journaliste', 'analyste')
+# Roles que l'ADMIN peut creer (le super_admin peut aussi creer des 'admin')
+ROLE_CREATABLE = ('editeur', 'moderateur', 'journaliste', 'analyste')
+
+def _acct_by_name(name):
+    """Retourne le compte admin correspondant au nom du jeton."""
+    for a in load_admins():
+        if a.get('name') == name:
+            return a
+    return None
+
+def _me():
+    """Retourne (entry_token, compte_complet) pour la session courante."""
+    entry = admin_ok()
+    if not entry:
+        return None, None
+    return entry, _acct_by_name(entry.get('name'))
+
+def role_required(*roles):
+    """Exige un role parmi la liste. Pour la hierarchie, passer les roles
+    superieurs explicitement (ex: role_required('editeur', 'admin', 'super_admin'))."""
+    def deco(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            entry = admin_ok()
+            if not entry:
+                return jsonify({'ok': False, 'error': 'non autorise'}), 401
+            if entry.get('role') not in roles:
+                return jsonify({'ok': False, 'error': 'privileges insuffisants'}), 403
+            return f(*args, **kwargs)
+        return wrapper
+    return deco
 
 # --- TOTP (RFC 6238) : 2FA sans dependance externe ---
 def totp_new_secret():
@@ -301,7 +347,7 @@ def _save_media_meta(meta):
         pass
 
 @app.route('/api/media', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def media_upload():
     d = request.get_json(silent=True) or {}
     b64 = str(d.get('image') or '')
@@ -330,10 +376,11 @@ def media_upload():
     meta[fname] = {'url': '/media/' + fname, 'name': fname, 'type': fmt,
                    'size': len(raw), 'created': time.time()}
     _save_media_meta(meta)
+    log_activity('media ajoute', fname)
     return jsonify({'ok': True, 'url': '/media/' + fname})
 
 @app.route('/api/media', methods=['GET'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def media_list():
     q = (request.args.get('q') or '').strip().lower()
     media = []
@@ -346,7 +393,7 @@ def media_list():
     return jsonify(media)
 
 @app.route('/api/media/<fname>', methods=['DELETE'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def media_delete(fname):
     fname = os.path.basename(fname or '')
     if not fname:
@@ -360,6 +407,7 @@ def media_delete(fname):
     meta = _media_meta()
     meta.pop(fname, None)
     _save_media_meta(meta)
+    log_activity('media supprime', fname)
     return jsonify({'ok': True})
 
 @app.route('/media/<path:fname>')
@@ -461,59 +509,102 @@ def get_article(aid):
             return jsonify(cp)
     return jsonify({'error': 'not found'}), 404
 
+def _journalist_owns(entry, me, a):
+    """Un journaliste ne gere que son propre contenu (champ author)."""
+    if entry.get('role') != 'journaliste':
+        return True
+    own = a.get('author') or ''
+    return own in ('', me.get('name') or '')
+
 @app.route('/api/articles', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def save_article():
+    entry, me = _me()
     articles = read_json('articles')
     data = _sanitize_article(request.json or {})
+    existed = False
     if data.get('id'):
         for i, a in enumerate(articles):
             if a['id'] == data['id']:
+                existed = True
+                if not _journalist_owns(entry, me, a):
+                    return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
                 articles[i] = {**a, **data}
                 break
     else:
+        if entry.get('role') == 'journaliste':
+            data['status'] = 'brouillon'
+            data['author'] = me.get('name') or ''
+        if not data.get('author'):
+            data['author'] = me.get('name') or ''
         data['id'] = int(time.time() * 1000)
         data['featured'] = False
         articles.insert(0, data)
     write_json('articles', articles)
+    log_activity('article %s' % ('modifie' if existed else 'cree'), 'id %s' % data['id'])
     return jsonify({'ok': True, 'id': data['id']})
 
 @app.route('/api/articles/<int:aid>', methods=['PUT'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def update_article(aid):
+    entry, me = _me()
     articles = read_json('articles')
     data = _sanitize_article(request.json or {})
     data['id'] = aid
     data['modified'] = time.strftime('%Y-%m-%dT%H:%M:%S')
     for i, a in enumerate(articles):
         if a['id'] == aid:
+            if not _journalist_owns(entry, me, a):
+                return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
+            if entry.get('role') == 'journaliste':
+                data['status'] = 'brouillon'
+            if not data.get('author'):
+                data['author'] = a.get('author') or ''
             articles[i] = {**a, **data}
             break
     else:
         data['featured'] = False
+        if entry.get('role') == 'journaliste':
+            data['status'] = 'brouillon'
+        data['author'] = data.get('author') or (me.get('name') or '')
         articles.insert(0, data)
     write_json('articles', articles)
+    log_activity('article modifie', 'id %s' % aid)
     return jsonify({'ok': True, 'id': aid})
 
 @app.route('/api/articles/<int:aid>', methods=['DELETE'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def delete_article(aid):
+    entry, me = _me()
+    arts = read_json('articles')
+    for a in arts:
+        if a['id'] == aid and not _journalist_owns(entry, me, a):
+            return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
     articles = [a for a in read_json('articles') if a['id'] != aid]
     write_json('articles', articles)
+    log_activity('article supprime', 'id %s' % aid)
     return jsonify({'ok': True})
 
 @app.route('/api/admin/articles', methods=['GET'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def admin_articles():
     promote_scheduled()
+    entry, me = _me()
+    if entry.get('role') == 'journaliste':
+        name = me.get('name') or ''
+        return jsonify([a for a in read_json('articles')
+                        if (a.get('author') or '') in ('', name)])
     return jsonify(read_json('articles'))
 
 @app.route('/api/articles/<int:aid>/duplicate', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def duplicate_article(aid):
+    entry, me = _me()
     arts = read_json('articles')
     for i, a in enumerate(arts):
         if a.get('id') == aid:
+            if not _journalist_owns(entry, me, a):
+                return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
             cp = dict(a)
             cp['id'] = int(time.time() * 1000)
             cp['title'] = (a.get('title') or 'Article') + ' (copie)'
@@ -521,37 +612,48 @@ def duplicate_article(aid):
             cp['scheduledAt'] = ''
             cp['featured'] = False
             cp.pop('modified', None)
+            if entry.get('role') == 'journaliste':
+                cp['author'] = me.get('name') or ''
             arts.insert(i + 1, cp)
             write_json('articles', arts)
+            log_activity('article duplique', 'id %s' % aid)
             return jsonify({'ok': True, 'id': cp['id']})
     return jsonify({'ok': False, 'error': 'article introuvable'}), 404
 
 @app.route('/api/articles/<int:aid>/trash', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def trash_article(aid):
+    entry, me = _me()
     arts = read_json('articles')
     for a in arts:
         if a.get('id') == aid:
+            if not _journalist_owns(entry, me, a):
+                return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
             a['status'] = 'corbeille'
             a['scheduledAt'] = ''
             write_json('articles', arts)
+            log_activity('article mis a la corbeille', 'id %s' % aid)
             return jsonify({'ok': True})
     return jsonify({'ok': False, 'error': 'article introuvable'}), 404
 
 @app.route('/api/articles/<int:aid>/restore', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def restore_article(aid):
+    entry, me = _me()
     arts = read_json('articles')
     for a in arts:
         if a.get('id') == aid:
+            if not _journalist_owns(entry, me, a):
+                return jsonify({'ok': False, 'error': 'cet article appartient a un autre auteur'}), 403
             a['status'] = 'publie'
             a['scheduledAt'] = ''
             write_json('articles', arts)
+            log_activity('article restaure', 'id %s' % aid)
             return jsonify({'ok': True})
     return jsonify({'ok': False, 'error': 'article introuvable'}), 404
 
 @app.route('/api/articles/<int:aid>/publish', methods=['POST'])
-@admin_required
+@role_required('editeur', 'admin', 'super_admin')
 def publish_article_now(aid):
     arts = read_json('articles')
     for a in arts:
@@ -559,6 +661,7 @@ def publish_article_now(aid):
             a['status'] = 'publie'
             a['scheduledAt'] = ''
             write_json('articles', arts)
+            log_activity('article publie', 'id %s' % aid)
             return jsonify({'ok': True})
     return jsonify({'ok': False, 'error': 'article introuvable'}), 404
 
@@ -700,7 +803,7 @@ def get_pages():
     return jsonify(read_json('pages'))
 
 @app.route('/api/pages', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def save_page():
     pages = read_json('pages')
     data = request.json or {}
@@ -716,7 +819,7 @@ def save_page():
     return jsonify({'ok': True, 'id': data['id']})
 
 @app.route('/api/pages/<int:pid>', methods=['PUT'])
-@admin_required
+@role_required('admin', 'super_admin')
 def update_page(pid):
     pages = read_json('pages')
     data = request.json or {}
@@ -731,7 +834,7 @@ def update_page(pid):
     return jsonify({'ok': True, 'id': pid})
 
 @app.route('/api/pages/<int:pid>', methods=['DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def delete_page(pid):
     pages = [p for p in read_json('pages') if p['id'] != pid]
     write_json('pages', pages)
@@ -772,7 +875,7 @@ def add_comment(article_id):
     return jsonify({'ok': True, 'id': entry['id']})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/approve', methods=['POST'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def approve_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = read_json(key)
@@ -782,10 +885,11 @@ def approve_comment(article_id, cid):
             c['status'] = 'visible'
             break
     write_json(key, comments)
+    log_activity('commentaire approuve', 'article %s, commentaire %s' % (article_id, cid))
     return jsonify({'ok': True})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/status', methods=['POST'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def set_comment_status(article_id, cid):
     st = (request.json or {}).get('status')
     if st not in ('visible', 'hidden'):
@@ -798,6 +902,7 @@ def set_comment_status(article_id, cid):
             c['pending'] = False
             break
     write_json(key, comments)
+    log_activity('commentaire %s' % st, 'article %s, commentaire %s' % (article_id, cid))
     return jsonify({'ok': True})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>/flag', methods=['POST'])
@@ -814,21 +919,22 @@ def flag_comment(article_id, cid):
     return jsonify({'ok': True})
 
 @app.route('/api/comments/<int:article_id>/<int:cid>', methods=['DELETE'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def delete_comment(article_id, cid):
     key = f'comments_{article_id}'
     comments = [c for c in read_json(key) if c['id'] != cid]
     write_json(key, comments)
+    log_activity('commentaire supprime', 'article %s, commentaire %s' % (article_id, cid))
     return jsonify({'ok': True})
 
 # --- BLOCKED USERS ---
 @app.route('/api/blocked', methods=['GET'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def list_blocked():
     return jsonify(read_obj('blocked', []))
 
 @app.route('/api/blocked', methods=['POST'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def block_user():
     name = ((request.json or {}).get('name') or '').strip().lower()[:40]
     if not name:
@@ -837,13 +943,15 @@ def block_user():
     if name not in bl:
         bl.append(name)
     write_json('blocked', bl)
+    log_activity('utilisateur bloque', name)
     return jsonify({'ok': True})
 
 @app.route('/api/blocked/<path:name>', methods=['DELETE'])
-@admin_required
+@role_required('moderateur', 'admin', 'super_admin')
 def unblock_user(name):
     bl = [n for n in read_obj('blocked', []) if n != name.lower()]
     write_json('blocked', bl)
+    log_activity('utilisateur debloque', name)
     return jsonify({'ok': True})
 
 # --- REACTIONS ---
@@ -1010,7 +1118,7 @@ def get_settings():
     return jsonify(out)
 
 @app.route('/api/settings', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def save_settings():
     d = read_obj('settings', DEFAULT_SETTINGS)
     data = request.json or {}
@@ -1035,7 +1143,7 @@ def save_settings():
 
 # --- NEWSLETTER ---
 @app.route('/api/newsletter', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def get_subscribers():
     raw = read_json('newsletter')
     out = []
@@ -1072,7 +1180,7 @@ def subscribe():
     return jsonify({'ok': True})
 
 @app.route('/api/newsletter/<path:email>', methods=['DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def delete_subscriber(email):
     email = email.lower()
     subs = [s for s in read_json('newsletter')
@@ -1126,7 +1234,7 @@ def push_broadcast(title, body, url='', scope=None):
 
 
 @app.route('/api/push/status', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def push_status():
     try:
         import pywebpush
@@ -1201,7 +1309,7 @@ def save_notification_prefs():
     return jsonify({'ok': True, 'id': entry['id']})
 
 @app.route('/api/notifications', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def list_notifications():
     out = []
     for s in read_json('notifications'):
@@ -1212,14 +1320,14 @@ def list_notifications():
     return jsonify(out)
 
 @app.route('/api/notifications/<int:nid>', methods=['DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def delete_notification(nid):
     subs = [s for s in read_json('notifications') if s.get('id') != nid]
     write_json('notifications', subs)
     return jsonify({'ok': True})
 
 @app.route('/api/push/send', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def push_send():
     d = request.json or {}
     title = (d.get('title') or '').strip()[:120]
@@ -1247,7 +1355,7 @@ def add_lost_found():
     return jsonify({'ok': True})
 
 @app.route('/api/lost-found/<int:lid>', methods=['DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def delete_lost_found(lid):
     ads = [a for a in read_json('lost_found') if a['id'] != lid]
     write_json('lost_found', ads)
@@ -1296,7 +1404,7 @@ def get_campaigns():
     return jsonify([_campaign_progress(c, donations) for c in campaigns])
 
 @app.route('/api/campaigns', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def save_campaign():
     campaigns = read_json('campaigns')
     data = _sanitize_campaign(request.json or {})
@@ -1313,10 +1421,12 @@ def save_campaign():
         data['createdAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
         campaigns.insert(0, data)
     write_json('campaigns', campaigns)
+    log_activity('campagne %s' % ('modifiee' if request.json and request.json.get('id') else 'creee'),
+                 'id %s' % data['id'])
     return jsonify({'ok': True, 'id': data['id']})
 
 @app.route('/api/campaigns/<int:cid>', methods=['PUT'])
-@admin_required
+@role_required('admin', 'super_admin')
 def update_campaign(cid):
     campaigns = read_json('campaigns')
     data = _sanitize_campaign(request.json or {})
@@ -1329,17 +1439,19 @@ def update_campaign(cid):
     else:
         campaigns.insert(0, data)
     write_json('campaigns', campaigns)
+    log_activity('campagne modifiee', 'id %s' % cid)
     return jsonify({'ok': True, 'id': cid})
 
 @app.route('/api/campaigns/<int:cid>', methods=['DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def delete_campaign(cid):
     campaigns = [c for c in read_json('campaigns') if c['id'] != cid]
     write_json('campaigns', campaigns)
+    log_activity('campagne supprimee', 'id %s' % cid)
     return jsonify({'ok': True})
 
 @app.route('/api/campaigns/<int:cid>/stop', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def stop_campaign(cid):
     campaigns = read_json('campaigns')
     for c in campaigns:
@@ -1348,10 +1460,11 @@ def stop_campaign(cid):
             c['archivedAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
             break
     write_json('campaigns', campaigns)
+    log_activity('campagne archivee', 'id %s' % cid)
     return jsonify({'ok': True})
 
 @app.route('/api/campaigns/<int:cid>/speed', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def set_campaign_speed(cid):
     campaigns = read_json('campaigns')
     speed = (request.json or {}).get('speed', 5000)
@@ -1397,7 +1510,7 @@ def _valid_donation_payload(data, required_key=True):
     return errors, amount
 
 @app.route('/api/donations', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def get_donations():
     return jsonify(read_json('donations'))
 
@@ -1462,7 +1575,7 @@ def add_donation():
     return jsonify({'ok': True, 'txn_id': txn_id, 'idempotency_key': idem})
 
 @app.route('/api/donations/stats', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def donation_stats():
     """Statistiques de gestion : totaux, periodes, par campagne, par methode.
     Seuls les dons confirmes (statut 'confirmed') comptent dans les montants."""
@@ -1511,7 +1624,7 @@ def donation_stats():
     })
 
 @app.route('/api/donations/<txn_id>/status', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def set_donation_status(txn_id):
     """Changement de statut d'un don par l'admin (en attente, reussi, echoue, annule, rembourse).
     Le credit de la campagne est ajuste selon le statut (confirmed <-> autre)."""
@@ -1543,6 +1656,7 @@ def set_donation_status(txn_id):
         don['confirmedAt'] = don.get('confirmedAt') or time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     write_json('donations', dons)
     pay.log_event(read_json, write_json, 'donation_status_changed', {'txn_id': txn_id, 'from': old, 'to': status})
+    log_activity('statut de don modifie', 'don %s : %s -> %s' % (txn_id, old, status))
     return jsonify({'ok': True})
 
 def _send_donation_email(don, subject, body):
@@ -1617,7 +1731,7 @@ def list_reports():
     return jsonify([r for r in reports if r.get('published')])
 
 @app.route('/api/reports', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def add_report():
     data = request.json or {}
     title = str(data.get('title') or '').strip()[:200]
@@ -1638,7 +1752,7 @@ def add_report():
     return jsonify({'ok': True, 'id': rid})
 
 @app.route('/api/reports/<int:rid>', methods=['PUT', 'DELETE'])
-@admin_required
+@role_required('admin', 'super_admin')
 def update_report(rid):
     reports = read_json('reports')
     report = next((r for r in reports if r.get('id') == rid), None)
@@ -1764,14 +1878,14 @@ def payment_verify():
         return jsonify({'ok': False, 'error': e.msg, 'code': e.code}), 400
 
 @app.route('/api/payments/log', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def get_payment_log():
     """Journal d'audit des paiements (append-only)."""
     logs = read_json(pay.LOG_FILE)
     return jsonify(list(reversed(logs)) if isinstance(logs, list) else [])
 
 @app.route('/api/payments/config', methods=['GET'])
-@admin_required
+@role_required('admin', 'super_admin')
 def get_payment_config():
     """Config de paiement pour l'admin : les secrets ne sont JAMAIS renvoyes."""
     cfg = pay.config_snapshot(read_json)
@@ -1785,7 +1899,7 @@ def get_payment_config():
     return jsonify(out)
 
 @app.route('/api/payments/config', methods=['POST'])
-@admin_required
+@role_required('admin', 'super_admin')
 def set_payment_config():
     data = request.json or {}
     cfg = pay.config_snapshot(read_json)
@@ -1813,7 +1927,7 @@ def set_payment_config():
 
 # --- VISITS ---
 @app.route('/api/visits', methods=['GET'])
-@admin_required
+@role_required('analyste', 'admin', 'super_admin')
 def get_visits():
     return jsonify(read_json('visits'))
 
@@ -1841,7 +1955,7 @@ def track_visit():
     return jsonify({'ok': True})
 
 @app.route('/api/visits/analytics', methods=['GET'])
-@admin_required
+@role_required('analyste', 'admin', 'super_admin')
 def visit_analytics():
     period = request.args.get('period', 'all')
     raw = read_json('visits')
@@ -1907,7 +2021,7 @@ def visit_analytics():
 
 # --- STATS ---
 @app.route('/api/stats', methods=['GET'])
-@admin_required
+@role_required('analyste', 'admin', 'super_admin')
 def get_stats():
     articles = len(read_json('articles'))
     comments = sum(len(read_json(f)) for f in os.listdir(DATA_DIR) if f.startswith('comments_'))
@@ -1962,7 +2076,7 @@ def _classify_source(ref):
     return 'Autres sites'
 
 @app.route('/api/analytics/overview', methods=['GET'])
-@admin_required
+@role_required('analyste', 'admin', 'super_admin')
 def analytics_overview():
     period = request.args.get('period', '30d')
     days = {'7d': 7, '30d': 30, '90d': 90, '12m': 365}.get(period, 30)
@@ -2082,7 +2196,7 @@ def analytics_overview():
     })
 
 @app.route('/api/analytics/<int:article_id>', methods=['GET'])
-@admin_required
+@role_required('analyste', 'admin', 'super_admin')
 def analytics_article(article_id):
     aid = str(article_id)
     art_list = read_json('articles')
@@ -2223,9 +2337,9 @@ def _record_fail(ip):
     AUTH_FAILS.setdefault(ip, []).append(now)
 
 def _find_account(user, password):
-    if user != 'admin':
-        return None
     for acct in load_admins():
+        if acct.get('user') != user:
+            continue
         if _check_pass(password, acct.get('pass_hash') or ''):
             return acct
     return None
@@ -2260,27 +2374,31 @@ def auth():
             return jsonify({'ok': False, 'error': 'code de securite invalide', 'totp': True}), 401
     AUTH_FAILS.pop(ip, None)
     token = _grant_token(acct)
+    log_activity('connexion', 'connexion a la plateforme', ip=ip, acct=acct)
     return jsonify({'ok': True, 'name': acct.get('name'), 'token': token,
-                    'twofa': bool(acct.get('twofa'))})
+                    'twofa': bool(acct.get('twofa')),
+                    'role': acct.get('role') or 'analyste'})
 
 @app.route('/api/auth/logout', methods=['POST'])
 def auth_logout():
     t = request.headers.get('X-Admin-Token', '')
     tokens = read_obj('admin_tokens', {})
+    entry = tokens.get(t) or {}
     tokens.pop(t, None)
     write_json('admin_tokens', tokens)
+    acct = _acct_by_name(entry.get('name'))
+    if acct:
+        log_activity('deconnexion', 'deconnexion de la plateforme', acct=acct)
     return jsonify({'ok': True})
 
 @app.route('/api/auth/status', methods=['GET'])
 @admin_required
 def auth_status():
     entry = admin_ok()
-    twofa = False
-    for a in load_admins():
-        if a.get('name') == entry.get('name'):
-            twofa = bool(a.get('twofa'))
-            break
-    return jsonify({'ok': True, 'name': entry.get('name'), 'twofa': twofa})
+    acct = _acct_by_name(entry.get('name'))
+    return jsonify({'ok': True, 'name': entry.get('name'),
+                    'role': entry.get('role'),
+                    'twofa': bool(acct.get('twofa')) if acct else False})
 
 @app.route('/api/auth/password', methods=['POST'])
 @admin_required
@@ -2306,6 +2424,7 @@ def auth_password():
     tokens = read_obj('admin_tokens', {})
     tokens = {k: v for k, v in tokens.items() if v.get('name') != acct['name']}
     write_json('admin_tokens', tokens)
+    log_activity('mot de passe change', 'compte %s' % acct.get('name'))
     return jsonify({'ok': True})
 
 @app.route('/api/auth/recovery', methods=['POST'])
@@ -2397,7 +2516,177 @@ def admin_recovery_regenerate():
             acct['recovery_codes'] = [_hash(c) for c in codes]
             _save_admins(accounts)
             return jsonify({'ok': True, 'codes': codes})
-    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404# --- IMAGE UPLOAD ---
+    return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+
+# --- JOURNAL D'ACTIVITES ---
+# Trace : utilisateur, action, date, adresse IP, element concerne.
+ACTIVITY_MAX = 2000
+
+def log_activity(action, target='', ip=None, acct=None):
+    """Enregistre une action dans le journal d'activites."""
+    try:
+        if acct is None:
+            entry = admin_ok()
+            acct = _acct_by_name(entry.get('name')) if entry else None
+        log = read_json('activity_log')
+        if not isinstance(log, list):
+            log = []
+        if ip is None:
+            ip = request.remote_addr or ''
+        now = time.strftime('%Y-%m-%dT%H:%M:%S')
+        log.append({
+            'id': int(time.time() * 1000),
+            'ts': time.time(),
+            'date': now,
+            'user': (acct.get('name') if acct else '?') or '?',
+            'role': (acct.get('role') or '') if acct else '',
+            'action': str(action)[:120],
+            'target': str(target)[:300],
+            'ip': str(ip)[:45],
+        })
+        if len(log) > ACTIVITY_MAX:
+            log = log[-ACTIVITY_MAX:]
+        write_json('activity_log', log)
+    except Exception:
+        pass
+
+def _revoke_tokens(name):
+    """Invalide tous les jetons d'un compte (par nom)."""
+    tokens = read_obj('admin_tokens', {})
+    tokens = {k: v for k, v in tokens.items() if v.get('name') != name}
+    write_json('admin_tokens', tokens)
+
+@app.route('/api/activity', methods=['GET'])
+@role_required('admin', 'super_admin')
+def list_activity():
+    page = max(1, int(request.args.get('page', 1) or 1))
+    per = min(100, max(10, int(request.args.get('per', 50) or 50)))
+    entries = read_json('activity_log')
+    entries.reverse()
+    total = len(entries)
+    start = (page - 1) * per
+    return jsonify({'ok': True, 'total': total, 'page': page,
+                    'per': per, 'items': entries[start:start + per]})
+
+# --- GESTION DES COMPTES (RBAC) ---
+@app.route('/api/admin/accounts', methods=['GET'])
+@role_required('admin', 'super_admin')
+def list_accounts():
+    out = []
+    for a in load_admins():
+        item = dict(a)
+        item.pop('pass_hash', None)
+        item.pop('recovery_codes', None)
+        item.pop('totp_secret', None)
+        item['role_label'] = ROLE_LABELS.get(item.get('role'), item.get('role', ''))
+        out.append(item)
+    return jsonify({'ok': True, 'accounts': out})
+
+@app.route('/api/admin/accounts', methods=['POST'])
+@role_required('admin', 'super_admin')
+def create_account():
+    entry, me = _me()
+    d = request.json or {}
+    user = (d.get('user') or '').strip()[:40]
+    name = (d.get('name') or '').strip()[:60]
+    pwd = str(d.get('pass') or '')
+    role = (d.get('role') or '').strip().lower()
+    if not user or not name:
+        return jsonify({'ok': False, 'error': 'identifiant et nom requis'}), 400
+    if not re.match(r'^[a-zA-Z0-9_.-]+$', user):
+        return jsonify({'ok': False, 'error': 'identifiant invalide (lettres, chiffres, . _ -)'}), 400
+    if len(pwd) < 8:
+        return jsonify({'ok': False, 'error': 'mot de passe trop court (8 caracteres min)'}), 400
+    allowed = ROLE_CREATABLE + (('admin',) if entry.get('role') == 'super_admin' else ())
+    if role not in allowed:
+        return jsonify({'ok': False, 'error': 'role non autorise pour votre niveau'}), 403
+    accounts = load_admins()
+    if any(a.get('user') == user for a in accounts):
+        return jsonify({'ok': False, 'error': 'identifiant deja utilise'}), 400
+    acct = {
+        'id': max([a.get('id', 0) for a in accounts] or [0]) + 1,
+        'user': user, 'name': name, 'role': role,
+        'pass_hash': _hash(pwd),
+        'pass_changed': time.strftime('%Y-%m-%dT%H:%M:%S'),
+        'twofa': False, 'totp_secret': '',
+        'recovery_codes': [_hash(secrets.token_urlsafe(9)) for _ in range(3)],
+        'created': time.strftime('%Y-%m-%d'),
+    }
+    accounts.append(acct)
+    _save_admins(accounts)
+    log_activity('creation compte', '%s (%s, role %s)' % (name, user, role))
+    return jsonify({'ok': True, 'id': acct['id']})
+
+@app.route('/api/admin/accounts/<int:aid>', methods=['PATCH'])
+@role_required('admin', 'super_admin')
+def update_account(aid):
+    entry, me = _me()
+    accounts = load_admins()
+    acct = next((a for a in accounts if a.get('id') == aid), None)
+    if not acct:
+        return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+    self = (me.get('id') == aid)
+    d = request.json or {}
+    is_admin = entry.get('role') == 'admin'
+    if self and 'role' in d:
+        return jsonify({'ok': False, 'error': 'vous ne pouvez pas changer votre propre role'}), 403
+    if self and 'pass' in d:
+        return jsonify({'ok': False, 'error': 'changez votre mot de passe via la page Securite'}), 403
+    target_is_priv = acct.get('role') in ('super_admin', 'admin')
+    if is_admin and target_is_priv:
+        return jsonify({'ok': False, 'error': 'vous ne pouvez pas modifier un compte admin'}), 403
+    if 'role' in d:
+        nrole = str(d.get('role')).strip().lower()
+        if nrole == 'super_admin':
+            return jsonify({'ok': False, 'error': 'impossible de nommer un super administrateur'}), 403
+        if is_admin and nrole not in ROLE_CREATABLE:
+            return jsonify({'ok': False, 'error': 'role non autorise pour votre niveau'}), 403
+        acct['role'] = nrole
+    if 'user' in d:
+        nuser = (d.get('user') or '').strip()[:40]
+        if not re.match(r'^[a-zA-Z0-9_.-]+$', nuser):
+            return jsonify({'ok': False, 'error': 'identifiant invalide'}), 400
+        if any(a.get('id') != aid and a.get('user') == nuser for a in accounts):
+            return jsonify({'ok': False, 'error': 'identifiant deja utilise'}), 400
+        acct['user'] = nuser
+    if 'name' in d:
+        nname = (d.get('name') or '').strip()[:60]
+        if not nname:
+            return jsonify({'ok': False, 'error': 'nom vide'}), 400
+        acct['name'] = nname
+    if 'pass' in d:
+        npwd = str(d.get('pass') or '')
+        if len(npwd) < 8:
+            return jsonify({'ok': False, 'error': 'mot de passe trop court (8 caracteres min)'}), 400
+        acct['pass_hash'] = _hash(npwd)
+        acct['pass_changed'] = time.strftime('%Y-%m-%dT%H:%M:%S')
+        _revoke_tokens(acct['name'])
+    _save_admins(accounts)
+    log_activity('modification compte', '%s (%s, role %s)' % (acct.get('name'), acct.get('user'), acct.get('role')))
+    return jsonify({'ok': True})
+
+@app.route('/api/admin/accounts/<int:aid>', methods=['DELETE'])
+@role_required('admin', 'super_admin')
+def delete_account(aid):
+    entry, me = _me()
+    accounts = load_admins()
+    acct = next((a for a in accounts if a.get('id') == aid), None)
+    if not acct:
+        return jsonify({'ok': False, 'error': 'compte introuvable'}), 404
+    if me.get('id') == aid:
+        return jsonify({'ok': False, 'error': 'vous ne pouvez pas supprimer votre propre compte'}), 403
+    if acct.get('role') == 'super_admin':
+        return jsonify({'ok': False, 'error': 'un super administrateur ne peut pas etre supprime'}), 403
+    if entry.get('role') == 'admin' and acct.get('role') != 'analyste' and acct.get('role') != 'journaliste' and acct.get('role') != 'moderateur' and acct.get('role') != 'editeur':
+        return jsonify({'ok': False, 'error': 'vous ne pouvez pas supprimer un compte admin'}), 403
+    name = acct.get('name')
+    accounts = [a for a in accounts if a.get('id') != aid]
+    _save_admins(accounts)
+    _revoke_tokens(name)
+    log_activity('suppression compte', name)
+    return jsonify({'ok': True})
+
+# --- IMAGE UPLOAD ---
 def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
     if not HAS_PIL:
         return img_bytes
@@ -2423,7 +2712,7 @@ def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
         return img_bytes
 
 @app.route('/api/upload', methods=['POST'])
-@admin_required
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
 def upload_image():
     data = request.json
     if not data or not data.get('image'):

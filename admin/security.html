@@ -85,6 +85,53 @@
         </div>
 
       </div>
+
+      <div id="comptes" style="margin-top:40px;background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);">
+        <h3 style="color:var(--primary);margin-bottom:6px;">👥 Comptes &amp; rôles</h3>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:18px;">
+          Créez des comptes pour l'équipe et attribuez-leur un rôle :
+          <b>Éditeur</b> (articles), <b>Journaliste</b> (ses propres articles), <b>Modérateur</b> (commentaires), <b>Analyste</b> (statistiques).
+          Un compte ne peut pas être supprimé une fois son rôle atteint (garde-fous serveur).
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-bottom:24px;">
+          <div style="border:1px solid #e5e8ee;border-radius:10px;padding:18px;">
+            <h4 style="margin-bottom:12px;font-size:1rem;">➕ Nouveau compte</h4>
+            <div class="form-group">
+              <label>Nom complet</label>
+              <input type="text" id="acct-name" class="form-input" maxlength="60">
+            </div>
+            <div class="form-group">
+              <label>Identifiant (login)</label>
+              <input type="text" id="acct-user" class="form-input" maxlength="40" placeholder="ex. jean.journaliste">
+            </div>
+            <div class="form-group">
+              <label>Mot de passe (8 caractères min.)</label>
+              <input type="text" id="acct-pass" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Rôle</label>
+              <select id="acct-role" class="form-input">
+                <option value="editeur">Éditeur</option>
+                <option value="journaliste">Journaliste</option>
+                <option value="moderateur">Modérateur</option>
+                <option value="analyste">Analyste</option>
+                <option value="admin" class="role-admin-opt">Administrateur</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="acct-create">Créer le compte</button>
+            <div id="acct-status" style="font-size:0.85rem;margin-top:10px;color:var(--text-light);"></div>
+          </div>
+
+          <div style="border:1px solid #e5e8ee;border-radius:10px;padding:18px;overflow:auto;">
+            <h4 style="margin-bottom:12px;font-size:1rem;">Liste des comptes</h4>
+            <table class="admin-table" style="min-width:560px;">
+              <thead><tr><th>Nom</th><th>Identifiant</th><th>Rôle</th><th>Actions</th></tr></thead>
+              <tbody id="accounts-body"><tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">Chargement...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
   <script src="../js/main.js"></script>
@@ -144,10 +191,86 @@
         var box = document.getElementById('recovery-codes');
         api('/api/admin/recovery-codes/regenerate', {}, 'POST').then(function (r) {
           if (r.body && r.body.ok) {
-            box.innerHTML = r.body.codes.map(function (c) { return '<div style="padding:4px 0;">ðŸ”‘ ' + c + '</div>'; }).join('');
-            msg(ts, 'Codes affichÃ©s une seule fois â€” copiez-les maintenant.', true);
+            box.innerHTML = r.body.codes.map(function (c) { return '<div style="padding:4px 0;">🔑 ' + c + '</div>'; }).join('');
+            msg(ts, 'Codes affichés une seule fois — copiez-les maintenant.', true);
           } else msg(ts, 'Erreur.', false);
         });
+      });
+
+      // ===== COMPTES & ROLES (visible admin+) =====
+      var myRole = localStorage.getItem('admin_role') || '';
+      var isSuper = myRole === 'super_admin';
+      if (myRole === 'admin' || isSuper) {
+        var roleOpts = document.querySelector('.role-admin-opt');
+        if (roleOpts) roleOpts.style.display = isSuper ? '' : 'none';
+        var acctStatus = document.getElementById('acct-status');
+
+        function loadAccounts() {
+          api('/api/admin/accounts', null, 'GET').then(function (r) {
+            var tbody = document.getElementById('accounts-body');
+            if (!(r.body && r.body.accounts)) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c0392b;padding:20px;">Impossible de charger les comptes.</td></tr>'; return; }
+            var accounts = r.body.accounts;
+            var roleLabels = { super_admin:'Super administrateur', admin:'Administrateur', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
+            tbody.innerHTML = accounts.map(function (a) {
+              var me = localStorage.getItem('admin_name') === a.name;
+              var priv = a.role === 'super_admin' || a.role === 'admin';
+              var canEdit = (isSuper || !priv) && !me;
+              var canDel = (isSuper || a.role === 'journaliste' || a.role === 'editeur' || a.role === 'moderateur' || a.role === 'analyste') && !me;
+              var roleSelect = '<select class="form-input acct-role-sel" data-id="' + a.id + '" style="max-width:190px;padding:4px 8px;font-size:0.8rem;"' + (canEdit ? '' : ' disabled') + '>' +
+                Object.keys(roleLabels).map(function (k) {
+                  return '<option value="' + k + '"' + (a.role === k ? ' selected' : '') + (k === 'super_admin' || (k === 'admin' && !isSuper) ? ' style="display:none;"' : '') + '>' + roleLabels[k] + '</option>';
+                }).join('') + '</select>';
+              var actions = '';
+              if (canEdit) actions += ' <button class="btn btn-sm btn-outline" onclick="resetAcctPass(' + a.id + ')" style="padding:4px 10px;font-size:0.78rem;">🔑 MDP</button>';
+              if (canDel) actions += ' <button class="btn btn-sm btn-secondary" onclick="delAccount(' + a.id + ')" style="padding:4px 10px;font-size:0.78rem;">🗑</button>';
+              return '<tr><td>' + a.name + (me ? ' <span style="color:#2e7d32;font-size:0.7rem;">(vous)</span>' : '') + '</td><td><code>' + a.user + '</code></td><td>' + roleSelect + '</td><td>' + actions + '</td></tr>';
+            }).join('') || '<tr><td colspan="4" style="text-align:center;color:#999;">Aucun compte.</td></tr>';
+            tbody.querySelectorAll('.acct-role-sel').forEach(function (sel) {
+              sel.addEventListener('change', function () {
+                api('/api/admin/accounts/' + sel.dataset.id, { role: sel.value }, 'PATCH').then(function (r2) {
+                  if (r2.body && r2.body.ok) { loadAccounts(); msg(acctStatus, 'Rôle mis à jour.', true); }
+                  else msg(acctStatus, (r2.body && r2.body.error) || 'Erreur.', false);
+                });
+              });
+            });
+          });
+        }
+        window.resetAcctPass = function (id) {
+          var pwd = window.prompt('Nouveau mot de passe (8 caractères min.) :');
+          if (!pwd) return;
+          if (pwd.length < 8) { msg(acctStatus, 'Mot de passe trop court.', false); return; }
+          api('/api/admin/accounts/' + id, { pass: pwd }, 'PATCH').then(function (r) {
+            if (r.body && r.body.ok) msg(acctStatus, 'Mot de passe réinitialisé. Les sessions de ce compte ont été révoquées.', true);
+            else msg(acctStatus, (r.body && r.body.error) || 'Erreur.', false);
+          });
+        };
+        window.delAccount = function (id) {
+          if (!confirm('Supprimer ce compte ? Cette action est irréversible.')) return;
+          api('/api/admin/accounts/' + id, null, 'DELETE').then(function (r) {
+            if (r.body && r.body.ok) { loadAccounts(); msg(acctStatus, 'Compte supprimé.', true); }
+            else msg(acctStatus, (r.body && r.body.error) || 'Erreur.', false);
+          });
+        };
+        document.getElementById('acct-create').addEventListener('click', function () {
+          var name = document.getElementById('acct-name').value.trim();
+          var user = document.getElementById('acct-user').value.trim();
+          var pwd = document.getElementById('acct-pass').value;
+          var role = document.getElementById('acct-role').value;
+          if (!name || !user) { msg(acctStatus, 'Nom et identifiant requis.', false); return; }
+          if (pwd.length < 8) { msg(acctStatus, 'Mot de passe trop court (8 caractères min.).', false); return; }
+          api('/api/admin/accounts', { name: name, user: user, pass: pwd, role: role }, 'POST').then(function (r) {
+            if (r.body && r.body.ok) {
+              msg(acctStatus, 'Compte créé. Communiquez l\'identifiant et le mot de passe à la personne.', true);
+              document.getElementById('acct-name').value = '';
+              document.getElementById('acct-user').value = '';
+              document.getElementById('acct-pass').value = '';
+              loadAccounts();
+            } else msg(acctStatus, (r.body && r.body.error) || 'Erreur.', false);
+          });
+        });
+        loadAccounts();
+      }
+    });
       });
     });
   </script>
