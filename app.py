@@ -2337,8 +2337,11 @@ def _record_fail(ip):
     AUTH_FAILS.setdefault(ip, []).append(now)
 
 def _find_account(user, password):
+    look = (user or '').strip().lower()
     for acct in load_admins():
-        if acct.get('user') != user:
+        ident = (acct.get('user') or '').strip().lower()
+        name = (acct.get('name') or '').strip().lower()
+        if look not in (ident, name):
             continue
         if _check_pass(password, acct.get('pass_hash') or ''):
             return acct
@@ -2747,6 +2750,7 @@ def sitemap():
         ('/index.html', None), ('/actualites.html', None), ('/qui-sommes-nous.html', None),
         ('/projets.html', None), ('/sensibilisation.html', None), ('/objets-perdus.html', None),
         ('/heritage.html', None), ('/faq.html', None), ('/donation.html', None), ('/page.html', None),
+        ('/mentions-legales.html', None), ('/privacy.html', None), ('/cookies.html', None),
     ]
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for p, _d in pages:

@@ -230,6 +230,13 @@
       </div>
       <div class="footer-bottom">
         <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits r&eacute;serv&eacute;s.</span>
+<div class="footer-legal">
+          <a href="mentions-legales.html">Mentions légales</a> | 
+          <a href="privacy.html">Politique de confidentialité</a> | 
+          <a href="cookies.html">Politique de cookies</a> | 
+          <button type="button" class="cookie-btn" onclick="window.manageCookies && window.manageCookies()" aria-label="Gérer mon consentement aux cookies">Gérer les cookies</button>
+        </div>
+
       </div>
     </div>
   </footer>
@@ -245,6 +252,7 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/consent.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/search.js"></script>
@@ -297,6 +305,8 @@ function renderShare(article) {
 
       function trackShare(channel) {
         if (!window._aid || window.location.protocol === 'file:') return;
+        // Respect du consentement : suivi UNIQUEMENT si accepté
+        if (!(window.Consent && window.Consent.allowed())) return;
         var p = { articleId: window._aid, channel: channel };
         fetch('/api/share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }).catch(function () {});
       }
@@ -475,13 +485,15 @@ function renderShare(article) {
     });
   </script>
 <script>
-    // ===== TEMPS DE LECTURE (popularite) =====
+    // ===== TEMPS DE LECTURE (popularite) — respect du consentement =====
     (function () {
       if (window.location.protocol === 'file:') return;
       var start = Date.now();
       var sent = false;
       function report() {
         if (sent || !window._aid) return;
+        // Respect du consentement : suivi UNIQUEMENT si accepté
+        if (!(window.Consent && window.Consent.allowed())) { sent = true; return; }
         var secs = Math.round((Date.now() - start) / 1000);
         if (secs < 5) return;
         sent = true;

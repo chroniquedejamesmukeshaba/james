@@ -1087,6 +1087,10 @@ function pageAllowed(page, role) {
   }
 
   function trackVisit() {
+    // Respect du consentement : suivi UNIQUEMENT si l'utilisateur a cliqué « Tout accepter »
+    if (!(window.Consent && window.Consent.allowed())) {
+      return;
+    }
     var params = new URLSearchParams(window.location.search);
     var articleId = params.get('id') || '';
     var path = window.location.pathname.replace('/index.html','/') || '/';
