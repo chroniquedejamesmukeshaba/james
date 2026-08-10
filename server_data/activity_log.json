@@ -58,5 +58,55 @@
     "action": "media supprime",
     "target": "3e7693ac47d14f5b8c1a9e47575803fe.png",
     "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786300609761,
+    "ts": 1786300609.761457,
+    "date": "2026-08-09T20:36:49",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786300621004,
+    "ts": 1786300621.0045087,
+    "date": "2026-08-09T20:37:01",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786300793544,
+    "ts": 1786300793.544144,
+    "date": "2026-08-09T20:39:53",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "article modifie",
+    "target": "id 1786221100000",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786301719829,
+    "ts": 1786301719.8294625,
+    "date": "2026-08-09T20:55:19",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "article modifie",
+    "target": "id 1786221000000",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786343031655,
+    "ts": 1786343031.6551933,
+    "date": "2026-08-10T08:23:51",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "article modifie",
+    "target": "id 1786220900000",
+    "ip": "127.0.0.1"
   }
 ]
