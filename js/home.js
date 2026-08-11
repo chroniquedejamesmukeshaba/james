@@ -232,6 +232,8 @@
     return '';
   }
 
+  var PER_PAGE = 12;
+
   function renderSections() {
     var wrap = document.getElementById('home-sections');
     if (!wrap) return;
@@ -246,13 +248,38 @@
     PREF_CATS_ALL.forEach(function (c) { if (map[c] && map[c].length && cats.indexOf(c) === -1) cats.push(c); });
     Object.keys(map).forEach(function (c) { if (cats.indexOf(c) === -1) cats.push(c); });
 
-    function cardGrid(selected) {
+    function pageButtons(page, totalPages) {
+      var btns = '<button type="button" class="pg-btn" data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + '>&lsaquo;</button>';
+      var shown = [];
+      for (var i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) shown.push(i);
+      }
+      var prev = 0;
+      shown.forEach(function (p) {
+        if (prev && p - prev > 1) btns += '<span class="pg-ell" style="padding:0 4px;color:#94a3b8;">&hellip;</span>';
+        btns += '<button type="button" class="pg-btn' + (p === page ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+        prev = p;
+      });
+      btns += '<button type="button" class="pg-btn" data-page="' + (page + 1) + '"' + (page >= totalPages ? ' disabled' : '') + '>&rsaquo;</button>';
+      return btns;
+    }
+
+    function cardGrid(selected, page) {
       var sel = selected === '__all__' ? list : map[selected];
-      var items = (sel || []).slice(0, 8);
-      return items.map(function (a) { return cardHtml(a); }).join('');
+      var items = sel || [];
+      var totalPages = Math.max(1, Math.ceil(items.length / PER_PAGE));
+      if (!page || page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      var slice = items.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+      var pager = totalPages > 1
+        ? '<nav class="pagination" style="grid-column:1/-1;margin-top:8px;">' + pageButtons(page, totalPages) + '</nav>'
+        : '';
+      return slice.map(function (a) { return cardHtml(a); }).join('') + pager;
     }
 
     var tabs = ['__all__'].concat(cats);
+    var currentCat = '__all__';
+    var currentPage = 1;
     html += '<section class="home-section"><div class="container"><div class="head">' +
       '<h2>' + t('home_cats', 'Toutes les actualités') + '</h2>' +
       '<div class="pop-tabs" role="tablist" aria-label="Rubriques">' +
@@ -260,7 +287,7 @@
         return '<button type="button" role="tab" class="pop-tab' + (i === 0 ? ' active' : '') + '" data-cat="' + c + '">' +
           (c === '__all__' ? t('home_cats_all', 'Tout') : esc(c)) + '</button>';
       }).join('') + '</div></div>' +
-      '<div class="section-grid cat-grid">' + cardGrid('__all__') + '</div>' +
+      '<div class="section-grid cat-grid">' + cardGrid(currentCat, currentPage) + '</div>' +
       '<div style="display:flex;justify-content:center;margin-top:18px;"><a class="head-link" href="actualites.html">' + t('home_view_more', 'Voir plus') + ' ' + IC.arrow + '</a></div>' +
       '</div></section>';
     wrap.innerHTML = html;
@@ -270,8 +297,18 @@
       b.addEventListener('click', function () {
         wrap.querySelectorAll('.pop-tab').forEach(function (x) { x.classList.remove('active'); });
         b.classList.add('active');
-        grid.innerHTML = cardGrid(b.dataset.cat);
+        currentCat = b.dataset.cat;
+        currentPage = 1;
+        grid.innerHTML = cardGrid(currentCat, currentPage);
       });
+    });
+    grid.addEventListener('click', function (ev) {
+      var b = ev.target.closest('.pg-btn');
+      if (!b || b.disabled) return;
+      var p = parseInt(b.dataset.page, 10);
+      if (!(p > 0)) return;
+      currentPage = p;
+      grid.innerHTML = cardGrid(currentCat, currentPage);
     });
   }
 

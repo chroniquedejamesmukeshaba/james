@@ -72,6 +72,7 @@
       </div>
     </div>
   </header>
+  <div id="global-ads-bar" aria-label="Espace publicitaire"></div>
 
   <main id="main-content">
   <section class="breadcrumb">
@@ -84,6 +85,15 @@
     <div class="container">
       <h1>Faire de la publicit&eacute; avec nous</h1>
       <p>Annoncez votre entreprise, votre activit&eacute; ou votre &eacute;v&eacute;nement &agrave; l&rsquo;audience de la Chronique de James Mukeshaba, en RDC et au Canada.</p>
+      <button type="button" class="btn btn-accent" onclick="window.openAdModal()" style="padding:12px 26px;margin-top:6px;">&#128227; VOTRE PUBLICIT&eacute; ICI</button>
+    </div>
+  </section>
+
+  <section class="section" id="current-ads-section" style="display:none;">
+    <div class="container">
+      <h2 style="color:var(--primary);margin:0 0 6px;">Publicit&eacute;s en cours</h2>
+      <p style="margin:0 0 20px;opacity:0.8;font-size:0.92rem;">Les publicit&eacute;s actuellement visibles sur la page d&rsquo;accueil.</p>
+      <div class="ads-grid" id="current-ads"></div>
     </div>
   </section>
 
@@ -291,6 +301,32 @@
   </script>
   <script>
     (function () {
+      var section = document.getElementById('current-ads-section');
+      var grid = document.getElementById('current-ads');
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+      fetch('/api/ads/public?_=' + Date.now())
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (list) {
+          if (!list || !list.length) return;
+          grid.innerHTML = list.map(function (a) {
+            var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0) ? a.image : '';
+            return '<article class="ad-card">' +
+              (src ? '<img src="' + esc(src) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '<div class="ad-noimg">&#128226;</div>') +
+              '<div class="ad-body"><h3>' + esc(a.title) + '</h3>' +
+              '<p>' + esc(a.description) + '</p>' +
+              '<span class="ad-by">' + esc(a.name || '') + '</span></div></article>';
+          }).join('');
+          section.style.display = '';
+        })
+        .catch(function () {});
+    })();
+  </script>
+  <script>
+    (function () {
       var form = document.getElementById('ad-form');
       var info = document.getElementById('ad-info');
       var err = document.getElementById('ad-error');
@@ -356,5 +392,6 @@
       });
     })();
   </script>
+  <script src="js/ads.js"></script>
 </body>
 </html>

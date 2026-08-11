@@ -1,13 +1,13 @@
-const CACHE = 'chronique-v8';
+const CACHE = 'chronique-v9';
 const STATIC = [
   '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
   '/objets-perdus.html', '/heritage.html', '/faq.html', '/soutenir.html',
   '/transparence.html', '/donation.html', '/page.html', '/article.html',
   '/categorie.html', '/recherche.html', '/cookies.html', '/privacy.html',
-  '/mentions-legales.html',
+  '/mentions-legales.html', '/publicite.html',
   '/css/tokens.css', '/css/style.css', '/css/home.css', '/css/redesign.css',
-  '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/notify.js', '/js/home.js', '/js/donation.js', '/js/actions.js', '/js/consent.js',
+  '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/notify.js', '/js/home.js', '/js/donation.js', '/js/actions.js', '/js/consent.js', '/js/ads.js',
   '/manifest.json', '/assets/images/logo.png',
   '/assets/images/icon-192.png', '/assets/images/icon-512.png'
 ];

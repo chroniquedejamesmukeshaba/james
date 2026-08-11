@@ -76,11 +76,13 @@
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
             
-          </ul>
+         <li><a href="publicite.html" data-i18n="nav_publicite">Publicit&eacute;</a></li>
+             </ul>
         </nav>
       </div>
     </div>
   </header>
+  <div id="global-ads-bar" aria-label="Espace publicitaire"></div>
   <main id="main-content">
 
   <section class="breadcrumb">
@@ -292,7 +294,22 @@
         if (!c) return 'Actualité';
         return c.charAt(0).toUpperCase() + c.slice(1);
       }
-      var SHOWN = 12;
+      var PER_PAGE = 12;
+      function pageButtons(page, totalPages) {
+        var btns = '<button type="button" class="pg-btn" data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + '>&lsaquo;</button>';
+        var shown = [];
+        for (var i = 1; i <= totalPages; i++) {
+          if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) shown.push(i);
+        }
+        var prev = 0;
+        shown.forEach(function (p) {
+          if (prev && p - prev > 1) btns += '<span style="padding:0 4px;color:#94a3b8;">&hellip;</span>';
+          btns += '<button type="button" class="pg-btn' + (p === page ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+          prev = p;
+        });
+        btns += '<button type="button" class="pg-btn" data-page="' + (page + 1) + '"' + (page >= totalPages ? ' disabled' : '') + '>&rsaquo;</button>';
+        return btns;
+      }
       function cardsHtml(list) {
         return list.map(function (a) {
           var img = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
@@ -334,27 +351,32 @@
         if (full.length === 1) tabsEl.style.display = 'none';
 
         var currentCat = '__all__';
+        var currentPage = 1;
         function draw() {
           var srcList = currentCat === '__all__' ? list : (map[currentCat] || []);
-          var html = cardsHtml(srcList.slice(0, SHOWN)).join('');
-          if (srcList.length > SHOWN) {
-            html += '<div style="grid-column:1/-1;text-align:center;margin-top:14px;">' +
-              '<button type="button" class="btn btn-outline" id="load-more-btn">Afficher plus d\u2019articles (' + srcList.length + ')</button></div>';
-          }
-          grid.innerHTML = html;
-          var more = document.getElementById('load-more-btn');
-          if (more) more.addEventListener('click', function () {
-            SHOWN = Math.min(SHOWN + 12, srcList.length);
-            draw();
-          });
+          var totalPages = Math.max(1, Math.ceil(srcList.length / PER_PAGE));
+          if (currentPage > totalPages) currentPage = totalPages;
+          var slice = srcList.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+          var pager = totalPages > 1
+            ? '<nav class="pagination">' + pageButtons(currentPage, totalPages) + '</nav>'
+            : '';
+          grid.innerHTML = cardsHtml(slice).join('') + pager;
         }
         draw();
+        grid.addEventListener('click', function (ev) {
+          var b = ev.target.closest('.pg-btn');
+          if (!b || b.disabled) return;
+          var p = parseInt(b.dataset.page, 10);
+          if (!(p > 0)) return;
+          currentPage = p;
+          draw();
+        });
         tabsEl.querySelectorAll('.pop-tab').forEach(function (b) {
           b.addEventListener('click', function () {
             tabsEl.querySelectorAll('.pop-tab').forEach(function (x) { x.classList.remove('active'); });
             b.classList.add('active');
             currentCat = b.dataset.cat;
-            SHOWN = 12;
+            currentPage = 1;
             draw();
           });
         });
@@ -384,5 +406,6 @@
       }
     })();
   </script>
+  <script src="js/ads.js"></script>
 </body>
 </html>
