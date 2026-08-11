@@ -2978,8 +2978,9 @@ def sitemap():
         ('/', None),
         ('/index.html', None), ('/actualites.html', None), ('/qui-sommes-nous.html', None),
         ('/projets.html', None), ('/sensibilisation.html', None), ('/objets-perdus.html', None),
-        ('/heritage.html', None), ('/faq.html', None), ('/donation.html', None), ('/page.html', None),
-        ('/mentions-legales.html', None), ('/privacy.html', None), ('/cookies.html', None),
+        ('/heritage.html', None), ('/faq.html', None), ('/soutenir.html', None),
+        ('/transparence.html', None), ('/mentions-legales.html', None), ('/privacy.html', None),
+        ('/cookies.html', None),
     ]
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for p, _d in pages:
@@ -3022,6 +3023,8 @@ def serve_article_og():
                 apply_lang(article, lang)
                 break
     html = open(os.path.join(BASE, 'article.html'), 'r', encoding='utf-8').read()
+    if aid and not article:
+        return Response('Article introuvable', status=404, mimetype='text/plain')
     if article:
         title = article.get('title', '')
         desc = article.get('excerpt', '')
@@ -3035,7 +3038,7 @@ def serve_article_og():
         def safe(s):
             return s.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
         stitle = safe(title)
-        sdesc = safe(desc or "Chronique de James Mukeshaba - MÃƒÂ©dia d'information")
+        sdesc = safe(desc or "Chronique de James Mukeshaba - M\u00e9dia d'information")
         site = request.host_url.rstrip('/')
         ld = {
             '@context': 'https://schema.org',
@@ -3116,6 +3119,8 @@ def serve_static(path):
         elif ext in ('.css', '.js', '.mjs', '.map'):
             resp.headers['Cache-Control'] = 'public, max-age=3600'
         return resp
+    if parts[0] == 'api':
+        return jsonify({'error': 'not found'}), 404
     if '.' in base_name:
         return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')

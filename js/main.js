@@ -572,3 +572,90 @@ window.showToast = function (message, type) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+// ===== UI KIT (composants reutilisables : Modal, Spinner, Confirm) =====
+(function () {
+  var overlay = null;
+  function ensureOverlay() {
+    if (overlay && overlay.parentNode) return overlay;
+    overlay = document.createElement('div');
+    overlay.className = 'ui-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.style.display = 'none';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+    return overlay;
+  }
+  function close() {
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    overlay.innerHTML = '';
+    document.body.classList.remove('ui-no-scroll');
+    var f = overlay._lastFocus;
+    if (f && document.body.contains(f)) f.focus();
+    overlay._lastFocus = null;
+  }
+  function open(html) {
+    ensureOverlay();
+    overlay._lastFocus = document.activeElement;
+    overlay.innerHTML = html;
+    overlay.style.display = 'flex';
+    document.body.classList.add('ui-no-scroll');
+    var closeBtn = overlay.querySelector('.ui-close');
+    var primary = overlay.querySelector('.ui-primary');
+    if (closeBtn) closeBtn.focus();
+    else if (primary) primary.focus();
+    function onKey(e) {
+      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
+      if (e.key === 'Tab') {
+        var focusables = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusables.length) return;
+        var first = focusables[0], last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    document.addEventListener('keydown', onKey);
+  }
+  window.UI = window.UI || {};
+  window.UI.closeModal = close;
+  window.UI.confirm = function (message, onConfirm, opts) {
+    opts = opts || {};
+    var title = opts.title || 'Confirmation';
+    var okLabel = opts.okLabel || 'Confirmer';
+    var cancelLabel = opts.cancelLabel || 'Annuler';
+    open('<div class="ui-modal">' +
+      '<button type="button" class="ui-close" aria-label="Fermer">&times;</button>' +
+      '<h3 class="ui-title">' + escHtml(title) + '</h3>' +
+      '<p class="ui-message">' + escHtml(message) + '</p>' +
+      '<div class="ui-actions">' +
+      '<button type="button" class="btn btn-ghost ui-cancel">' + escHtml(cancelLabel) + '</button>' +
+      '<button type="button" class="btn btn-accent ui-primary">' + escHtml(okLabel) + '</button>' +
+      '</div></div>');
+    overlay.querySelector('.ui-close').onclick = close;
+    overlay.querySelector('.ui-cancel').onclick = close;
+    overlay.querySelector('.ui-primary').onclick = function () { close(); if (onConfirm) onConfirm(); };
+  };
+  window.UI.spinner = function (show, opts) {
+    opts = opts || {};
+    if (show) {
+      var msg = opts.message || '';
+      open('<div class="ui-modal ui-spinner-modal">' +
+        '<span class="ui-spinner" aria-hidden="true"></span>' +
+        (msg ? '<p class="ui-message">' + escHtml(msg) + '</p>' : '') +
+        '</div>');
+      var cb = overlay.querySelector('.ui-close');
+      if (cb) cb.style.display = 'none';
+    } else {
+      close();
+    }
+  };
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+})();

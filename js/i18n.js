@@ -13,6 +13,7 @@ var TRANSLATIONS = {
   nav_heritage:       { fr:'H\u00e9ritage', en:'Heritage', sw:'Urithi', es:'Patrimonio', zh:'文化遗产', ln:'Libulisi'},
   nav_faq:            { fr:'FAQ', en:'FAQ', sw:'Maswali', es:'Preguntas', zh:'常见问题', ln:'Batikisi ya mbala mingi'},
   nav_donation:       { fr:'Donation', en:'Donate', sw:'Mchango', es:'Donar', zh:'支持我们', ln:'Bosungi'},
+  nav_soutenir:       { fr:'Soutenir', en:'Support', sw:'Msaada', es:'Apoyar', zh:'支持', ln:'Bosungi'},
 
   // === LOGO / TAGLINE ===
   logo_title:         { fr:'Chronique de James Mukeshaba', en:'James Mukeshaba Chronicle', sw:'Chronicle ya James Mukeshaba', es:'Cr\u00f3nica de James Mukeshaba', zh:'詹姆斯·穆克沙巴纪事报', ln:'Kroniki ya James Mukeshaba'},
@@ -133,6 +134,13 @@ var TRANSLATIONS = {
   sensibilisation_subtitle: { fr:'Des campagnes pour un impact social durable', en:'Campaigns for lasting social impact', sw:'Kampeni za athari za kijamii za kudumu', es:'Campa\u00f1as para un impacto social duradero', zh:'提高对重要议题的认识。', ln:'Kobongola makanisi ya bato na makambo ya ntina.'},
   sensibilisation_archived: { fr:'Campagnes archiv\u00e9es', en:'Archived Campaigns', sw:'Kampeni zilizohifadhiwa', es:'Campa\u00f1as archivadas', zh:'已归档文章', ln:'Makomi oyo ebombami'},
   sensibilisation_no_archived: { fr:'Aucune campagne archiv\u00e9e pour le moment.', en:'No archived campaigns for now.', sw:'Hakuna kampeni zilizohifadhiwa kwa sasa.', es:'No hay campa\u00f1as archivadas por ahora.', zh:'没有已归档的文章。', ln:'Mokanda moko te oyo ebombami.'},
+
+  // === COMMUNS ===
+  categories:         { fr:'Cat\u00e9gories', en:'Categories', sw:'Kategoria', es:'Categor\u00edas', zh:'分类', ln:'Bibongoli'},
+  nav_categories:     { fr:'Cat\u00e9gories', en:'Categories', sw:'Kategoria', es:'Categor\u00edas', zh:'分类', ln:'Bibongoli'},
+  prev_article:       { fr:'Article pr\u00e9c\u00e9dent', en:'Previous article', sw:'Makala iliyotangulia', es:'Art\u00edculo anterior', zh:'上一篇', ln:'Makomi oyo eleki'},
+  next_article:       { fr:'Article suivant', en:'Next article', sw:'Makala ijayo', es:'Art\u00edculo siguiente', zh:'下一篇', ln:'Makomi oyo elandi'},
+  related_title:      { fr:'\u00c0 lire ensuite', en:'Read next', sw:'Soma ijayo', es:'Siga leyendo', zh:'接下来阅读', ln:'Tanga oyo elandi'},
 
   // === HOME MODERNE ===
   home_breaking:      { fr:'Derni\u00e8re heure', en:'Breaking News', sw:'Habari za mwisho', es:'\u00daltima hora', zh:'突发新闻', ln:'Sango ya suki'},

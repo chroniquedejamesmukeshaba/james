@@ -16,7 +16,8 @@
   <link rel="icon" type="image/png" href="assets/images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="css/redesign.css">
   <meta property="og:site_name" content="Chronique de James Mukeshaba">
@@ -74,61 +75,98 @@
             <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
-            <li><a href="soutenir.html" data-i18n="nav_donation">Soutenir</a></li>
+            
           </ul>
         </nav>
       </div>
     </div>
   </header>
-  <main id="main-content">
+    <main id="main-content">
 
   <section class="breadcrumb"><div class="container"><a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <span data-i18n="nav_projets">Projets</span></div></section>
-  <section class="page-header"><div class="container"><h1 data-i18n="projects_title">Nos Projets</h1><p data-i18n="projects_subtitle">Des initiatives qui transforment nos communautés</p></div></section>
 
-  <section class="section" id="page-content-wrapper">
-    <div class="container" id="dynamic-content">
-      <div class="cards-grid">
-        <div class="card">
-          <div class="card-img" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:3rem;">🌱</div>
-          <div class="card-body">
-            <div class="card-category">Environnement</div>
-            <h2 class="card-title">Bukavu Ville Propre</h2>
-            <p class="card-text">Mobilisation citoyenne pour le nettoyage et l'assainissement des quartiers périphériques de Bukavu. Des actions de sensibilisation et des collectes de déchets organisées chaque mois.</p>
-            <a href="/article?id=3" class="btn btn-primary" style="font-size:0.85rem;padding:8px 16px;">En savoir plus</a>
-          </div>
+  <section class="projects-hero" aria-label="Nos projets">
+    <div class="container">
+      <div class="projects-hero-grid">
+        <div class="projects-hero-body">
+          <span class="projects-hero-badge">Nos initiatives</span>
+          <h1 data-i18n="projects_title">Nos Projets</h1>
+          <p class="projects-hero-sub" data-i18n="projects_subtitle">Des initiatives qui transforment nos communautés</p>
+          <p class="projects-hero-lead">Au-delà de l'information, La Chronique de James Mukeshaba porte des projets concrets de terrain : environnmenent, éducation, numérique et connexion communautaire. Chaque initiative est menée avec les populations, pour un impact durable au Sud-Kivu, en RDC et au-delà.</p>
+          <ul class="projects-hero-meta">
+            <li><strong>Bukavu &amp; Goma</strong>Terrain d'action principal</li>
+            <li><strong>Sud-Kivu</strong>Communautés accompagnées</li>
+            <li><strong>Canada</strong>Diaspora connectée au pays</li>
+          </ul>
         </div>
-        <div class="card">
-          <div class="card-img" style="background:linear-gradient(135deg,#3498db,#2980b9);color:white;font-size:3rem;">📚</div>
-          <div class="card-body">
-            <div class="card-category">Éducation</div>
-            <h2 class="card-title">Bibliothèque Mobile</h2>
-            <p class="card-text">Un projet de bibliothèque itinérante pour offrir l'accès à la lecture aux enfants des zones rurales du Sud-Kivu. Plus de 500 livres déjà collectés.</p>
-            <a href="#" class="btn btn-primary" style="font-size:0.85rem;padding:8px 16px;">En savoir plus</a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">💻</div>
-          <div class="card-body">
-            <div class="card-category">Numérique</div>
-            <h2 class="card-title">Formation au Numérique</h2>
-            <p class="card-text">Ateliers de formation aux compétences numériques pour les jeunes de Bukavu et Goma. Développement web, journalisme en ligne et réseaux sociaux.</p>
-            <a href="#" class="btn btn-primary" style="font-size:0.85rem;padding:8px 16px;">En savoir plus</a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-img" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:3rem;">🤝</div>
-          <div class="card-body">
-            <div class="card-category">Communauté</div>
-            <h2 class="card-title">Diaspora Connect</h2>
-            <p class="card-text">Programme de connexion entre la diaspora congolaise au Canada et les communautés locales en RDC. Échanges, mentorat et projets collaboratifs.</p>
-            <a href="#" class="btn btn-primary" style="font-size:0.85rem;padding:8px 16px;">En savoir plus</a>
-          </div>
-        </div>
+        <figure class="projects-hero-art">
+          <img src="assets/images/bk1.jpeg" alt="Actions de la Chronique de James Mukeshaba sur le terrain" loading="eager" decoding="async" width="1083" height="1200">
+          <figcaption>Des projets pensés avec les communautés</figcaption>
+        </figure>
       </div>
     </div>
   </section>
 
-  
+  <section class="projects-section">
+    <div class="container">
+      <h2 class="section-title">Projets en cours</h2>
+      <div class="projects-grid">
+        <article class="project-card">
+          <div class="project-card-banner" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">
+            <div class="project-card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+          </div>
+          <div class="project-card-body">
+            <span class="project-card-cat">Environnement</span>
+            <h2>Bukavu Ville Propre</h2>
+            <p>Mobilisation citoyenne pour le nettoyage et l'assainissement des quartiers périphériques de Bukavu. Des actions de sensibilisation et des collectes de déchets organisées chaque mois.</p>
+            <a class="project-card-more" href="/article?id=1786180732155">En savoir plus <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-card-banner" style="background:linear-gradient(135deg,#3498db,#2980b9);">
+            <div class="project-card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+          </div>
+          <div class="project-card-body">
+            <span class="project-card-cat">Éducation</span>
+            <h2>Bibliothèque Mobile</h2>
+            <p>Un projet de bibliothèque itinérante pour offrir l'accès à la lecture aux enfants des zones rurales du Sud-Kivu. Plus de 500 livres déjà collectés.</p>
+            <a class="project-card-more" href="actualites.html">En savoir plus <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-card-banner" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">
+            <div class="project-card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          </div>
+          <div class="project-card-body">
+            <span class="project-card-cat">Numérique</span>
+            <h2>Formation au Numérique</h2>
+            <p>Ateliers de formation aux compétences numériques pour les jeunes de Bukavu et Goma. Développement web, journalisme en ligne et réseaux sociaux.</p>
+            <a class="project-card-more" href="actualites.html">En savoir plus <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-card-banner" style="background:linear-gradient(135deg,#e67e22,#f39c12);">
+            <div class="project-card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          </div>
+          <div class="project-card-body">
+            <span class="project-card-cat">Communauté</span>
+            <h2>Diaspora Connect</h2>
+            <p>Programme de connexion entre la diaspora congolaise au Canada et les communautés locales en RDC. Échanges, mentorat et projets collaboratifs.</p>
+            <a class="project-card-more" href="actualites.html">En savoir plus <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </article>
+      </div>
+
+      <div class="projects-cta">
+        <div>
+          <h3>Vous voulez soutenir ces projets&nbsp;?</h3>
+          <p>Chaque contribution, grande ou petite, nous aide à poursuivre notre mission d'information et de sensibilisation.</p>
+        </div>
+        <a href="soutenir.html" class="btn btn-accent" data-i18n="home_support">Soutenir nos actions</a>
+      </div>
+    </div>
+  </section>
+
   </main>
   <section class="newsletter-section" id="notif-block" aria-label="Notifications">
     <div class="container">
@@ -175,39 +213,49 @@
       </div>
     </div>
   </section>
-  <footer>
+      <footer>
     <div class="container">
       <div class="footer-grid">
-        <div>
+        <div class="footer-brand">
+          <a class="footer-logo" href="index.html" aria-label="Accueil"><img src="assets/images/logo.png" alt="Chronique de James Mukeshaba" width="44" height="44" loading="lazy"></a>
           <h4 data-i18n="logo_title">Chronique de James Mukeshaba</h4>
           <p style="opacity:0.8;font-size:0.9rem;" data-i18n="footer_description">M&eacute;dia d'information en ligne, sensibilisation et projets communautaires. Bas&eacute; &agrave; Bukavu avec une pr&eacute;sence internationale.</p>
-                    <div class="footer-social">
+          <div class="footer-social">
             <a href="https://www.facebook.com/profile.php?id=100090796957406&locale=fr_FR" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg></a>
-            <a href="https://www.youtube.com/@chroniquesjamesmukeshaba" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3L10 15z"/></svg></a>
-            <a href="https://whatsapp.com/channel/0029Vb5cx1mElah28wiCWw10" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
             <a href="https://x.com/JamesMukeshaba" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" title="X (Twitter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.youtube.com/@chroniquesjamesmukeshaba" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3L10 15z"/></svg></a>
             <a href="https://www.tiktok.com/@jamesmukeshaba" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg></a>
+            <a href="https://whatsapp.com/channel/0029Vb5cx1mElah28wiCWw10" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false" role="img"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
           </div>
+        </div>
+        <div>
+          <h4 data-i18n="categories">Cat&eacute;gories</h4>
+          <ul>
+            <li><a href="/categorie/societe">Soci&eacute;t&eacute;</a></li>
+            <li><a href="/categorie/sante">Sant&eacute;</a></li>
+            <li><a href="/categorie/national">Nationale</a></li>
+            <li><a href="/categorie/education">&Eacute;ducation</a></li>
+            <li><a href="/categorie/sport">Sport</a></li>
+            <li><a href="/categorie/sensibilisation">Sensibilisation</a></li>
+          </ul>
         </div>
         <div>
           <h4 data-i18n="footer_pages">Pages</h4>
           <ul>
             <li><a href="actualites.html" data-i18n="nav_actualites">Actualit&eacute;s</a></li>
             <li><a href="projets.html" data-i18n="nav_projets">Projets</a></li>
-            <li><a href="sensibilisation.html" data-i18n="nav_sensibilisation">Sensibilisation</a></li>
             <li><a href="objets-perdus.html" data-i18n="nav_objets_perdus">Objets perdus</a></li>
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
-            <li><a href="soutenir.html" data-i18n="nav_donation">Soutenir</a></li>
-            <li><a href="transparence.html">Nos actions</a></li>
-            </ul>
+            
+          </ul>
         </div>
         <div>
           <h4 data-i18n="footer_contact">Contact</h4>
-          <ul>
-            <li data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</li>
-            <li data-i18n="footer_phone_rdc">+243 971460415</li>
-            <li data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</li>
+          <ul class="footer-contact">
+            <li><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg><span data-i18n="footer_address">Bukavu, Sud-Kivu, RDC</span></li>
+            <li><a href="tel:+243971460415"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span data-i18n="footer_phone_rdc">+243 971460415</span></a></li>
+            <li><a href="tel:+18254490187"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span data-i18n="footer_phone_canada">+1 (825) 449-0187 (Canada)</span></a></li>
           </ul>
         </div>
         <div>
@@ -221,14 +269,13 @@
         <button id="pwa-install-btn" onclick="installPWA()" style="background:var(--accent);color:var(--white);border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;font-weight:600;" data-i18n="pwa_install">&#128241; Installer l'application</button>
       </div>
       <div class="footer-bottom">
-        <span data-i18n="copyright">&copy; 2026 Chronique de James Mukeshaba. Tous droits r&eacute;serv&eacute;s.</span>
-<div class="footer-legal">
-          <a href="mentions-legales.html">Mentions légales</a> | 
-          <a href="privacy.html">Politique de confidentialité</a> | 
-          <a href="cookies.html">Politique de cookies</a> | 
-          <button type="button" class="cookie-btn" onclick="window.manageCookies && window.manageCookies()" aria-label="Gérer mon consentement aux cookies">Gérer les cookies</button>
+        <span data-i18n="copyright">&copy; 2026 CHRONIQUE DE JAMES MUKESHABA. Tous droits r&eacute;serv&eacute;s.</span>
+        <div class="footer-legal">
+          <a href="mentions-legales.html">Mentions l&eacute;gales</a> |
+          <a href="privacy.html">Politique de confidentialit&eacute;</a> |
+          <a href="cookies.html">Politique de cookies</a> |
+          <button type="button" class="cookie-btn" onclick="window.manageCookies && window.manageCookies()" aria-label="G&eacute;rer mon consentement aux cookies">G&eacute;rer les cookies</button>
         </div>
-
       </div>
     </div>
   </footer>
