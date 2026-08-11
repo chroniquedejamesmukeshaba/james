@@ -11,6 +11,12 @@ UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'assets', 'uploads')
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Taux de reference CDF/USD utilise uniquement pour convertir les collectes
+# en francs congolais en dollars dans les compteurs de campagne et les stats.
+CDF_USD_RATE = 2900.0
+CURRENCIES = ('USD', 'CDF')
+MAX_VIDEO_BYTES = 30 * 1024 * 1024  # 30 Mo max pour une video d'appel a don
+
 try:
     from PIL import Image
     HAS_PIL = True
@@ -1508,9 +1514,12 @@ def delete_lost_found(lid):
 def _sanitize_campaign(data):
     """Normalise les champs financiers / dates d'une campagne."""
     clean = {}
-    for k in ('id', 'title', 'description', 'image', 'status', 'createdAt', 'archivedAt', 'speed', 'type'):
+    for k in ('id', 'title', 'description', 'image', 'video', 'status', 'createdAt', 'archivedAt', 'speed', 'type'):
         if k in data and data[k] is not None:
-            clean[k] = data[k]
+            if k in ('title', 'description', 'image', 'video'):
+                clean[k] = str(data[k])[:5000]
+            else:
+                clean[k] = data[k]
     try:
         clean['goal'] = round(min(max(float(data.get('goal') or 0), 0), 1e9), 2)
     except (TypeError, ValueError):
@@ -1519,6 +1528,10 @@ def _sanitize_campaign(data):
         clean['collected'] = round(min(max(float(data.get('collected') or 0), 0), 1e9), 2)
     except (TypeError, ValueError):
         clean['collected'] = 0.0
+    try:
+        clean['collected_cdf'] = round(min(max(float(data.get('collected_cdf') or 0), 0), 1e12), 2)
+    except (TypeError, ValueError):
+        clean['collected_cdf'] = 0.0
     for k in ('startDate', 'endDate'):
         v = data.get(k)
         clean[k] = v if isinstance(v, str) and len(v) <= 40 else ''
@@ -1555,6 +1568,7 @@ def save_campaign():
         for i, c in enumerate(campaigns):
             if c['id'] == data['id']:
                 data['collected'] = float(c.get('collected') or 0)
+                data['collected_cdf'] = float(c.get('collected_cdf') or 0)
                 data['createdAt'] = c.get('createdAt', '')
                 campaigns[i] = {**c, **data}
                 break
@@ -1577,6 +1591,7 @@ def update_campaign(cid):
     for i, c in enumerate(campaigns):
         if c['id'] == cid:
             data['collected'] = float(data.get('collected', c.get('collected') or 0))
+            data['collected_cdf'] = float(data.get('collected_cdf', c.get('collected_cdf') or 0))
             campaigns[i] = {**c, **data}
             break
     else:
@@ -1626,17 +1641,24 @@ def _find_donation(txn_id):
     return None
 
 def _valid_donation_payload(data, required_key=True):
-    """Validation serveur d'un don : montant borne, infos obligatoires.
+    """Validation serveur d'un don : montant borne (USD ou CDF), infos obligatoires.
     Si anonymous est vrai, nom/email/telephone ne sont pas requis (jamais conserves)."""
     errors = {}
+    currency = str(data.get('currency') or 'USD').strip().upper()
+    if currency not in CURRENCIES:
+        errors['currency'] = 'Devise invalide (USD ou CDF).'
     try:
         amount = float(data.get('amount'))
     except (TypeError, ValueError):
         errors['amount'] = 'Montant invalide.'
     else:
         amount = round(amount, 2)
-        if not (1 <= amount <= 100000):
-            errors['amount'] = 'Le montant doit etre compris entre 1 et 100000 USD.'
+        if currency == 'CDF':
+            if not (1000 <= amount <= 250000000):
+                errors['amount'] = 'Le montant doit etre compris entre 1000 et 250000000 Francs (CDF).'
+        else:
+            if not (1 <= amount <= 100000):
+                errors['amount'] = 'Le montant doit etre compris entre 1 et 100000 USD.'
     anonymous = bool(data.get('anonymous'))
     for field, label in (('campaignId', 'campagne'), ('method', 'methode de paiement')):
         if not str(data.get(field) or '').strip():
@@ -1696,7 +1718,7 @@ def add_donation():
         'txn_id': txn_id,
         'idempotency_key': idem,
         'amount': amount,
-        'currency': 'USD',
+        'currency': str(data.get('currency') or 'USD').strip().upper(),
         'anonymous': anonymous,
         'name': 'Anonyme' if anonymous else str(data.get('name') or '').strip()[:120],
         'email': '' if anonymous else str(data.get('email') or '').strip()[:200],
@@ -1732,6 +1754,7 @@ def donation_stats():
     week0 = time.strftime('%Y-%m-%d', time.gmtime(now - 7 * 86400))
     month0 = time.strftime('%Y-%m-01', time.gmtime(now))
     total = 0.0
+    total_cdf = 0.0
     donors = set()
     today = 0.0
     week = 0.0
@@ -1742,26 +1765,32 @@ def donation_stats():
         if d.get('status') != 'confirmed':
             continue
         amt = float(d.get('amount') or 0)
-        total += amt
+        if str(d.get('currency') or 'USD').upper() == 'CDF':
+            amt_usd = amt / CDF_USD_RATE
+            total_cdf += amt
+        else:
+            amt_usd = amt
+        total += amt_usd
         daystr = (d.get('confirmedAt') or d.get('createdAt') or '')[:10]
         if daystr == today0:
-            today += amt
+            today += amt_usd
         if daystr >= week0:
-            week += amt
+            week += amt_usd
         if daystr >= month0:
-            month += amt
+            month += amt_usd
         identity = str(d.get('email') or '').strip() or str(d.get('name') or '').strip()
         if identity:
             donors.add(identity)
         cid = d.get('campaignId')
-        by_campaign[str(cid)] = round(by_campaign.get(str(cid), 0) + amt, 2)
+        by_campaign[str(cid)] = round(by_campaign.get(str(cid), 0) + amt_usd, 2)
         meth = d.get('method') or 'inconnu'
-        by_method[meth] = round(by_method.get(meth, 0) + amt, 2)
+        by_method[meth] = round(by_method.get(meth, 0) + amt_usd, 2)
     camps = {str(c['id']): c.get('title', '') for c in read_json('campaigns')}
     by_campaign = {camps.get(k, 'Campagne #' + k): v for k, v in by_campaign.items()}
     return jsonify({
         'ok': True,
         'total': round(total, 2),
+        'total_cdf': round(total_cdf, 2),
         'donors': len(donors),
         'today': round(today, 2),
         'week': round(week, 2),
@@ -1787,6 +1816,7 @@ def set_donation_status(txn_id):
     if old == status:
         return jsonify({'ok': True})
     amt = float(don.get('amount') or 0)
+    cur = str(don.get('currency') or 'USD').upper()
     if amt:
         campaigns = read_json('campaigns')
         camp = next((c for c in campaigns if c['id'] == don.get('campaignId')), None)
@@ -1794,9 +1824,17 @@ def set_donation_status(txn_id):
             was_credited = (old == 'confirmed')
             will_credit = (status == 'confirmed')
             if was_credited and not will_credit:
-                camp['collected'] = max(0.0, round(float(camp.get('collected') or 0) - amt, 2))
+                if cur == 'CDF':
+                    camp['collected_cdf'] = max(0.0, round(float(camp.get('collected_cdf') or 0) - amt, 2))
+                    camp['collected'] = max(0.0, round(float(camp.get('collected') or 0) - amt / CDF_USD_RATE, 2))
+                else:
+                    camp['collected'] = max(0.0, round(float(camp.get('collected') or 0) - amt, 2))
             elif will_credit and not was_credited:
-                camp['collected'] = round(float(camp.get('collected') or 0) + amt, 2)
+                if cur == 'CDF':
+                    camp['collected_cdf'] = round(float(camp.get('collected_cdf') or 0) + amt, 2)
+                    camp['collected'] = round(float(camp.get('collected') or 0) + amt / CDF_USD_RATE, 2)
+                else:
+                    camp['collected'] = round(float(camp.get('collected') or 0) + amt, 2)
             write_json('campaigns', campaigns)
     don['status'] = status
     if status == 'confirmed':
@@ -1856,10 +1894,18 @@ def _confirm_donation(txn_id, provider_status='confirmed', provider_txn_id=''):
     write_json('donations', dons)
 
     # Credit unique de la campagne (protections anti-double-paiement).
+    # La collecte est suivie par devise : collected (USD, conversions incluses)
+    # et collected_cdf (francs congolais bruts, pour l'affichage).
     campaigns = read_json('campaigns')
+    amt = float(don.get('amount') or 0)
+    cur = str(don.get('currency') or 'USD').upper()
     for c in campaigns:
         if c['id'] == don.get('campaignId'):
-            c['collected'] = round(float(c.get('collected') or 0) + float(don.get('amount') or 0), 2)
+            if cur == 'CDF':
+                c['collected_cdf'] = round(float(c.get('collected_cdf') or 0) + amt, 2)
+                c['collected'] = round(float(c.get('collected') or 0) + amt / CDF_USD_RATE, 2)
+            else:
+                c['collected'] = round(float(c.get('collected') or 0) + amt, 2)
             break
     write_json('campaigns', campaigns)
     pay.log_event(read_json, write_json, 'donation_confirmed', {'txn_id': txn_id, 'amount': don.get('amount'),
@@ -2961,6 +3007,35 @@ def upload_image():
     path = os.path.join(UPLOAD_DIR, filename)
     with open(path, 'wb') as f:
         f.write(img_bytes)
+    return jsonify({'url': '/assets/uploads/' + filename})
+
+@app.route('/api/upload/video', methods=['POST'])
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
+def upload_video():
+    """Upload d'une video d'appel a don (mp4/webm/quicktime), base64 JSON,
+    limite 30 Mo decodes. Aucune recompression : le fichier est stocke tel quel."""
+    data = request.json
+    if not data or not data.get('video'):
+        return jsonify({'error': 'no video'}), 400
+    raw = data['video']
+    m = re.match(r'data:video/(mp4|webm);base64,', raw[:64])
+    if not m:
+        return jsonify({'error': 'format video non supporte (mp4, webm)'}), 400
+    ext = m.group(1)
+    if ',' in raw:
+        raw = raw.split(',', 1)[1]
+    try:
+        vid_bytes = base64.b64decode(raw)
+    except Exception:
+        return jsonify({'error': 'invalid base64'}), 400
+    if not vid_bytes:
+        return jsonify({'error': 'video vide'}), 400
+    if len(vid_bytes) > MAX_VIDEO_BYTES:
+        return jsonify({'error': 'video trop volumineuse (max 30 Mo)'}), 413
+    filename = str(uuid.uuid4()) + '.' + ext
+    path = os.path.join(UPLOAD_DIR, filename)
+    with open(path, 'wb') as f:
+        f.write(vid_bytes)
     return jsonify({'url': '/assets/uploads/' + filename})
 
 # --- SEO ---

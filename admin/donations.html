@@ -183,6 +183,11 @@
     var SECRET_FIELDS = ['client_secret', 'webhook_secret', 'api_key'];
 
     function fmtUSD(v) { return Number(v || 0).toLocaleString('en-US', {style:'currency', currency:'USD'}); }
+    function fmtCDF(v) { return Number(v || 0).toLocaleString('fr-FR', {maximumFractionDigits:0}) + ' FC'; }
+    function fmtMoney(d) {
+      if ((d.currency || 'USD').toUpperCase() === 'CDF') return fmtCDF(d.amount);
+      return fmtUSD(d.amount);
+    }
 
     function esc(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -270,7 +275,7 @@
             '<td style="white-space:nowrap;">'+dateFmt(d.confirmedAt || d.createdAt || d.date)+'</td>' +
             '<td>'+esc(d.name || '—')+(d.email ? '<br><small style="color:#999;">'+esc(d.email)+'</small>' : '')+'</td>' +
             '<td style="font-size:0.8rem;">'+esc(camp)+'</td>' +
-            '<td><strong>'+fmtUSD(d.amount)+'</strong></td>' +
+            '<td><strong>'+fmtMoney(d)+'</strong></td>' +
             '<td>'+esc((PROVIDER_LABELS[d.method] || METHOD_SHORT[d.method] || d.method || '—').split(' (')[0])+'</td>' +
             '<td>'+statusSelect(d.txn_id, status)+'</td>' +
             '<td>'+(d.txn_id ? '<code style="font-size:0.75rem;">'+esc(d.txn_id)+'</code>' : '—')+'</td>' +

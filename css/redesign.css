@@ -3287,3 +3287,42 @@ html[data-theme="dark"] .faq-question::after { color: var(--primary-light, #9cc7
   .support-campaigns { grid-template-columns: 1fr; }
 }
 
+/* =====================================================
+   PAGE SOUTENIR (section 34) - devise USD/CDF
+   ===================================================== */
+.donation-currency {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.currency-btn {
+  flex: 1;
+  min-width: 150px;
+  padding: 12px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.currency-btn:hover { border-color: var(--primary-light); }
+.currency-btn.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.card-banner-video video {
+  display: block;
+  cursor: pointer;
+}
+#don-quick-amounts { flex-wrap: wrap; }
+@media (max-width: 400px) {
+  .currency-btn { min-width: 100%; }
+}

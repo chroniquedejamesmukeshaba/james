@@ -48,7 +48,7 @@
     { label: 'Newsletter', href: 'newsletter.html', icon: 'mail' },
     { label: 'Médias', href: 'media.html', icon: 'media' },
     { group: 'Gestion' },
-    { label: 'Campagnes', href: 'campaigns.html', icon: 'megaphone' },
+    { label: 'Faire un Don', href: 'campaigns.html', icon: 'megaphone' },
     { label: 'Dons & paiements', href: 'donations.html', icon: 'coin' },
     { label: 'Pages', href: 'pages.html', icon: 'file' },
     { label: 'Utilisateurs & rôles', href: 'security.html#comptes', icon: 'shield' },

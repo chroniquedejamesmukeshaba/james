@@ -144,8 +144,18 @@
             <input type="hidden" id="don-txn-id" value="">
 
             <div class="support-field">
-              <label for="don-amount">Montant (USD) *</label>
-              <div class="donation-amounts">
+              <label>Devise de votre don</label>
+              <div class="donation-currency" id="don-currency" role="radiogroup" aria-label="Devise">
+                <button type="button" class="currency-btn selected" data-cur="USD" role="radio" aria-checked="true">$ Dollar (USD)</button>
+                <button type="button" class="currency-btn" data-cur="CDF" role="radio" aria-checked="false">&nbsp;F&nbsp; Franc congolais (CDF)</button>
+              </div>
+              <small>Votre don est d&eacute;bit&eacute; uniquement sur le compte correspondant &agrave; la devise choisie (USD ou CDF).</small>
+            </div>
+
+            <div class="support-field">
+              <label for="don-amount">Montant <span id="don-amount-label">(USD)</span> *</label>
+              <div class="donation-amounts" id="don-quick-amounts">
+                <button type="button" class="donation-amount" data-val="1">1 $</button>
                 <button type="button" class="donation-amount" data-val="5">5 $</button>
                 <button type="button" class="donation-amount" data-val="10">10 $</button>
                 <button type="button" class="donation-amount selected" data-val="25">25 $</button>
@@ -153,6 +163,7 @@
                 <button type="button" class="donation-amount" data-val="100">100 $</button>
               </div>
               <input type="number" id="don-amount" min="1" max="100000" step="0.01" value="25">
+              <small>Ou saisissez le montant libre de votre choix.</small>
             </div>
 
             <div class="support-field">

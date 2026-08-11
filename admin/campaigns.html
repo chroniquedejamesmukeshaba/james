@@ -7,10 +7,46 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion des Campagnes - Administration</title>
+  <title>Faire un Don - Administration</title>
   <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .appel-hero {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff; border-radius: 18px; padding: 26px 30px; margin-bottom: 26px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    }
+    .appel-hero h2 { margin: 0 0 6px; color: #fff; font-size: 1.5rem; }
+    .appel-hero p { margin: 0; color: rgba(255,255,255,0.85); font-size: 0.95rem; max-width: 560px; }
+    .appel-form-card {
+      background: var(--white, #fff); padding: 26px; border-radius: var(--radius, 12px);
+      box-shadow: var(--shadow, 0 2px 15px rgba(0,0,0,0.1)); margin-bottom: 28px;
+    }
+    .appel-form-card h3 { color: var(--primary); margin: 0 0 18px; }
+    .appel-media-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .appel-media-tab {
+      border: 1.5px solid #cbd5e1; background: #fff; color: var(--text, #2c3e50);
+      padding: 9px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+      transition: all .15s;
+    }
+    .appel-media-tab.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .appel-media-pane { display: none; }
+    .appel-media-pane.on { display: block; }
+    .appel-upload-area {
+      border: 2px dashed #cbd5e1; border-radius: 12px; padding: 26px; text-align: center;
+      cursor: pointer; background: #f8fafc; transition: border-color .15s;
+    }
+    .appel-upload-area:hover { border-color: var(--primary); }
+    .appel-upload-area input[type="file"] { display: none; }
+    .appel-upload-area .up-ico { font-size: 2rem; margin-bottom: 8px; }
+    .appel-upload-area .up-txt { font-weight: 600; font-size: 0.95rem; }
+    .appel-upload-area .up-hint { color: #94a3b8; font-size: 0.82rem; margin-top: 4px; }
+    .appel-preview { max-width: 100%; max-height: 260px; border-radius: 10px; margin-top: 12px; display: block; }
+    .appel-preview-actions { margin-top: 10px; }
+    .appel-note { color: var(--text-light, #5d6b6e); font-size: 0.85rem; margin-top: 8px; }
+    @media (max-width: 640px) { .appel-hero { padding: 20px; } .appel-form-card { padding: 18px; } }
+  </style>
 </head>
 <body class="admin-body">
   <div class="admin-header">
@@ -26,7 +62,8 @@
       <a href="index.html">📊 Tableau de bord</a>
       <a href="articles.html">📝 Gestion des articles</a>
       <a href="pages.html">📄 Gestion des pages</a>
-      <a href="campaigns.html" class="active">📢 Gestion des campagnes</a>
+      <a href="campaigns.html" class="active">💝 Faire un Don</a>
+      <a href="donations.html">💳 Gestion des dons</a>
       <a href="comments.html">💬 Modération des commentaires</a>
       <a href="analytics.html">📈 Analytiques</a>
       <a href="security.html">🔐 Sécurité</a>
@@ -35,91 +72,105 @@
       <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px;">
-        <h2 style="color:var(--primary);">Gestion des Campagnes</h2>
-        <button class="btn btn-primary" id="new-campaign-btn">➕ Nouvelle campagne</button>
+
+      <div class="appel-hero">
+        <div>
+          <h2>💝 Faire un Don</h2>
+          <p>Définissez le motif de la collecte, ajoutez une photo ou une vidéo et décrivez votre appel à don. Dès validation, l&rsquo;appel est publi&eacute; automatiquement sur la page &laquo; Soutenir nos actions &raquo; avec les boutons de don rapides (1&nbsp;$, 5&nbsp;$, 10&nbsp;$, 25&nbsp;$, 50&nbsp;$, 100&nbsp;$ &mdash; ou Francs congolais).</p>
+        </div>
+        <button class="btn btn-primary" id="new-campaign-btn" style="padding:12px 22px;">➕ Nouvel appel &agrave; don</button>
       </div>
 
-      <div id="campaign-form-container" style="display:none;background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
-        <h3 id="campaign-form-title" style="color:var(--primary);margin-bottom:20px;">Nouvelle campagne</h3>
+      <div id="campaign-form-container" class="appel-form-card" style="display:none;">
+        <h3 id="campaign-form-title">Nouvel appel &agrave; don</h3>
         <form id="campaign-form">
           <input type="hidden" id="campaign-id">
           <div class="form-group">
-            <label>Titre de la campagne</label>
-            <input type="text" id="cmp-title" class="form-input" placeholder="Ex: Respect des mesures de sécurité contre Ebola" required>
+            <label>Motif de la collecte *</label>
+            <input type="text" id="cmp-title" class="form-input" placeholder="Ex : Scolarisation des enfants de la commune de Lemba" required>
+            <small class="appel-note">Il s&rsquo;affichera en grand sur la page Soutenir nos actions.</small>
           </div>
           <div class="form-group">
-            <label>Image illustrative</label>
-            <div class="img-upload-wrapper">
-              <div class="img-upload-area" id="cmp-img-area" onclick="document.getElementById('cmp-image-input').click()">
+            <label>Description de l&rsquo;appel &agrave; don *</label>
+            <textarea id="cmp-description" class="form-input" placeholder="Expliquez l&rsquo;objet de la collecte, qui en b&eacute;n&eacute;ficie, comment les fonds seront utilis&eacute;s..." rows="5" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Photo ou vid&eacute;o de l&rsquo;appel *</label>
+            <div class="appel-media-tabs">
+              <button type="button" class="appel-media-tab on" id="tab-photo">🖼️ Photo</button>
+              <button type="button" class="appel-media-tab" id="tab-video">🎬 Vid&eacute;o</button>
+            </div>
+            <div class="appel-media-pane on" id="pane-photo">
+              <div class="appel-upload-area" id="cmp-img-area" onclick="document.getElementById('cmp-image-input').click()">
                 <input type="file" id="cmp-image-input" accept="image/*">
-                <div class="upload-icon">🖼️</div>
-                <div class="upload-text">Cliquez pour choisir une image</div>
-                <div class="upload-hint">Requis</div>
-                <img class="img-preview" id="cmp-img-preview" alt="Aperçu">
+                <div class="up-ico">🖼️</div>
+                <div class="up-txt">Cliquez pour choisir une photo</div>
+                <div class="up-hint">JPG, PNG, WebP (recevra une image compress&eacute;e)</div>
+                <img class="appel-preview" id="cmp-img-preview" alt="Aper&ccedil;u" style="display:none;">
               </div>
-              <button type="button" class="img-remove-btn" id="cmp-img-remove" onclick="removeCmpImage()" style="display:none;">✕ Supprimer l'image</button>
+              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-img-remove" style="display:none;">✕ Retirer la photo</button>
+            </div>
+            <div class="appel-media-pane" id="pane-video">
+              <div class="appel-upload-area" id="cmp-video-area" onclick="document.getElementById('cmp-video-input').click()">
+                <input type="file" id="cmp-video-input" accept="video/mp4,video/webm,video/quicktime">
+                <div class="up-ico">🎬</div>
+                <div class="up-txt">Cliquez pour choisir une vid&eacute;o</div>
+                <div class="up-hint">MP4 ou WebM, 30 Mo maximum</div>
+                <video class="appel-preview" id="cmp-video-preview" controls style="display:none;"></video>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-video-remove" style="display:none;">✕ Retirer la vid&eacute;o</button>
             </div>
           </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="cmp-description" class="form-input" placeholder="Texte d'explication de la campagne..." rows="4" required></textarea>
+          <div class="form-group" style="max-width: 340px;">
+            <label>Objectif financier (USD, facultatif)</label>
+            <input type="number" id="cmp-goal" class="form-input" placeholder="Ex : 5000" min="0" step="0.01" style="width:100%;">
+            <small class="appel-note">Montant total &agrave; collecter. La barre de progression de l&rsquo;appel l&rsquo;utilisera. Laisser &agrave; 0 = sans objectif.</small>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;">
-            <div class="form-group">
-              <label>Objectif financier (USD)</label>
-              <input type="number" id="cmp-goal" class="form-input" placeholder="Ex: 5000" min="0" step="0.01" style="width:100%;">
-              <small style="color:var(--text-light);display:block;">Montant total &agrave; collecter (0 = sans objectif).</small>
+          <details style="margin-bottom:18px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+            <summary style="cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--primary);">Options avanc&eacute;es (dates, statut, vitesse)</summary>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:14px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Date de d&eacute;but</label>
+                <input type="date" id="cmp-start" class="form-input" style="width:100%;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Date de fin</label>
+                <input type="date" id="cmp-end" class="form-input" style="width:100%;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Statut</label>
+                <select id="cmp-status" class="form-input" style="width:100%;">
+                  <option value="active">Active</option>
+                  <option value="paused">En pause</option>
+                  <option value="ended">Termin&eacute;e</option>
+                  <option value="archived">Archiv&eacute;e</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Vitesse d'affichage</label>
+                <input type="number" id="cmp-speed" class="form-input" value="5" min="2" max="30" style="width:100%;">
+              </div>
             </div>
-            <div class="form-group">
-              <label>Montant collect&eacute; (USD)</label>
-              <input type="number" id="cmp-collected" class="form-input" placeholder="Ex: 1250" min="0" step="0.01" style="width:100%;">
-              <small style="color:var(--text-light);display:block;">Valeur initiale (les dons confirm&eacute;s l'augmentent automatiquement).</small>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;">
-            <div class="form-group">
-              <label>Date de d&eacute;but</label>
-              <input type="date" id="cmp-start" class="form-input" style="width:100%;">
-            </div>
-            <div class="form-group">
-              <label>Date de fin</label>
-              <input type="date" id="cmp-end" class="form-input" style="width:100%;">
-            </div>
-            <div class="form-group">
-              <label>Statut</label>
-              <select id="cmp-status" class="form-input" style="width:100%;">
-                <option value="active">Active</option>
-                <option value="paused">En pause</option>
-                <option value="ended">Termin&eacute;e</option>
-                <option value="archived">Archiv&eacute;e</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Vitesse d'affichage (secondes)</label>
-            <input type="number" id="cmp-speed" class="form-input" value="5" min="2" max="30" style="width:120px;">
-            <small style="color:var(--text-light);display:block;">Temps d'affichage de chaque campagne dans le carrousel.</small>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+          </details>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary" id="cmp-submit" style="padding:12px 26px;">🚀 Publier l&rsquo;appel &agrave; don</button>
             <button type="button" class="btn btn-outline" id="cancel-campaign">Annuler</button>
           </div>
         </form>
       </div>
 
-      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes actives</h3>
+      <h3 style="color:var(--primary);margin-bottom:15px;">Appels &agrave; don actifs</h3>
       <div class="admin-table" style="margin-bottom:30px;">
         <table>
-          <thead><tr><th>Titre</th><th>Cr&eacute;&eacute;e le</th><th>Objectif</th><th>Collect&eacute;</th><th>Progression</th><th>Statut</th><th>Actions</th></tr></thead>
+          <thead><tr><th>M&eacute;dia</th><th>Motif</th><th>Cr&eacute;&eacute; le</th><th>Objectif</th><th>Collect&eacute;</th><th>Progression</th><th>Statut</th><th>Actions</th></tr></thead>
           <tbody id="campaigns-active-body"></tbody>
         </table>
       </div>
 
-      <h3 style="color:var(--primary);margin-bottom:15px;">Campagnes archiv&eacute;es</h3>
+      <h3 style="color:var(--primary);margin-bottom:15px;">Appels &agrave; don archiv&eacute;s</h3>
       <div class="admin-table">
         <table>
-          <thead><tr><th>Titre</th><th>Cr&eacute;&eacute;e le</th><th>Archiv&eacute;e le</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Motif</th><th>Cr&eacute;&eacute; le</th><th>Archiv&eacute; le</th><th>Actions</th></tr></thead>
           <tbody id="campaigns-archived-body"></tbody>
         </table>
       </div>
@@ -138,52 +189,102 @@
         .then(function(r){return r.json()}).catch(function(){return null;});
     }
 
+    function fmtUSD(v) {
+      return Number(v || 0).toLocaleString('en-US', {style:'currency', currency:'USD'});
+    }
+    function fmtCDF(v) {
+      return Number(v || 0).toLocaleString('fr-FR') + ' FC';
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       loadCampaigns();
 
-      document.getElementById('new-campaign-btn').addEventListener('click', function () {
-        showForm();
-      });
+      document.getElementById('new-campaign-btn').addEventListener('click', function () { showForm(); });
       document.getElementById('cancel-campaign').addEventListener('click', function () {
         document.getElementById('campaign-form-container').style.display = 'none';
       });
 
+      /* Onglets Photo / Vidéo */
+      function setMediaPane(which) {
+        document.getElementById('tab-photo').classList.toggle('on', which === 'photo');
+        document.getElementById('tab-video').classList.toggle('on', which === 'video');
+        document.getElementById('pane-photo').classList.toggle('on', which === 'photo');
+        document.getElementById('pane-video').classList.toggle('on', which === 'video');
+      }
+      document.getElementById('tab-photo').addEventListener('click', function () { setMediaPane('photo'); });
+      document.getElementById('tab-video').addEventListener('click', function () { setMediaPane('video'); });
+
+      /* Prévisualisations */
       document.getElementById('cmp-image-input').addEventListener('change', function (e) {
         var file = e.target.files[0];
         if (!file) return;
         var reader = new FileReader();
         reader.onload = function (ev) {
-          document.getElementById('cmp-img-preview').src = ev.target.result;
-          document.getElementById('cmp-img-area').classList.add('has-image');
+          setMediaPane('photo');
+          var pv = document.getElementById('cmp-img-preview');
+          pv.src = ev.target.result; pv.style.display = 'block';
           document.getElementById('cmp-img-remove').style.display = 'inline-block';
+          document.getElementById('cmp-video-preview').src = '';
+          document.getElementById('cmp-video-preview').style.display = 'none';
+          document.getElementById('cmp-video-remove').style.display = 'none';
         };
         reader.readAsDataURL(file);
       });
-
       window.removeCmpImage = function () {
         document.getElementById('cmp-image-input').value = '';
-        document.getElementById('cmp-img-area').classList.remove('has-image');
         document.getElementById('cmp-img-preview').src = '';
+        document.getElementById('cmp-img-preview').style.display = 'none';
         document.getElementById('cmp-img-remove').style.display = 'none';
       };
+      document.getElementById('cmp-img-remove').addEventListener('click', function (ev) {
+        ev.stopPropagation(); removeCmpImage();
+      });
+
+      document.getElementById('cmp-video-input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 30 * 1024 * 1024) {
+          showToast('Vidéo trop volumineuse (30 Mo maximum).');
+          this.value = '';
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          setMediaPane('video');
+          var pv = document.getElementById('cmp-video-preview');
+          pv.src = ev.target.result; pv.style.display = 'block';
+          document.getElementById('cmp-video-remove').style.display = 'inline-block';
+          removeCmpImage();
+        };
+        reader.readAsDataURL(file);
+      });
+      document.getElementById('cmp-video-remove').addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        document.getElementById('cmp-video-input').value = '';
+        document.getElementById('cmp-video-preview').src = '';
+        document.getElementById('cmp-video-preview').style.display = 'none';
+        document.getElementById('cmp-video-remove').style.display = 'none';
+      });
 
       document.getElementById('campaign-form').addEventListener('submit', function (e) {
         e.preventDefault();
         var id = document.getElementById('campaign-id').value;
-        var preview = document.getElementById('cmp-img-preview');
-        var imageData = preview && preview.src ? preview.src : '';
+        var imgPreview = document.getElementById('cmp-img-preview');
+        var vidPreview = document.getElementById('cmp-video-preview');
+        var imageData = imgPreview && imgPreview.src ? imgPreview.src : '';
+        var videoData = vidPreview && vidPreview.src ? vidPreview.src : '';
+        if (!imageData && !videoData) {
+          showToast('Ajoutez une photo ou une vidéo pour votre appel à don.');
+          return;
+        }
         var speed = parseInt(document.getElementById('cmp-speed').value) * 1000 || 5000;
 
         function save(data) {
-          if (window.location.protocol !== 'file:') {
-            var p = id ? api('POST', '/api/campaigns', data) : api('POST', '/api/campaigns', data);
-            p.then(function(){
-              if (speed !== 5000 && id) {
-                api('POST', '/api/campaigns/' + id + '/speed', {speed: speed});
-              }
-              loadCampaigns();
-            });
-          }
+          var p = api('POST', '/api/campaigns', data);
+          if (p) p.then(function () {
+            if (speed !== 5000 && id) api('POST', '/api/campaigns/' + id + '/speed', {speed: speed});
+            loadCampaigns();
+          });
           var all = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
           if (id) {
             var idx = all.findIndex(function(x){return x.id === id;});
@@ -197,31 +298,36 @@
           localStorage.setItem('cms_campaigns', JSON.stringify(all));
           document.getElementById('campaign-form-container').style.display = 'none';
           loadCampaigns();
-          showToast(id ? 'Campagne modifiée.' : 'Campagne créée !');
+          showToast(id ? 'Appel à don modifié.' : 'Appel à don publié sur Soutenir nos actions !');
         }
 
         var data = {
           title: document.getElementById('cmp-title').value,
           description: document.getElementById('cmp-description').value,
-          image: imageData,
           speed: speed,
           goal: parseFloat(document.getElementById('cmp-goal').value) || 0,
-          collected: parseFloat(document.getElementById('cmp-collected').value) || 0,
           startDate: document.getElementById('cmp-start').value,
           endDate: document.getElementById('cmp-end').value,
           status: document.getElementById('cmp-status').value
         };
-        if (id) data.id = Number(id);
-        if (!id) delete data.collected; // cote serveur, valeur initiale 0 sauf si fournie
+        if (id) {
+          data.id = Number(id);
+          if (imgPreview && imgPreview.src && !imgPreview.src.startsWith('data:')) data.image = imgPreview.src;
+          if (vidPreview && vidPreview.src && !vidPreview.src.startsWith('data:')) data.video = vidPreview.src;
+        }
+        if (!id) delete data.collected;
 
-        if (window.location.protocol !== 'file:' && imageData.startsWith('data:')) {
-          var h = {'Content-Type':'application/json'};
-          var tok = localStorage.getItem('admin_token');
-          if (tok) h['X-Admin-Token'] = tok;
-          fetch('/api/upload', {method:'POST', headers:h, body:JSON.stringify({image:imageData})})
-            .then(function(r){return r.json()})
-            .then(function(res){ data.image = res.url || imageData; save(data); })
-            .catch(function(){ save(data); });
+        if (videoData.startsWith('data:')) {
+          api('POST', '/api/upload/video', {video: videoData}).then(function (res) {
+            if (!res || !res.url) { showToast('Upload de la vidéo échoué.'); return; }
+            data.video = res.url;
+            save(data);
+          });
+        } else if (imageData.startsWith('data:')) {
+          api('POST', '/api/upload', {image: imageData}).then(function (res) {
+            if (res && res.url) data.image = res.url;
+            save(data);
+          });
         } else {
           save(data);
         }
@@ -230,25 +336,41 @@
       function showForm(campaign) {
         document.getElementById('campaign-form-container').style.display = 'block';
         if (campaign) {
-          document.getElementById('campaign-form-title').textContent = 'Modifier la campagne';
+          document.getElementById('campaign-form-title').textContent = 'Modifier l\'appel à don';
+          document.getElementById('cmp-submit').textContent = '💾 Enregistrer les modifications';
           document.getElementById('campaign-id').value = campaign.id;
           document.getElementById('cmp-title').value = campaign.title;
           document.getElementById('cmp-description').value = campaign.description;
           document.getElementById('cmp-speed').value = (campaign.speed || 5000) / 1000;
           document.getElementById('cmp-goal').value = campaign.goal || 0;
-          document.getElementById('cmp-collected').value = campaign.collected || 0;
           document.getElementById('cmp-start').value = (campaign.startDate || '').slice(0, 10);
           document.getElementById('cmp-end').value = (campaign.endDate || '').slice(0, 10);
           document.getElementById('cmp-status').value = campaign.status || 'active';
-          if (campaign.image) {
-            document.getElementById('cmp-img-preview').src = campaign.image;
-            document.getElementById('cmp-img-area').classList.add('has-image');
+          removeCmpImage();
+          var vp = document.getElementById('cmp-video-preview');
+          vp.src = ''; vp.style.display = 'none';
+          document.getElementById('cmp-video-remove').style.display = 'none';
+          if (campaign.video) {
+            setMediaPane('video');
+            vp.src = campaign.video; vp.style.display = 'block';
+            document.getElementById('cmp-video-remove').style.display = 'inline-block';
+          } else if (campaign.image) {
+            setMediaPane('photo');
+            var pv = document.getElementById('cmp-img-preview');
+            pv.src = campaign.image; pv.style.display = 'block';
             document.getElementById('cmp-img-remove').style.display = 'inline-block';
+          } else {
+            setMediaPane('photo');
           }
         } else {
           document.getElementById('campaign-form').reset();
           removeCmpImage();
-          document.getElementById('campaign-form-title').textContent = 'Nouvelle campagne';
+          document.getElementById('cmp-video-preview').src = '';
+          document.getElementById('cmp-video-preview').style.display = 'none';
+          document.getElementById('cmp-video-remove').style.display = 'none';
+          setMediaPane('photo');
+          document.getElementById('campaign-form-title').textContent = 'Nouvel appel à don';
+          document.getElementById('cmp-submit').textContent = '🚀 Publier l\'appel à don';
           document.getElementById('campaign-id').value = '';
           document.getElementById('cmp-speed').value = 5;
           document.getElementById('cmp-status').value = 'active';
@@ -257,7 +379,6 @@
       }
 
       function loadCampaigns() {
-        if (window.location.protocol === 'file:') return renderFromLocal();
         api('GET', '/api/campaigns').then(function(list) {
           if (list) { renderTable(list); localStorage.setItem('cms_campaigns', JSON.stringify(list)); }
           else renderFromLocal();
@@ -275,28 +396,37 @@
         var active = list.filter(function(c){return c.status !== 'archived';});
         var archived = list.filter(function(c){return c.status === 'archived';});
 
+        function mediaCell(c) {
+          if (c.video && (c.video.startsWith('/') || c.video.startsWith('http'))) {
+            return '<video src="'+c.video+'" muted preload="metadata" style="width:90px;height:50px;object-fit:cover;border-radius:4px;background:#000;"></video>';
+          }
+          if (c.image && (c.image.startsWith('/') || c.image.startsWith('data:') || c.image.startsWith('http'))) {
+            return '<img src="'+c.image+'" style="width:90px;height:50px;object-fit:cover;border-radius:4px;">';
+          }
+          return '<span style="color:#999;">—</span>';
+        }
+
         if (active.length === 0) {
-          activeBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Aucune campagne active.</td></tr>';
+          activeBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Aucun appel &agrave; don actif. Cliquez sur &laquo; Nouvel appel &agrave; don &raquo; pour lancer une collecte.</td></tr>';
         } else {
           activeBody.innerHTML = active.map(function(c) {
-            var img = c.image && (c.image.startsWith('/') || c.image.startsWith('data:') || c.image.startsWith('http'))
-              ? '<img src="'+c.image+'" style="width:60px;height:40px;object-fit:cover;border-radius:4px;">' : '<span style="color:#999;">—</span>';
             var goal = Number(c.goal || 0);
             var col = Number(c.collected || 0);
+            var colCDF = Number(c.collected_cdf || 0);
             var pct = goal > 0 ? Math.min(col / goal * 100, 100).toFixed(0) : (col > 0 ? '—' : '0');
             var prog = goal > 0
               ? '<div class="progress-row" style="margin-bottom:0;min-width:140px;"><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--primary),var(--accent));"></div></div><div class="progress-val">'+pct+'%</div></div>'
               : '<span style="color:#999;font-size:0.8rem;">—</span>';
-            var fmt = function(v){ return Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD'}); };
-            return '<tr><td><strong>'+c.title+'</strong><br><small style="color:#999;">'+img+'</small></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmt(goal)+'</td><td>'+fmt(col)+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' +
+            var collecte = fmtUSD(col) + (colCDF > 0 ? ' <small style="color:#999;">+ ' + fmtCDF(colCDF) + '</small>' : '');
+            return '<tr><td>'+mediaCell(c)+'</td><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmtUSD(goal)+'</td><td>'+collecte+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' +
               '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Arrêter</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Arr&ecirc;ter</button> ' +
               '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
           }).join('');
         }
 
         if (archived.length === 0) {
-          archivedBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Aucune campagne archivée.</td></tr>';
+          archivedBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Aucun appel archiv&eacute;.</td></tr>';
         } else {
           archivedBody.innerHTML = archived.map(function(c) {
             return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+(c.archivedAt||'—').slice(0,10)+'</td><td>' +
@@ -313,25 +443,23 @@
       };
 
       window.stopCampaign = function (id) {
-        if (!confirm('Arrêter cette campagne ? Elle sera archivée et visible sur la page Sensibilisation.')) return;
-        if (window.location.protocol !== 'file:') api('POST', '/api/campaigns/'+id+'/stop', {});
+        if (!confirm('Arrêter cet appel à don ? Il sera archivé et retiré de la page Soutenir nos actions.')) return;
+        api('POST', '/api/campaigns/'+id+'/stop', {});
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-        var found = false;
-        list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='archived'; c.archivedAt=new Date().toISOString(); found=true; } });
-        if (found) localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='archived'; c.archivedAt=new Date().toISOString(); } });
+        localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Campagne arrêtée et archivée.');
+        showToast('Appel arrêté et archivé.');
       };
 
       window.deleteCampaign = function (id) {
-        if (!confirm('Supprimer définitivement ?')) return;
-        if (window.location.protocol !== 'file:') api('DELETE', '/api/campaigns/'+id);
+        if (!confirm('Supprimer définitivement cet appel ? Les dons reçus resteront dans l\'historique.')) return;
+        api('DELETE', '/api/campaigns/'+id);
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-        var before = list.length;
         list = list.filter(function(c){return c.id !== id;});
-        if (list.length !== before) localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Campagne supprimée.');
+        showToast('Appel supprimé.');
       };
     });
   </script>

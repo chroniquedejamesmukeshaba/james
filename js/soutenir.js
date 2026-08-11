@@ -18,6 +18,9 @@
   var idempotencyKey = newIdem();
   var busy = false;
   var feePct = 0.035;
+  var currency = 'USD';
+  var QUICK_AMOUNTS = { USD: [1, 5, 10, 25, 50, 100], CDF: [2000, 5000, 10000, 25000, 50000, 100000] };
+  var LIMITS = { USD: { min: 1, max: 100000 }, CDF: { min: 1000, max: 250000000 } };
 
   function newIdem() {
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
@@ -26,6 +29,14 @@
 
   function fmtUSD(v) {
     return Number(v || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  }
+
+  function fmtCDF(v) {
+    return Number(v || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' FC';
+  }
+
+  function fmtMoney(v, cur) {
+    return cur === 'CDF' ? fmtCDF(v) : fmtUSD(v);
   }
 
   function showError(msg) {
@@ -60,24 +71,34 @@
     list.forEach(function (c) {
       var goal = Number(c.goal || 0);
       var col = Number(c.collected || 0);
+      var colCDF = Number(c.collected_cdf || 0);
       var pct = goal > 0 ? Math.min(col / goal * 100, 100) : 0;
       var isDone = goal > 0 && col >= goal;
+      var isVideo = c.video && (c.video[0] === '/' || c.video.indexOf('http') === 0 || c.video.indexOf('data:') === 0);
       var img = (c.image && (c.image[0] === '/' || c.image.indexOf('http') === 0 || c.image.indexOf('data:') === 0)) ? c.image : '';
       var endBadge = '';
       if (c.endDate) {
         var end = new Date(c.endDate);
         if (!isNaN(end.getTime()) && end < new Date()) endBadge = '<span class="cat-chip" style="background:rgba(192,57,43,.12);color:#c0392b;">Termin&eacute;e</span>';
       }
+      var media = img
+        ? '<div class="card-banner" style="height:170px;background:url(' + img + ') center/cover;"></div>'
+        : '<div class="card-banner" style="height:170px;background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>';
+      if (isVideo) {
+        media = '<div class="card-banner card-banner-video" style="height:185px;background:#08121f;">' +
+          '<video src="' + c.video + '" controls muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>' +
+          '</div>';
+      }
+      var collecte = '<strong>' + fmtUSD(col) + '</strong> collect&eacute;s' + (colCDF > 0 ? ' <strong>+ ' + fmtCDF(colCDF) + '</strong>' : '');
       html += '<article class="wcard campaign-card" data-id="' + c.id + '" style="cursor:pointer;display:flex;flex-direction:column;overflow:hidden;border:2px solid transparent;transition:border-color .2s;">' +
-        (img ? '<div class="card-banner" style="height:170px;background:url(' + img + ') center/cover;"></div>' :
-               '<div class="card-banner" style="height:170px;background:linear-gradient(135deg,var(--primary),var(--primary-light));"></div>') +
+        media +
         '<div class="wcard-body" style="padding:20px;flex:1;display:flex;flex-direction:column;gap:10px;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
         '<h2 style="margin:0;font-size:1.05rem;">' + esc(c.title) + '</h2>' + endBadge + '</div>' +
         '<p style="margin:0;font-size:0.92rem;opacity:0.8;flex:1;">' + esc(c.description || '') + '</p>' +
         '<div class="campaign-progress" style="margin-top:4px;">' +
         '  <div class="campaign-progress-bar"><div class="campaign-progress-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
-        '  <div class="campaign-progress-labels"><span><strong>' + fmtUSD(col) + '</strong> collect&eacute;s</span>' +
+        '  <div class="campaign-progress-labels"><span>' + collecte + '</span>' +
         '  <span>' + pct.toFixed(0) + '% &middot; objectif ' + fmtUSD(goal) + '</span></div>' +
         '</div>' +
         (isDone ? '<span class="cat-chip" style="background:rgba(31,111,235,.12);color:var(--primary);">Objectif atteint &mdash; merci !</span>' : '') +
@@ -87,7 +108,8 @@
     box.innerHTML = html;
 
     box.querySelectorAll('.campaign-card').forEach(function (card) {
-      card.addEventListener('click', function () {
+      card.addEventListener('click', function (ev) {
+        if (ev.target.closest('video')) return;
         box.querySelectorAll('.campaign-card').forEach(function (x) { x.style.borderColor = 'transparent'; });
         card.style.borderColor = 'var(--primary)';
         selectCampaign(Number(card.dataset.id));
@@ -104,7 +126,10 @@
     $('don-campaign-id').value = id;
     var goal = Number(c.goal || 0);
     var col = Number(c.collected || 0);
-    $('don-form-campaign').textContent = c.title + ' — ' + fmtUSD(col) + ' collectés sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre générosité !';
+    var colCDF = Number(c.collected_cdf || 0);
+    $('don-form-campaign').textContent = c.title + ' — ' + fmtUSD(col) +
+      (colCDF > 0 ? ' + ' + fmtCDF(colCDF) : '') +
+      ' collectés sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre générosité !';
   }
 
   function esc(s) {
@@ -175,27 +200,60 @@
     if (!isMoneyMethod(currentMethod())) { box.style.display = 'none'; return; }
     var net = parseFloat($('don-amount').value || '0');
     if (!(net > 0)) { box.style.display = 'none'; return; }
-    var fee = net * feePct;
-    var total = net + fee;
-    $('fee-net').textContent = fmtUSD(net);
-    $('fee-amount').textContent = fmtUSD(fee) + ' (' + (feePct * 100).toFixed(1) + ' %)';
-    $('fee-total').textContent = fmtUSD(total);
+    var fee = currency === 'CDF' ? Math.round(net * feePct) : net * feePct;
+    var total = currency === 'CDF' ? Math.round(net + fee) : net + fee;
+    var curLabel = currency === 'CDF' ? ' CDF' : ' USD';
+    $('fee-net').textContent = fmtMoney(net, currency);
+    $('fee-amount').textContent = fmtMoney(fee, currency) + ' (' + (feePct * 100).toFixed(1) + ' %)';
+    $('fee-total').textContent = fmtMoney(total, currency) + curLabel;
     box.style.display = 'block';
   }
 
-  /* ---------- Montants ---------- */
+  /* ---------- Devise + montants ---------- */
+  function setCurrency(cur) {
+    currency = cur === 'CDF' ? 'CDF' : 'USD';
+    var lim = LIMITS[currency];
+    var inp = $('don-amount');
+    var curVal = parseFloat(inp.value || '0');
+    var defaultVal = currency === 'CDF' ? 5000 : 25;
+    inp.value = (curVal > 0 && QUICK_AMOUNTS[currency].indexOf(curVal) === -1 && lim.min <= curVal && curVal <= lim.max)
+      ? curVal : (curVal > 0 ? (currency === 'CDF' ? curVal * 1000 : Math.round(curVal / 1000)) : defaultVal);
+    if (!(inp.value > 0) || isNaN(inp.value)) inp.value = defaultVal;
+    inp.min = lim.min;
+    inp.max = lim.max;
+    inp.step = currency === 'CDF' ? '1' : '0.01';
+    $('don-amount-label').textContent = currency === 'CDF' ? '(Francs CDF)' : '(USD)';
+
+    var lblNet = $('fee-net'), lblTot = $('fee-total');
+    document.querySelectorAll('.currency-btn').forEach(function (b) {
+      var on = b.dataset.cur === currency;
+      b.classList.toggle('selected', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    renderQuickAmounts();
+    updateFeeSummary();
+  }
+
+  function renderQuickAmounts() {
+    var box = $('don-quick-amounts');
+    box.innerHTML = QUICK_AMOUNTS[currency].map(function (v) {
+      var label = currency === 'CDF' ? v.toLocaleString('fr-FR') + ' FC' : v + ' $';
+      return '<button type="button" class="donation-amount' + (String($('don-amount').value) === String(v) ? ' selected' : '') + '" data-val="' + v + '">' + label + '</button>';
+    }).join('');
+  }
+
   function bindAmounts() {
-    document.querySelectorAll('.donation-amount').forEach(function (b) {
-      b.addEventListener('click', function () {
-        document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
-        b.classList.add('selected');
-        $('don-amount').value = b.dataset.val;
-        updateFeeSummary();
-      });
+    $('don-quick-amounts').addEventListener('click', function (ev) {
+      var b = ev.target.closest('.donation-amount');
+      if (!b) return;
+      setAmount(b.dataset.val);
     });
     $('don-amount').addEventListener('input', function () {
       document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
       updateFeeSummary();
+    });
+    document.querySelectorAll('.currency-btn').forEach(function (b) {
+      b.addEventListener('click', function () { setCurrency(b.dataset.cur); });
     });
     document.querySelectorAll('.pay-method input[name="pay-method"]').forEach(function (r) {
       r.addEventListener('change', function () {
@@ -203,6 +261,14 @@
         updateFeeSummary();
       });
     });
+  }
+
+  function setAmount(v) {
+    document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
+    $('don-amount').value = v;
+    var btn = document.querySelector('.donation-amount[data-val="' + v + '"]');
+    if (btn) btn.classList.add('selected');
+    updateFeeSummary();
   }
 
   /* ---------- Soumission : intention puis initiation paiement ---------- */
@@ -214,7 +280,17 @@
     var campaignId = $('don-campaign-id').value;
     if (!campaignId) { showError('Veuillez s\u00e9lectionner une campagne active.'); return; }
     var amount = parseFloat($('don-amount').value);
-    if (!(amount >= 1 && amount <= 100000)) { showError('Le montant doit \u00eatre compris entre 1 et 100000 USD.'); return; }
+    var lim = LIMITS[currency];
+    if (!(amount >= lim.min && amount <= lim.max)) {
+      showError(currency === 'CDF'
+        ? 'Le montant doit \u00eatre compris entre 1 000 et 250 000 000 Francs (CDF).'
+        : 'Le montant doit \u00eatre compris entre 1 et 100000 USD.');
+      return;
+    }
+    if (currency === 'CDF' && amount % 1 !== 0) {
+      showError('Le montant en Francs doit \u00eatre un nombre entier.');
+      return;
+    }
     var name = $('don-name').value.trim();
     if (!name) { showError('Veuillez indiquer votre nom complet.'); return; }
     var methodEl = document.querySelector('.pay-method input[name="pay-method"]:not(:disabled):checked');
@@ -235,6 +311,7 @@
     var payload = {
       campaignId: campaignId,
       amount: amount.toFixed(2),
+      currency: currency,
       name: name,
       phone: phone,
       message: $('don-message').value.trim(),

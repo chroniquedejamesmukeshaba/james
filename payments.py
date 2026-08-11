@@ -271,12 +271,14 @@ class MaishaPayAdapter(ProviderAdapter):
         if not phone:
             raise PaymentError('phone_required', 'Votre numéro de téléphone est requis pour le paiement mobile money.')
         net = float(txn.get('amount') or 0)
-        gross = round(net * (1.0 + MAISHAPAY_FEE_PCT), 2)  # 3,5% de frais a la charge du client
+        currency = str(txn.get('currency') or 'USD').upper()
+        # 3,5% de frais a la charge du client ; arrondi entier pour le CDF.
+        gross = round(net * (1.0 + MAISHAPAY_FEE_PCT), 2) if currency != 'CDF' else int(round(net * (1.0 + MAISHAPAY_FEE_PCT)))
         payload = dict(self._auth())
         payload.update({
             'transactionReference': str(txn.get('txn_id') or '')[:50],
             'amount': gross,
-            'currency': str(txn.get('currency') or 'USD').upper(),
+            'currency': currency,
             'customerFullName': str(txn.get('name') or '')[:120],
             'customerPhoneNumber': phone[:20],
             'customerEmailAddress': str(txn.get('email') or '')[:200] or None,
