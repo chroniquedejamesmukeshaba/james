@@ -98,6 +98,7 @@
 
   <section class="section">
     <div class="container">
+      <div class="pop-tabs" id="all-cat-tabs" role="tablist" aria-label="Rubriques" style="margin-bottom:22px;"></div>
       <div class="cards-grid" id="all-articles-grid"></div>
     </div>
   </section>
@@ -286,9 +287,14 @@
         arrow: S + '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
         newspaper: S + '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V7"/><line x1="10" y1="7" x2="18" y2="7"/><line x1="10" y1="11" x2="18" y2="11"/><line x1="10" y1="15" x2="14" y2="15"/></svg>'
       };
-      function render() {
-        var list = articles.slice().sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
-        grid.innerHTML = list.map(function (a) {
+      function normCat(c) {
+        c = String(c || '').trim();
+        if (!c) return 'Actualité';
+        return c.charAt(0).toUpperCase() + c.slice(1);
+      }
+      var SHOWN = 12;
+      function cardsHtml(list) {
+        return list.map(function (a) {
           var img = a.image && (a.image.startsWith('data:') || a.image.startsWith('/') || a.image.startsWith('http'))
             ? '<img src="' + esc(a.image) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">'
             : '<span class="no-thumb">' + IC.newspaper + '</span>';
@@ -307,7 +313,51 @@
             (comments > 0 ? '<span class="fc">' + IC.user + '<span>' + comments + '</span></span>' : '') +
             '<a class="read-link" href="/article?id=' + esc(a.id) + '">' + (typeof t === 'function' ? t('home_view') : 'Lire') + ' ' + IC.arrow + '</a>' +
             '</div></div></article>';
+        });
+      }
+      function render() {
+        var list = articles.slice().sort(function (x, y) { return (y.id || 0) - (x.id || 0); });
+        var map = {};
+        list.forEach(function (a) { var c = normCat(a.category); (map[c] = map[c] || []).push(a); });
+        var cats = [];
+        ['Projets', 'Sensibilisation', 'Société', 'Santé', 'Politique', 'International', 'Éducation', 'Sport', 'Environnement', 'Sécurité', 'Culture'].forEach(function (c) {
+          if (map[c] && cats.indexOf(c) === -1) cats.push(c);
+        });
+        Object.keys(map).forEach(function (c) { if (cats.indexOf(c) === -1) cats.push(c); });
+        var tabsEl = document.getElementById('all-cat-tabs');
+        var all = ['__all__'].concat(cats);
+        tabsEl.innerHTML = all.map(function (c, i) {
+          return '<button type="button" role="tab" class="pop-tab' + (i === 0 ? ' active' : '') + '" data-cat="' + c + '">' +
+            (c === '__all__' ? 'Tout' : esc(c)) + '</button>';
         }).join('');
+        var full = all.length > 1 ? all : ['__all__'];
+        if (full.length === 1) tabsEl.style.display = 'none';
+
+        var currentCat = '__all__';
+        function draw() {
+          var srcList = currentCat === '__all__' ? list : (map[currentCat] || []);
+          var html = cardsHtml(srcList.slice(0, SHOWN)).join('');
+          if (srcList.length > SHOWN) {
+            html += '<div style="grid-column:1/-1;text-align:center;margin-top:14px;">' +
+              '<button type="button" class="btn btn-outline" id="load-more-btn">Afficher plus d\u2019articles (' + srcList.length + ')</button></div>';
+          }
+          grid.innerHTML = html;
+          var more = document.getElementById('load-more-btn');
+          if (more) more.addEventListener('click', function () {
+            SHOWN = Math.min(SHOWN + 12, srcList.length);
+            draw();
+          });
+        }
+        draw();
+        tabsEl.querySelectorAll('.pop-tab').forEach(function (b) {
+          b.addEventListener('click', function () {
+            tabsEl.querySelectorAll('.pop-tab').forEach(function (x) { x.classList.remove('active'); });
+            b.classList.add('active');
+            currentCat = b.dataset.cat;
+            SHOWN = 12;
+            draw();
+          });
+        });
       }
       loadFromServer();
     });

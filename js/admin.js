@@ -134,6 +134,7 @@ const ROLE_PAGES = {
   'pages.html': ['super_admin','admin'],
   'campaigns.html': ['super_admin','admin'],
   'donations.html': ['super_admin','admin'],
+  'ads.html': ['super_admin','admin'],
   'newsletter.html': ['super_admin','admin'],
   'security.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
   'journal.html': ['super_admin','admin']

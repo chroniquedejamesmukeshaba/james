@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publicit&eacute;s - Administration</title>
+<link rel="icon" type="image/png" href="../assets/images/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<style>
+  .ads-card { background:var(--white,#fff); border-radius:14px; padding:20px; box-shadow:var(--shadow); margin-bottom:16px; display:flex; gap:16px; flex-wrap:wrap; }
+  .ads-card .ad-img { width:130px; height:88px; border-radius:8px; object-fit:cover; background:#eef2f7; flex-shrink:0; }
+  .ads-card .ad-body { flex:1; min-width:240px; }
+  .ads-card h3 { margin:0 0 4px; font-size:1.02rem; }
+  .ads-card .ad-meta { font-size:0.85rem; color:var(--text-light,#5d6b6e); margin-bottom:6px; }
+  .ads-card .ad-desc { font-size:0.9rem; margin:0 0 10px; }
+  .ads-card .ad-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .chip-status { display:inline-block; padding:3px 12px; border-radius:999px; font-size:0.78rem; font-weight:600; }
+  .chip-pending { background:#fef3c7; color:#92400e; }
+  .chip-active { background:#d1fae5; color:#065f46; }
+  .chip-rejected { background:#fee2e2; color:#991b1b; }
+</style>
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">💝 Faire un Don</a>
+      <a href="donations.html">💳 Gestion des dons</a>
+      <a href="ads.html" class="active">📢 Publicités</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+      <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-radius:18px;padding:26px 30px;margin-bottom:26px;">
+        <h2 style="margin:0 0 6px;color:#fff;font-size:1.5rem;">📢 Publicit&eacute;s</h2>
+        <p style="margin:0;color:rgba(255,255,255,0.85);max-width:640px;">Les demandes envoy&eacute;es via la page &laquo;&nbsp;Publicit&eacute;&nbsp;&raquo; arrivent ici. Approuvez pour afficher la publicit&eacute; sur la page d&rsquo;accueil, ou refusez : la personne recevra un email avec votre motif.</p>
+      </div>
+      <div id="ads-list">
+        <p style="color:#999;">Chargement&hellip;</p>
+      </div>
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin-layout.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    function api(method, url, body) {
+      if (window.location.protocol === 'file:') return Promise.reject('file:');
+      var h = {'Content-Type':'application/json'};
+      var token = localStorage.getItem('admin_token');
+      if (token) h['X-Admin-Token'] = token;
+      return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
+        .then(function(r){return r.json()}).catch(function(){return null;});
+    }
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    var STATUS = {
+      pending: ['En attente', 'chip-pending'],
+      active: ['Visible sur l\u2019accueil', 'chip-active'],
+      rejected: ['Refus\u00e9e', 'chip-rejected']
+    };
+    function load() {
+      api('GET', '/api/ads').then(function (d) {
+        var items = (d && d.items) || [];
+        if (!items.length) {
+          document.getElementById('ads-list').innerHTML = '<p style="color:#999;padding:20px;">Aucune demande de publicit\u00e9 pour le moment.</p>';
+          return;
+        }
+        document.getElementById('ads-list').innerHTML = items.map(function (a) {
+          var st = STATUS[a.status] || STATUS.pending;
+          var photo = a.image ? '<img class="ad-img" src="' + esc(a.image) + '" alt="">'
+            : '<div class="ad-img" style="display:flex;align-items:center;justify-content:center;color:#999;font-size:1.6rem;">\uD83D\uDDBC\uFE0F</div>';
+          var actions = '';
+          if (a.status === 'pending') {
+            actions += '<button class="btn btn-sm btn-primary" onclick="approveAd(' + a.id + ')">\u2713 Approuver</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="rejectAd(' + a.id + ')">\u2715 Refuser avec motif</button> ';
+          }
+          actions += '<button class="btn btn-sm btn-outline" onclick="deleteAd(' + a.id + ')">\uD83D\uDDD1 Supprimer</button>';
+          return '<div class="ads-card">' + photo +
+            '<div class="ad-body">' +
+            '<h3>' + esc(a.title) + ' <span class="chip-status ' + st[1] + '">' + st[0] + '</span></h3>' +
+            '<div class="ad-meta">Par <strong>' + esc(a.name) + '</strong> &middot; <a href="mailto:' + esc(a.email) + '">' + esc(a.email) + '</a> &middot; re\u00e7u le ' + (a.createdAt || '').replace('T', ' ').slice(0, 16) + '</div>' +
+            '<p class="ad-desc">' + esc(a.description) + '</p>' +
+            (a.reason ? '<p style="font-size:0.85rem;color:#b91c1c;background:#fdf2f2;border-radius:8px;padding:8px 12px;margin:0 0 10px;"><strong>Motif de refus :</strong> ' + esc(a.reason) + '</p>' : '') +
+            '<div class="ad-actions">' + actions + '</div>' +
+            '</div></div>';
+        }).join('');
+      });
+    }
+    window.approveAd = function (id) {
+      if (!confirm('Approuver et afficher cette publicit\u00e9 sur la page d\u2019accueil ?')) return;
+      api('POST', '/api/ads/' + id + '/approve', {}).then(function (d) {
+        if (d && d.ok) { showToast('Publicit\u00e9 approuv\u00e9e et visible sur l\u2019accueil.'); load(); }
+      });
+    };
+    window.rejectAd = function (id) {
+      var reason = prompt('Motif du refus (envoy\u00e9 par email au demandeur) :');
+      if (reason === null) return;
+      if (!reason.trim()) { showToast('Un motif est requis pour refuser.'); return; }
+      api('POST', '/api/ads/' + id + '/reject', {reason: reason.trim()}).then(function (d) {
+        if (d && d.ok) { showToast('Demande refus\u00e9e. Email envoy\u00e9 au demandeur.'); load(); }
+        else if (d && d.error) { showToast(d.error); }
+      });
+    };
+    window.deleteAd = function (id) {
+      if (!confirm('Supprimer d\u00e9finitivement cette demande ?')) return;
+      api('DELETE', '/api/ads/' + id).then(function (d) {
+        if (d && d.ok) { showToast('Demande supprim\u00e9e.'); load(); }
+      });
+    };
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</body>
+</html>

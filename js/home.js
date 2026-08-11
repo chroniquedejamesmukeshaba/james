@@ -13,7 +13,8 @@
     arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
     zap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
     newspaper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V7"/><line x1="10" y1="7" x2="18" y2="7"/><line x1="10" y1="11" x2="18" y2="11"/><line x1="10" y1="15" x2="14" y2="15"/></svg>',
-    fire: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4.418 0 8-3.582 8-8 0-3.5-2-5.5-3-6.5C16 6 15.5 4.5 15.5 3c-2 1.5-3 3.5-3 4.5C11 7 10 6.5 9.5 6c.5 2.5-1 5-1.5 6-.5 1 0 2 1 2.5 0-1 1-1.5 1.5-2 .5 1 .5 2.5 1 3.5 0 .8-2 3-2 4.5 0 1 .9 1.5 2 1.5z" transform="scale(0.95) translate(0.6 1)"/></svg>'
+    fire: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4.418 0 8-3.582 8-8 0-3.5-2-5.5-3-6.5C16 6 15.5 4.5 15.5 3c-2 1.5-3 3.5-3 4.5C11 7 10 6.5 9.5 6c.5 2.5-1 5-1.5 6-.5 1 0 2 1 2.5 0-1 1-1.5 1.5-2 .5 1 .5 2.5 1 3.5 0 .8-2 3-2 4.5 0 1 .9 1.5 2 1.5z" transform="scale(0.95) translate(0.6 1)"/></svg>',
+    megaphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>'
   };
 
   function esc(s) {
@@ -237,19 +238,41 @@
     var list = sorted();
     var html = sectionHtml('home_latest', 'Dernières actualités', list, true, '', 5, true);
     var map = byCat(list);
-    var used = {};
-    PREF_CATS.forEach(function (c) {
-      if (map[c] && map[c].length) {
-        used[c] = true;
-        html += sectionHtml('cat_' + c, c, map[c], true, slugOf(c), 4);
-      }
-    });
-    Object.keys(map).forEach(function (c) {
-      if (!used[c] && map[c].length) {
-        html += sectionHtml('cat_' + c, c, map[c], true, slugOf(c), 4);
-      }
-    });
+
+    // Onglets par rubrique (comme les campagnes de financement, les projets et
+    // les sensibilisations occupent l'accueil, on evite une liste interminable)
+    var cats = [];
+    var PREF_CATS_ALL = ['Projets', 'Sensibilisation'].concat(PREF_CATS);
+    PREF_CATS_ALL.forEach(function (c) { if (map[c] && map[c].length && cats.indexOf(c) === -1) cats.push(c); });
+    Object.keys(map).forEach(function (c) { if (cats.indexOf(c) === -1) cats.push(c); });
+
+    function cardGrid(selected) {
+      var sel = selected === '__all__' ? list : map[selected];
+      var items = (sel || []).slice(0, 8);
+      return items.map(function (a) { return cardHtml(a); }).join('');
+    }
+
+    var tabs = ['__all__'].concat(cats);
+    html += '<section class="home-section"><div class="container"><div class="head">' +
+      '<h2>' + t('home_cats', 'Toutes les actualités') + '</h2>' +
+      '<div class="pop-tabs" role="tablist" aria-label="Rubriques">' +
+      tabs.map(function (c, i) {
+        return '<button type="button" role="tab" class="pop-tab' + (i === 0 ? ' active' : '') + '" data-cat="' + c + '">' +
+          (c === '__all__' ? t('home_cats_all', 'Tout') : esc(c)) + '</button>';
+      }).join('') + '</div></div>' +
+      '<div class="section-grid cat-grid">' + cardGrid('__all__') + '</div>' +
+      '<div style="display:flex;justify-content:center;margin-top:18px;"><a class="head-link" href="actualites.html">' + t('home_view_more', 'Voir plus') + ' ' + IC.arrow + '</a></div>' +
+      '</div></section>';
     wrap.innerHTML = html;
+
+    var grid = wrap.querySelector('.cat-grid');
+    wrap.querySelectorAll('.pop-tab').forEach(function (b) {
+      b.addEventListener('click', function () {
+        wrap.querySelectorAll('.pop-tab').forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+        grid.innerHTML = cardGrid(b.dataset.cat);
+      });
+    });
   }
 
   // ---------- RECHERCHE ----------
@@ -342,12 +365,39 @@
       });
   }
 
+  // ---------- PUBLICITÉS (validées par l'admin) ----------
+  function renderAds() {
+    var wrap = document.getElementById('home-ads');
+    if (!wrap) return;
+    if (window.location.protocol === 'file:') { wrap.style.display = 'none'; return; }
+    fetch('/api/ads/public?_=' + Date.now())
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        if (!d || !d.length) { wrap.style.display = 'none'; return; }
+        wrap.style.display = '';
+        wrap.innerHTML = '<div class="container"><div class="head">' +
+          '<h2>' + t('home_ads', 'Espace publicitaire') + '</h2>' +
+          '<a class="head-link" href="publicite.html">' + t('home_ads_cta', 'Faire de la publicité') + ' ' + IC.arrow + '</a>' +
+          '</div><div class="ads-grid">' +
+          d.map(function (a) {
+            var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0) ? a.image : '';
+            return '<article class="ad-card">' +
+              (src ? '<img src="' + esc(src) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '<div class="ad-noimg">' + IC.megaphone + '</div>') +
+              '<div class="ad-body"><h3>' + esc(a.title) + '</h3>' +
+              '<p>' + esc(a.description) + '</p>' +
+              '<span class="ad-by">' + esc(a.name || '') + '</span></div></article>';
+          }).join('') + '</div></div>';
+      })
+      .catch(function () { wrap.style.display = 'none'; });
+  }
+
   // ---------- CHARGEMENT ----------
   function renderAll() {
     var list = sorted();
     renderTicker(list);
     renderHero(list);
     renderSections();
+    renderAds();
     renderMostRead();
   }
 

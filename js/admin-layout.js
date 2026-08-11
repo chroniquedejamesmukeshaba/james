@@ -50,6 +50,7 @@
     { group: 'Gestion' },
     { label: 'Faire un Don', href: 'campaigns.html', icon: 'megaphone' },
     { label: 'Dons & paiements', href: 'donations.html', icon: 'coin' },
+    { label: 'Publicit\u00e9s', href: 'ads.html', icon: 'megaphone' },
     { label: 'Pages', href: 'pages.html', icon: 'file' },
     { label: 'Utilisateurs & rôles', href: 'security.html#comptes', icon: 'shield' },
     { label: 'Sécurité', href: 'security.html', icon: 'shield' },

@@ -77,7 +77,9 @@
       var isVideo = c.video && (c.video[0] === '/' || c.video.indexOf('http') === 0 || c.video.indexOf('data:') === 0);
       var img = (c.image && (c.image[0] === '/' || c.image.indexOf('http') === 0 || c.image.indexOf('data:') === 0)) ? c.image : '';
       var endBadge = '';
-      if (c.endDate) {
+      if (c.status === 'ended') {
+        endBadge = '<span class="cat-chip" style="background:rgba(192,57,43,.12);color:#c0392b;">Cl&ocirc;tur&eacute;e</span>';
+      } else if (c.endDate) {
         var end = new Date(c.endDate);
         if (!isNaN(end.getTime()) && end < new Date()) endBadge = '<span class="cat-chip" style="background:rgba(192,57,43,.12);color:#c0392b;">Termin&eacute;e</span>';
       }
@@ -89,7 +91,7 @@
           '<video src="' + c.video + '" controls muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>' +
           '</div>';
       }
-      var collecte = '<strong>' + fmtUSD(col) + '</strong> collect&eacute;s' + (colCDF > 0 ? ' <strong>+ ' + fmtCDF(colCDF) + '</strong>' : '');
+      var collecte = '<strong>' + pct.toFixed(0) + ' %</strong> de l\u2019objectif atteint';
       html += '<article class="wcard campaign-card" data-id="' + c.id + '" style="cursor:pointer;display:flex;flex-direction:column;overflow:hidden;border:2px solid transparent;transition:border-color .2s;">' +
         media +
         '<div class="wcard-body" style="padding:20px;flex:1;display:flex;flex-direction:column;gap:10px;">' +
@@ -99,10 +101,13 @@
         '<div class="campaign-progress" style="margin-top:4px;">' +
         '  <div class="campaign-progress-bar"><div class="campaign-progress-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
         '  <div class="campaign-progress-labels"><span>' + collecte + '</span>' +
-        '  <span>' + pct.toFixed(0) + '% &middot; objectif ' + fmtUSD(goal) + '</span></div>' +
+        '  <span>objectif ' + fmtUSD(goal) + '</span></div>' +
         '</div>' +
+        (c.status === 'ended' ? '<div class="cat-chip" style="background:rgba(192,57,43,.1);color:#c0392b;">' + esc(c.closedReason || 'Collecte clôturée') + '</div>' : '') +
         (isDone ? '<span class="cat-chip" style="background:rgba(31,111,235,.12);color:var(--primary);">Objectif atteint &mdash; merci !</span>' : '') +
-        '<button class="btn-primary" style="border:none;padding:11px;border-radius:8px;font-weight:600;cursor:pointer;">Je fais un don</button>' +
+        (c.status === 'ended'
+          ? '<button class="btn-primary" style="border:none;padding:11px;border-radius:8px;font-weight:600;background:#5c6f85;color:#fff;cursor:not-allowed;" disabled>Collecte cl&ocirc;tur&eacute;e</button>'
+          : '<button class="btn-primary" style="border:none;padding:11px;border-radius:8px;font-weight:600;cursor:pointer;">Je fais un don</button>') +
         '</div></article>';
     });
     box.innerHTML = html;
@@ -115,7 +120,9 @@
         selectCampaign(Number(card.dataset.id));
       });
     });
-    if (list.length) selectCampaign(Number(list[0].id));
+    var firstActive = list.filter(function (x) { return x.status === 'active'; })[0];
+    if (firstActive) selectCampaign(Number(firstActive.id));
+    else if (list.length) selectCampaign(Number(list[0].id));
   }
 
   function selectCampaign(id) {
@@ -127,9 +134,15 @@
     var goal = Number(c.goal || 0);
     var col = Number(c.collected || 0);
     var colCDF = Number(c.collected_cdf || 0);
-    $('don-form-campaign').textContent = c.title + ' — ' + fmtUSD(col) +
-      (colCDF > 0 ? ' + ' + fmtCDF(colCDF) : '') +
-      ' collectés sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre générosité !';
+    var pctS = goal > 0 ? Math.min((col + colCDF / 2900) / goal * 100, 100) : 0;
+    $('don-form-campaign').textContent = c.title + ' — ' + pctS.toFixed(0) + ' % de l\u2019objectif de ' + fmtUSD(goal) + ' atteint. Merci pour votre générosité !';
+    var closedNote = $('don-closed-note');
+    if (c.status === 'ended' && c.closedReason && closedNote) {
+      closedNote.textContent = 'Collecte cl\u00f4tur\u00e9e : ' + c.closedReason;
+      closedNote.style.display = 'block';
+    } else if (closedNote) {
+      closedNote.style.display = 'none';
+    }
   }
 
   function esc(s) {
@@ -140,7 +153,7 @@
     fetch('/api/campaigns?_=' + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (list) {
-        campaigns = (list || []).filter(function (c) { return c.status === 'active'; });
+        campaigns = (list || []).filter(function (c) { return c.status === 'active' || c.status === 'ended'; });
         renderCampaigns(campaigns);
       })
       .catch(function () {
@@ -279,6 +292,10 @@
 
     var campaignId = $('don-campaign-id').value;
     if (!campaignId) { showError('Veuillez s\u00e9lectionner une campagne active.'); return; }
+    var selected = null;
+    campaigns.forEach(function (x) { if (String(x.id) === String(campaignId)) selected = x; });
+    if (!selected) { showError('Veuillez s\u00e9lectionner une campagne active.'); return; }
+    if (selected.status === 'ended') { showError('Cette collecte est cl\u00f4tur\u00e9e : les dons ne sont plus accept\u00e9s pour celle-ci. Merci de votre compr\u00e9hension.'); return; }
     var amount = parseFloat($('don-amount').value);
     var lim = LIMITS[currency];
     if (!(amount >= lim.min && amount <= lim.max)) {

@@ -418,10 +418,13 @@
               ? '<div class="progress-row" style="margin-bottom:0;min-width:140px;"><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--primary),var(--accent));"></div></div><div class="progress-val">'+pct+'%</div></div>'
               : '<span style="color:#999;font-size:0.8rem;">—</span>';
             var collecte = fmtUSD(col) + (colCDF > 0 ? ' <small style="color:#999;">+ ' + fmtCDF(colCDF) + '</small>' : '');
-            return '<tr><td>'+mediaCell(c)+'</td><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmtUSD(goal)+'</td><td>'+collecte+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' +
+            var ended = c.status === 'ended' || c.status === 'archived';
+            var actions = (ended
+              ? '<button class="btn btn-sm btn-primary" onclick="resumeCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">Reprendre</button> '
+              : '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Cl&ocirc;turer</button> ') +
               '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Arr&ecirc;ter</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
+              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button>';
+            return '<tr><td>'+mediaCell(c)+'</td><td><strong>'+c.title+'</strong>' + (c.closedReason ? '<div style="font-size:0.78rem;color:#b91c1c;margin-top:3px;">Motif : '+c.closedReason+'</div>' : '') + '</td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmtUSD(goal)+'</td><td>'+collecte+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' + actions + '</td></tr>';
           }).join('');
         }
 
@@ -443,23 +446,37 @@
       };
 
       window.stopCampaign = function (id) {
-        if (!confirm('Arrêter cet appel à don ? Il sera archivé et retiré de la page Soutenir nos actions.')) return;
-        api('POST', '/api/campaigns/'+id+'/stop', {});
+        var reason = prompt('Motif de la cl\u00f4ture de cette collecte (obligatoire) :');
+        if (reason === null) return;
+        if (!reason.trim()) { showToast('Le motif est obligatoire pour cl\u00f4turer la collecte.'); return; }
+        api('POST', '/api/campaigns/'+id+'/status', {status:'ended', reason: reason.trim()});
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-        list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='archived'; c.archivedAt=new Date().toISOString(); } });
+        list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='ended'; c.archivedAt=new Date().toISOString(); c.closedReason=reason.trim(); } });
         localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Appel arrêté et archivé.');
+        showToast('Collecte cl\u00f4turée. Le motif est affiché sur la page Soutenir nos actions.');
+      };
+
+      window.resumeCampaign = function (id) {
+        if (!confirm('Reprendre cette collecte ? Elle redeviendra ouverte aux dons.')) return;
+        api('POST', '/api/campaigns/'+id+'/status', {status:'active'});
+        var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+        list.forEach(function(c){ if(c.id===id) { c.status='active'; c.closedReason=''; } });
+        localStorage.setItem('cms_campaigns', JSON.stringify(list));
+        loadCampaigns();
+        showToast('Collecte relancée.');
       };
 
       window.deleteCampaign = function (id) {
-        if (!confirm('Supprimer définitivement cet appel ? Les dons reçus resteront dans l\'historique.')) return;
-        api('DELETE', '/api/campaigns/'+id);
+        var reason = prompt('Motif de la suppression de cette collecte (obligatoire) :');
+        if (reason === null) return;
+        if (!reason.trim()) { showToast('Le motif est obligatoire pour supprimer la collecte.'); return; }
+        api('DELETE', '/api/campaigns/'+id, {reason: reason.trim()});
         var list = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
         list = list.filter(function(c){return c.id !== id;});
         localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Appel supprimé.');
+        showToast('Appel supprimé (motif consigné).');
       };
     });
   </script>

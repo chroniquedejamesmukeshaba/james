@@ -16,6 +16,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 CDF_USD_RATE = 2900.0
 CURRENCIES = ('USD', 'CDF')
 MAX_VIDEO_BYTES = 30 * 1024 * 1024  # 30 Mo max pour une video d'appel a don
+CHRONIQUE_MAIL = 'chroniquedejamesmukeshaba@gmail.com'
 
 try:
     from PIL import Image
@@ -227,6 +228,212 @@ def role_required(*roles):
         return wrapper
     return deco
 
+def rate_limit(route, limit, window):
+    def deco(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            ip = request.remote_addr or '?'
+            key = (route, ip)
+            now = time.time()
+            items = [t for t in RATE_CACHE.get(key, []) if now - t < window]
+            if len(items) >= limit:
+                return jsonify({'ok': False, 'error': 'trop de requetes'}), 429
+            items.append(now)
+            RATE_CACHE[key] = items
+            if len(RATE_CACHE) > _RATE_MAX_KEYS:
+                cutoff = time.time() - 3600
+                RATE_CACHE.clear()
+            return f(*args, **kwargs)
+        return wrapper
+    return deco
+
+# --- COURRIEL (SMTP) ---
+def _smtp_config():
+    """SMTP : prioritise le fichier server_data/smtp_config.json (host, port,
+    user, pass, from), puis les variables d'environnement SMTP_*."""
+    cfg = read_obj('smtp_config', None)
+    if isinstance(cfg, dict) and cfg.get('host'):
+        return cfg
+    cfg = {}
+    for k in ('host', 'port', 'user', 'pass', 'from'):
+        cfg[k] = os.environ.get('SMTP_' + k.upper(), '')
+    return cfg
+
+def _send_mail(to, subject, body, html=None):
+    """Envoi d'un email simple. Retourne True si envoye, False sinon
+    (SMTP non configure ou erreur : silencieux, aucune erreur au visiteur)."""
+    if not to:
+        return False
+    cfg = _smtp_config()
+    host = cfg.get('host')
+    if not host:
+        return False
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        msg = MIMEText(body, 'plain', 'utf-8')
+        if html:
+            from email.mime.multipart import MIMEMultipart
+            alt = MIMEMultipart('alternative')
+            alt.attach(MIMEText(body, 'plain', 'utf-8'))
+            alt.attach(MIMEText(html, 'html', 'utf-8'))
+            alt['Subject'] = subject
+            alt['From'] = cfg.get('from') or cfg.get('user') or 'noreply@chroniquedejamesmukeshaba.org'
+            alt['To'] = to
+            msg = alt
+        else:
+            msg['Subject'] = subject
+            msg['From'] = cfg.get('from') or cfg.get('user') or 'noreply@chroniquedejamesmukeshaba.org'
+            msg['To'] = to
+        port = int(cfg.get('port') or 587)
+        with smtplib.SMTP(host, port, timeout=20) as s:
+            if cfg.get('user'):
+                s.starttls()
+                s.login(cfg['user'], cfg.get('pass') or '')
+            s.send_message(msg)
+        return True
+    except Exception:
+        return False
+
+# --- PUBLICITES ---
+def _sanitize_ad(data):
+    return {
+        'title': str(data.get('title') or '').strip()[:120],
+        'name': str(data.get('name') or '').strip()[:120],
+        'email': str(data.get('email') or '').strip()[:200],
+        'description': str(data.get('description') or '').strip()[:2000],
+        'image': str(data.get('image') or '').strip()[:1000],
+    }
+
+@app.route('/api/ad-requests', methods=['POST'])
+@rate_limit('ad_request', 5, 24 * 3600)
+def create_ad_request():
+    """Demande publique de publicite : notification admin + email vers la
+    chronique. Aucun affichage public avant validation par l'admin."""
+    data = _sanitize_ad(request.json or {})
+    errors = {}
+    if not (5 <= len(data['title']) <= 120):
+        errors['title'] = 'Le titre de la publicite doit faire entre 5 et 120 caracteres.'
+    if not (2 <= len(data['name']) <= 120):
+        errors['name'] = 'Indiquez votre nom ou celui de votre entreprise.'
+    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', data['email']):
+        errors['email'] = 'Adresse email invalide.'
+    if not (10 <= len(data['description']) <= 2000):
+        errors['description'] = 'La description doit faire entre 10 et 2000 caracteres.'
+    image_url = ''
+    if data['image'].startswith('data:image/'):
+        raw = data['image'].split(',', 1)[1] if ',' in data['image'] else ''
+        try:
+            img_bytes = base64.b64decode(raw)
+            if len(img_bytes) > 15 * 1024 * 1024:
+                errors['image'] = 'Image trop volumineuse (15 Mo maximum).'
+            else:
+                img_bytes = compress_image(img_bytes, 70000)
+                filename = str(uuid.uuid4()) + '.jpg'
+                with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
+                    f.write(img_bytes)
+                image_url = '/assets/uploads/' + filename
+        except Exception:
+            errors['image'] = 'Image invalide.'
+    elif data['image'].startswith('/assets/') or data['image'].startswith('http'):
+        image_url = data['image']
+    else:
+        errors['image'] = 'Ajoutez une photo pour votre publicite.'
+    if errors:
+        return jsonify({'ok': False, 'errors': errors}), 400
+
+    ads = read_json('ads')
+    ad = {
+        'id': int(time.time() * 1000),
+        'title': data['title'],
+        'name': data['name'],
+        'email': data['email'],
+        'description': data['description'],
+        'image': image_url,
+        'status': 'pending',
+        'reason': '',
+        'createdAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'processedAt': '',
+        'ip': request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '',
+    }
+    ads.append(ad)
+    write_json('ads', ads)
+    _admin_notify('publicite', 'Demande de publicite : %s' % ad['title'],
+                  'Demandeur : %s (%s)' % (ad['name'], ad['email']),
+                  '/admin/ads.html')
+    _send_mail(CHRONIQUE_MAIL,
+               'Nouvelle demande de publicite - %s' % ad['title'],
+               'Une nouvelle demande de publicite a ete recue sur le site.\n\n'
+               'Titre : %s\nNom / entreprise : %s\nEmail : %s\n'
+               'Description : %s\nPhoto : %s\n\n'
+               'Consultez la demande dans l\'administration : /admin/ads.html'
+               % (ad['title'], ad['name'], ad['email'], ad['description'], ad['image']))
+    return jsonify({'ok': True, 'id': ad['id']})
+
+@app.route('/api/ads', methods=['GET'])
+@role_required('admin', 'super_admin')
+def list_ads():
+    ads = read_json('ads')
+    ads = sorted(ads, key=lambda a: -a.get('id', 0))
+    return jsonify({'ok': True, 'items': ads})
+
+@app.route('/api/ads/public', methods=['GET'])
+def list_public_ads():
+    ads = read_json('ads')
+    out = [{'id': a.get('id'), 'title': a.get('title'), 'name': a.get('name'),
+            'description': a.get('description'), 'image': a.get('image')}
+           for a in ads if a.get('status') == 'active']
+    return jsonify(out)
+
+@app.route('/api/ads/<int:aid>/approve', methods=['POST'])
+@role_required('admin', 'super_admin')
+def approve_ad(aid):
+    ads = read_json('ads')
+    for a in ads:
+        if a['id'] == aid:
+            a['status'] = 'active'
+            a['reason'] = ''
+            a['processedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+            break
+    write_json('ads', ads)
+    _admin_notify('publicite', 'Publicite validee', 'La publicite est maintenant visible sur la page d\'accueil.')
+    return jsonify({'ok': True})
+
+@app.route('/api/ads/<int:aid>/reject', methods=['POST'])
+@role_required('admin', 'super_admin')
+def reject_ad(aid):
+    """Refus d'une publicite : envoi d'un email au demandeur avec le motif."""
+    reason = str((request.json or {}).get('reason') or '').strip()[:1000]
+    if not reason:
+        return jsonify({'ok': False, 'error': 'Un motif de refus est requis.'}), 400
+    ads = read_json('ads')
+    ad = next((a for a in ads if a['id'] == aid), None)
+    if not ad:
+        return jsonify({'ok': False, 'error': 'Demande introuvable.'}), 404
+    ad['status'] = 'rejected'
+    ad['reason'] = reason
+    ad['processedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    write_json('ads', ads)
+    _send_mail(ad.get('email'),
+               'Refus de votre demande de publicite - Chronique de James Mukeshaba',
+               'Bonjour %s,\n\nNous avons bien recu votre demande de publicite intitulee '
+               '"%s". Apres etude, nous ne pouvons pas la publier pour le moment.\n\n'
+               'Motif : %s\n\nModalites et rappel : nos emplacements publicitaires se '
+               'reservent le droit de refuser toute publicite non conforme a notre charte '
+               'editoriale (contenu trompeur, illicite ou contraire a l\'ethique). Vous '
+               'pouvez nous recontacter a %s pour toute question.\n\n'
+               'Chronique de James Mukeshaba'
+               % (ad.get('name') or '', ad.get('title') or '', reason, CHRONIQUE_MAIL))
+    _admin_notify('publicite', 'Publicite refusee : %s' % ad.get('title'), 'Motif : %s' % reason)
+    return jsonify({'ok': True})
+
+@app.route('/api/ads/<int:aid>', methods=['DELETE'])
+@role_required('admin', 'super_admin')
+def delete_ad(aid):
+    ads = [a for a in read_json('ads') if a['id'] != aid]
+    write_json('ads', ads)
+    return jsonify({'ok': True})
+
 # --- TOTP (RFC 6238) : 2FA sans dependance externe ---
 def totp_new_secret():
     return base64.b32encode(os.urandom(10)).decode().rstrip('=')
@@ -249,25 +456,6 @@ def totp_valid(secret, code, drift=1):
 
 RATE_CACHE = {}
 _RATE_MAX_KEYS = 10000
-def rate_limit(route, limit, window):
-    def deco(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            ip = request.remote_addr or '?'
-            key = (route, ip)
-            now = time.time()
-            items = [t for t in RATE_CACHE.get(key, []) if now - t < window]
-            if len(items) >= limit:
-                return jsonify({'ok': False, 'error': 'trop de requetes'}), 429
-            items.append(now)
-            RATE_CACHE[key] = items
-            if len(RATE_CACHE) > _RATE_MAX_KEYS:
-                cutoff = time.time() - 3600
-                RATE_CACHE.clear()
-            return f(*args, **kwargs)
-        return wrapper
-    return deco
-
 @app.after_request
 def security_headers(resp):
     resp.headers['X-Content-Type-Options'] = 'nosniff'
@@ -1603,9 +1791,39 @@ def update_campaign(cid):
 @app.route('/api/campaigns/<int:cid>', methods=['DELETE'])
 @role_required('admin', 'super_admin')
 def delete_campaign(cid):
+    reason = str((request.json or {}).get('reason') or '').strip()[:1000]
     campaigns = [c for c in read_json('campaigns') if c['id'] != cid]
     write_json('campaigns', campaigns)
-    log_activity('campagne supprimee', 'id %s' % cid)
+    log_activity('campagne supprimee', 'id %s (motif : %s)' % (cid, reason or 'non precise'))
+    _admin_notify('campagne', 'Appel a don supprime',
+                  'Motif : %s' % (reason or 'non precise'))
+    return jsonify({'ok': True})
+
+@app.route('/api/campaigns/<int:cid>/status', methods=['POST'])
+@role_required('admin', 'super_admin')
+def set_campaign_status(cid):
+    """Change le statut d'un appel a don (active/paused/ended/archived) avec un
+    motif obligatoire pour la cloture. Le motif est conserve sur la campagne."""
+    d = request.json or {}
+    status = str(d.get('status') or '').strip()
+    if status not in ('active', 'paused', 'ended', 'archived'):
+        return jsonify({'ok': False, 'error': 'Statut inconnu.'}), 400
+    reason = str(d.get('reason') or '').strip()[:1000]
+    if status == 'ended' and not reason:
+        return jsonify({'ok': False, 'error': 'Un motif est requis pour cloturer la collecte.'}), 400
+    campaigns = read_json('campaigns')
+    for c in campaigns:
+        if c['id'] == cid:
+            c['status'] = status
+            c['closedReason'] = reason
+            if status == 'active':
+                c.pop('archivedAt', None)
+            else:
+                c['archivedAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+            break
+    write_json('campaigns', campaigns)
+    log_activity('campagne %s' % ('reprise' if status == 'active' else status),
+                 'id %s (motif : %s)' % (cid, reason or '-'))
     return jsonify({'ok': True})
 
 @app.route('/api/campaigns/<int:cid>/stop', methods=['POST'])
