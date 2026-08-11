@@ -17,6 +17,7 @@
   var selectedCampaignId = null;
   var idempotencyKey = newIdem();
   var busy = false;
+  var feePct = 0.035;
 
   function newIdem() {
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
@@ -103,7 +104,7 @@
     $('don-campaign-id').value = id;
     var goal = Number(c.goal || 0);
     var col = Number(c.collected || 0);
-    $('don-form-campaign').textContent = c.title + ' &mdash; ' + fmtUSD(col) + ' collect&eacute;s sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre g&eacute;n&eacute;rosit&eacute; !';
+    $('don-form-campaign').textContent = c.title + ' — ' + fmtUSD(col) + ' collectés sur ' + fmtUSD(goal) + ' (objectif). Merci pour votre générosité !';
   }
 
   function esc(s) {
@@ -129,6 +130,7 @@
       .then(function (cfg) {
         if (!cfg) return;
         var enabled = cfg.providers || {};
+        if (cfg.fee_pct && cfg.fee_pct > 0) feePct = cfg.fee_pct;
         document.querySelectorAll('.pay-method').forEach(function (label) {
           var input = label.querySelector('input');
           var disabled = !enabled[input.value] || !enabled[input.value].enabled;
@@ -140,12 +142,45 @@
         if (first) first.checked = true;
         var note = $('pay-unavailable-note');
         if (cfg.payment_unavailable) {
-          note.textContent = 'Les paiements en ligne seront bient&ocirc;t disponibles. Merci de r&eacute;essayer plus tard ou de nous contacter pour un don manuel.';
+          note.textContent = 'Les paiements en ligne seront bientôt disponibles. Merci de réessayer plus tard ou de nous contacter pour un don manuel.';
         } else {
-          note.textContent = 'Paiement s&eacute;curis&eacute; : vos donn&eacute;es bancaires ne sont jamais stock&eacute;es sur ce site.';
+          note.textContent = 'Paiement sécurisé : vos données bancaires ne sont jamais stockées sur ce site.';
         }
+        refreshPhoneReq();
+        updateFeeSummary();
       })
       .catch(function () {});
+  }
+
+  /* ---------- Méthode active / résumé des frais ---------- */
+  function currentMethod() {
+    var el = document.querySelector('.pay-method input[name="pay-method"]:not(:disabled):checked');
+    return el ? el.value : '';
+  }
+
+  var MONEY_METHODS = ['airtel_money', 'orange_money', 'vodacom_mpesa'];
+  function isMoneyMethod(m) { return MONEY_METHODS.indexOf(m) !== -1; }
+
+  function refreshPhoneReq() {
+    var req = isMoneyMethod(currentMethod());
+    var lbl = $('don-phone-req');
+    if (lbl) lbl.textContent = req ? ' (requis pour Airtel, Orange, M-Pesa)' : ' (facultatif pour PayPal / carte)';
+    var inp = $('don-phone');
+    if (inp) inp.required = req;
+  }
+
+  function updateFeeSummary() {
+    var box = $('don-fee-summary');
+    if (!box) return;
+    if (!isMoneyMethod(currentMethod())) { box.style.display = 'none'; return; }
+    var net = parseFloat($('don-amount').value || '0');
+    if (!(net > 0)) { box.style.display = 'none'; return; }
+    var fee = net * feePct;
+    var total = net + fee;
+    $('fee-net').textContent = fmtUSD(net);
+    $('fee-amount').textContent = fmtUSD(fee) + ' (' + (feePct * 100).toFixed(1) + ' %)';
+    $('fee-total').textContent = fmtUSD(total);
+    box.style.display = 'block';
   }
 
   /* ---------- Montants ---------- */
@@ -155,10 +190,18 @@
         document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
         b.classList.add('selected');
         $('don-amount').value = b.dataset.val;
+        updateFeeSummary();
       });
     });
     $('don-amount').addEventListener('input', function () {
       document.querySelectorAll('.donation-amount').forEach(function (x) { x.classList.remove('selected'); });
+      updateFeeSummary();
+    });
+    document.querySelectorAll('.pay-method input[name="pay-method"]').forEach(function (r) {
+      r.addEventListener('change', function () {
+        refreshPhoneReq();
+        updateFeeSummary();
+      });
     });
   }
 
@@ -169,33 +212,30 @@
     showError(null); showInfo(null);
 
     var campaignId = $('don-campaign-id').value;
-    if (!campaignId) { showError('Veuillez s&eacute;lectionner une campagne active.'); return; }
+    if (!campaignId) { showError('Veuillez s\u00e9lectionner une campagne active.'); return; }
     var amount = parseFloat($('don-amount').value);
-    if (!(amount >= 1 && amount <= 100000)) { showError('Le montant doit &ecirc;tre compris entre 1 et 100000 USD.'); return; }
+    if (!(amount >= 1 && amount <= 100000)) { showError('Le montant doit \u00eatre compris entre 1 et 100000 USD.'); return; }
     var name = $('don-name').value.trim();
-    var email = $('don-email').value.trim();
     if (!name) { showError('Veuillez indiquer votre nom complet.'); return; }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showError('Adresse email invalide.'); return; }
     var methodEl = document.querySelector('.pay-method input[name="pay-method"]:not(:disabled):checked');
     if (!methodEl) { showError('Aucun moyen de paiement disponible pour le moment.'); return; }
     var method = methodEl.value;
     var phone = $('don-phone').value.trim();
-    if (['airtel_money', 'orange_money', 'vodacom_mpesa'].indexOf(method) !== -1) {
-      if (!phone) { showError('Veuillez indiquer votre num&eacute;ro de t&eacute;l&eacute;phone pour le paiement mobile money.'); return; }
-      if (phone.replace(/[^0-9]/g, '').length < 10) { showError('Num&eacute;ro de t&eacute;l&eacute;phone invalide (ex : +243XXXXXXXXX).'); return; }
+    if (isMoneyMethod(method)) {
+      if (!phone) { showError('Veuillez indiquer votre num\u00e9ro de t\u00e9l\u00e9phone pour le paiement mobile money.'); return; }
+      if (phone.replace(/[^0-9]/g, '').length < 10) { showError('Num\u00e9ro de t\u00e9l\u00e9phone invalide (ex : +243XXXXXXXXX).'); return; }
     }
 
     busy = true;
     var submit = $('don-submit');
     submit.disabled = true;
-    submit.textContent = 'Traitement en cours&hellip;';
+    submit.textContent = 'Traitement en cours\u2026';
     var txnRef = '';
 
     var payload = {
       campaignId: campaignId,
       amount: amount.toFixed(2),
       name: name,
-      email: email,
       phone: phone,
       message: $('don-message').value.trim(),
       method: method,
@@ -225,21 +265,21 @@
         idempotencyKey = newIdem();
         if (res.redirect_url) {
           $('don-pending').style.display = 'block';
-          $('don-pending-msg').textContent = 'Vous allez &ecirc;tre redirig&eacute;(e) vers ' + method.replace('_', ' ') + ' pour finaliser votre paiement.';
+          $('don-pending-msg').textContent = 'Vous allez \u00eatre redirig\u00e9(e) vers ' + method.replace('_', ' ') + ' pour finaliser votre paiement.';
           window.location.href = res.redirect_url;
           return;
         }
         if (res.ok) {
           // Paiement initie sans redirection web : mobile money via USSD.
           $('don-pending').style.display = 'block';
-          $('don-pending-msg').textContent = 'Une demande de paiement a &eacute;t&eacute; envoy&eacute;e sur votre t&eacute;l&eacute;phone. Confirmez-la avec votre code PIN, puis patientez : la confirmation est v&eacute;rifi&eacute;e automatiquement.';
+          $('don-pending-msg').textContent = 'Une demande de paiement a \u00e9t\u00e9 envoy\u00e9e sur votre t\u00e9l\u00e9phone. Confirmez-la avec votre code PIN, puis patientez : la confirmation est v\u00e9rifi\u00e9e automatiquement.';
           pollVerify(txnRef, 0);
           return;
         }
         // Paiement non configure : on garde l'intention mais on informe
         // honnetement (aucune simulation).
         $('don-pending').style.display = 'block';
-        $('don-pending-msg').textContent = 'Votre don est enregistr&eacute; avec la r&eacute;f&eacute;rence ' + txnRef + '. Le paiement en ligne sera bient&ocirc;t disponible : votre demande restera valide d&egrave;s l\u2019activation du prestataire.';
+        $('don-pending-msg').textContent = 'Votre don est enregistr\u00e9 avec la r\u00e9f\u00e9rence ' + txnRef + '. Le paiement en ligne sera bient\u00f4t disponible : votre demande restera valide d\u00e8s l\u2019activation du prestataire.';
       })
       .catch(function (err) {
         showError(err.message || 'Une erreur est survenue. R&eacute;essayez.');
@@ -268,7 +308,7 @@
   /* ---------- Retour depuis le prestataire : verification serveur ---------- */
   function pollVerify(txn, tries) {
     if (tries > 40) {
-      $('don-pending-msg').textContent = 'La confirmation du paiement est en cours c&ocirc;t&eacute; prestataire. Vous recevrez un email d&egrave;s validation.';
+      $('don-pending-msg').textContent = 'La confirmation du paiement est en cours c\u00f4t\u00e9 prestataire. Vous serez inform\u00e9(e) d\u00e8s validation.';
       return;
     }
     setTimeout(function () {
@@ -278,12 +318,12 @@
         body: JSON.stringify({ txn_id: txn })
       }).then(function (r) { return r.json(); }).then(function (d) {
         if (d.ok && d.status === 'confirmed') {
-          $('don-pending-msg').textContent = 'Merci ! Votre paiement a &eacute;t&eacute; confirm&eacute; et votre don comptabilis&eacute;. Un re&ccedil;u vous est envoy&eacute; par email.';
+          $('don-pending-msg').textContent = 'MERCI ! Votre paiement a \u00e9t\u00e9 confirm\u00e9 et votre don comptabilis\u00e9. Toute la Chronique de James Mukeshaba vous remercie chaleureusement pour votre g\u00e9n\u00e9rosit\u00e9.';
           loadCampaigns();
           return;
         }
         if (d.ok && (d.status === 'failed' || d.status === 'cancelled')) {
-          $('don-pending-msg').textContent = 'Votre paiement a &eacute;t&eacute; annul&eacute; ou n\u2019a pas abouti. Vous pouvez r&eacute;essayer ci-dessus.';
+          $('don-pending-msg').textContent = 'Votre paiement a \u00e9t\u00e9 annul\u00e9 ou n\u2019a pas abouti. Vous pouvez r\u00e9essayer ci-dessus.';
           idempotencyKey = newIdem();
           return;
         }
@@ -300,23 +340,23 @@
     if (!txn) return;
     $('don-pending').style.display = 'block';
     $('don-ref').textContent = txn;
-    $('don-pending-msg').textContent = 'V&eacute;rification du paiement aupr&egrave;s du prestataire&hellip;';
+    $('don-pending-msg').textContent = 'V\u00e9rification du paiement aupr\u00e8s du prestataire\u2026';
     fetch('/api/payments/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ txn_id: txn })
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d.ok && d.status === 'confirmed') {
-        $('don-pending-msg').textContent = 'Merci ! Votre don (' + txn + ') a &eacute;t&eacute; confirm&eacute; et comptabilis&eacute;. Un email de confirmation vous sera envoy&eacute;.';
+        $('don-pending-msg').textContent = 'MERCI ! Votre don (' + txn + ') a \u00e9t\u00e9 confirm\u00e9 et comptabilis\u00e9. Toute la Chronique de James Mukeshaba vous remercie chaleureusement pour votre g\u00e9n\u00e9rosit\u00e9.';
         loadCampaigns();
       } else if (d.ok && (d.status === 'failed' || d.status === 'cancelled')) {
-        $('don-pending-msg').textContent = 'Votre paiement a &eacute;t&eacute; annul&eacute; ou n\u2019a pas abouti. Vous pouvez r&eacute;essayer.';
+        $('don-pending-msg').textContent = 'Votre paiement a \u00e9t\u00e9 annul\u00e9 ou n\u2019a pas abouti. Vous pouvez r\u00e9essayer.';
         idempotencyKey = newIdem();
       } else {
-        $('don-pending-msg').textContent = 'Votre paiement est en cours de confirmation c&ocirc;t&eacute; prestataire. Vous recevrez une confirmation par email d&egrave;s validation.';
+        $('don-pending-msg').textContent = 'Votre paiement est en cours de confirmation c\u00f4t\u00e9 prestataire. Vous serez inform\u00e9(e) d\u00e8s validation.';
       }
     }).catch(function () {
-      $('don-pending-msg').textContent = 'Impossible de v&eacute;rifier le paiement pour le moment. Vous recevrez une confirmation par email d&egrave;s validation.';
+      $('don-pending-msg').textContent = 'Impossible de v\u00e9rifier le paiement pour le moment. Vous serez inform\u00e9(e) d\u00e8s validation.';
     });
   }
 

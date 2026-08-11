@@ -86,36 +86,65 @@
   </header>
 
   <main id="main-content">
-    <div class="container">
 
-      <section class="page-header" style="text-align:center;">
-        <h1>SOUTENEZ NOS ACTIONS COMMUNAUTAIRES</h1>
-        <p>Chaque don finance nos projets de sensibilisation, d'information et de solidarit&eacute; en RDC et au Canada. Vos contributions sont suivies avec transparence : le montant collect&eacute; de chaque campagne est actualis&eacute; publiquement.</p>
-      </section>
+    <!-- ===== HERO ===== -->
+    <section class="support-hero">
+      <div class="container">
+        <div class="support-hero-inner">
+          <div class="support-hero-txt">
+            <span class="support-hero-badge"><span aria-hidden="true">&#10084;&#65039;</span> G&eacute;n&eacute;rons ensemble</span>
+            <h1>Soutenez nos actions communautaires</h1>
+            <p class="support-hero-lead">Chaque don finance nos projets de sensibilisation, d'information et de solidarit&eacute; en RDC et au Canada. Vos contributions sont suivies avec transparence : le montant collect&eacute; de chaque campagne est actualis&eacute; publiquement.</p>
+            <ul class="support-hero-meta">
+              <li><strong>100% transparent</strong><span>Montants actualis&eacute;s en public</span></li>
+              <li><strong>Airtel &middot; Orange &middot; M-Pesa</strong><span>Mobile money s&eacute;curis&eacute; via MaishaPay</span></li>
+              <li><strong>Confirmation automatique</strong><span>Re&ccedil;u valid&eacute; c&ocirc;t&eacute; serveur</span></li>
+            </ul>
+          </div>
+          <div class="support-hero-note">
+            <div class="support-note-card">
+              <span class="support-note-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+              <p>Votre g&eacute;n&eacute;rosit&eacute; a un impact direct sur le terrain : l&eacute;ducation, la sant&eacute;, l'environnement et la coh&eacute;sion communautaire.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <!-- ===== CAMPAGNES AVEC BARRE DE PROGRESSION ===== -->
-      <section aria-label="Campagnes de financement">
-        <div class="sg-grid" id="campaign-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;margin:30px 0;">
-          <div class="sg-empty">Chargement des campagnes&hellip;</div>
+    <div class="container support-layout">
+
+      <!-- ===== COLONNE GAUCHE : CAMPAGNES ===== -->
+      <section aria-label="Campagnes de financement" class="support-left">
+        <h2 class="section-title">Campagnes en cours</h2>
+        <div class="support-campaigns" id="campaign-list">
+          <div class="sg-empty" style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.75;">Chargement des campagnes&hellip;</div>
+        </div>
+
+        <div class="support-trust">
+          <h3>S&eacute;curit&eacute; et transparence</h3>
+          <p>Les paiements sont trait&eacute;s par MaishaPay, agr&eacute;ateur officiel de mobile money en RDC. La Chronique de James Mukeshaba ne stocke jamais vos donn&eacute;es bancaires. Le montant collect&eacute; affich&eacute; sur chaque campagne est confirm&eacute; par le prestataire avant d'&ecirc;tre comptabilis&eacute;.</p>
+          <p class="support-fees">Frais de transfert MaishaPay&nbsp;: <strong>3,5%</strong> &agrave; la charge du donateur (affich&eacute;s dans le r&eacute;capitulatif).</p>
         </div>
       </section>
 
-      <!-- ===== FORMULAIRE DE DON ===== -->
-      <section aria-label="Formulaire de don" class="soutenir-section">
+      <!-- ===== COLONNE DROITE : FORMULAIRE (position strategique) ===== -->
+      <section aria-label="Formulaire de don" class="support-right">
         <div class="donation-card" id="donation-form-card">
-          <h2 id="don-form-title">Faire un don</h2>
-          <p id="don-form-campaign" style="opacity:0.85;font-size:0.95rem;">S&eacute;lectionnez une campagne active ci-dessus.</p>
+          <div class="donation-card-head">
+            <h2 id="don-form-title">Faire un don</h2>
+            <p id="don-form-campaign">S&eacute;lectionnez une campagne active ci-dessus.</p>
+          </div>
 
-          <div id="don-error" style="display:none;background:#fde8e8;color:#b91c1c;border:1px solid #f5c6c6;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;"></div>
-          <div id="don-info" style="display:none;background:#e8f4fd;color:#0c4a6e;border:1px solid #cfe9fb;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;"></div>
+          <div id="don-error" style="display:none;background:#fde8e8;color:#b91c1c;border:1px solid #f5c6c6;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:0.9rem;"></div>
+          <div id="don-info" style="display:none;background:#e8f4fd;color:#0c4a6e;border:1px solid #cfe9fb;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:0.9rem;"></div>
 
           <form id="donation-form" novalidate>
             <input type="hidden" id="don-campaign-id" value="">
             <input type="hidden" id="don-idempotency" value="">
             <input type="hidden" id="don-txn-id" value="">
 
-            <div style="text-align:left;margin-bottom:14px;">
-              <label for="don-amount" style="font-weight:600;">Montant (USD) *</label>
+            <div class="support-field">
+              <label for="don-amount">Montant (USD) *</label>
               <div class="donation-amounts">
                 <button type="button" class="donation-amount" data-val="5">5 $</button>
                 <button type="button" class="donation-amount" data-val="10">10 $</button>
@@ -123,36 +152,30 @@
                 <button type="button" class="donation-amount" data-val="50">50 $</button>
                 <button type="button" class="donation-amount" data-val="100">100 $</button>
               </div>
-              <input type="number" id="don-amount" min="1" max="100000" step="0.01" value="25" style="width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:1rem;">
+              <input type="number" id="don-amount" min="1" max="100000" step="0.01" value="25">
             </div>
 
-            <div style="text-align:left;margin-bottom:14px;">
-              <label for="don-name" style="font-weight:600;">Nom complet *</label>
-              <input type="text" id="don-name" required maxlength="120" style="width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:1rem;">
+            <div class="support-field">
+              <label for="don-name">Nom complet *</label>
+              <input type="text" id="don-name" required maxlength="120" placeholder="Votre nom">
             </div>
 
-            <div style="text-align:left;margin-bottom:14px;">
-              <label for="don-email" style="font-weight:600;">Adresse email *</label>
-              <input type="email" id="don-email" required maxlength="200" style="width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:1rem;">
-              <small style="opacity:0.7;">Votre re&ccedil;u de donation vous sera envoy&eacute; &agrave; cette adresse.</small>
+            <div class="support-field">
+              <label for="don-phone">T&eacute;l&eacute;phone <span id="don-phone-req">(requis pour Airtel, Orange, M-Pesa)</span></label>
+              <input type="tel" id="don-phone" maxlength="30" placeholder="+243XXXXXXXXX">
+              <small>La demande de paiement est envoy&eacute;e sur ce num&eacute;ro.</small>
             </div>
 
-            <div style="text-align:left;margin-bottom:14px;">
-              <label for="don-phone" style="font-weight:600;">T&eacute;l&eacute;phone <span id="don-phone-req" style="opacity:0.7;font-weight:400;">(requis pour Airtel, Orange, M-Pesa)</span></label>
-              <input type="tel" id="don-phone" maxlength="30" placeholder="+243..." style="width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:1rem;">
-              <small style="opacity:0.7;">Format : +243XXXXXXXXX. La demande de paiement est envoy&eacute;e sur ce num&eacute;ro.</small>
+            <div class="support-field">
+              <label for="don-message">Message (Pas obligatoire)</label>
+              <textarea id="don-message" maxlength="1000" rows="3" placeholder="Un mot d'encouragement&hellip;"></textarea>
             </div>
 
-            <div style="text-align:left;margin-bottom:16px;">
-              <label for="don-message" style="font-weight:600;">Message (facultatif)</label>
-              <textarea id="don-message" maxlength="1000" rows="3" style="width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:1rem;"></textarea>
-            </div>
-
-            <div style="text-align:left;margin-bottom:18px;">
-              <label style="font-weight:600;">Moyen de paiement *</label>
+            <div class="support-field">
+              <label>Moyen de paiement *</label>
               <div class="pay-methods" id="pay-methods">
                 <label class="pay-method">
-                  <input type="radio" name="pay-method" value="paypal" checked>
+                  <input type="radio" name="pay-method" value="paypal">
                   <span>PayPal</span>
                 </label>
                 <label class="pay-method">
@@ -175,20 +198,19 @@
               <small id="pay-unavailable-note" style="opacity:0.75;display:block;margin-top:6px;"></small>
             </div>
 
-            <button type="submit" class="btn-primary" id="don-submit" style="width:100%;padding:14px;font-size:1.05rem;border:none;border-radius:8px;cursor:pointer;font-weight:600;">&#10084;&#65039; Proc&eacute;der au paiement s&eacute;curis&eacute;</button>
+            <div id="don-fee-summary" style="display:none;margin-bottom:16px;background:var(--color-surface-2);border:1px dashed var(--border);border-radius:10px;padding:12px 16px;font-size:0.92rem;">
+              <div style="display:flex;justify-content:space-between;gap:10px;"><span>Votre don</span><strong id="fee-net">25,00 USD</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;"><span>Frais de transfert MaishaPay (3,5 %)</span><strong id="fee-amount">0,88 USD</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px;border-top:1px solid var(--border);padding-top:6px;"><span>Total d&eacute;bit&eacute;</span><strong id="fee-total">25,88 USD</strong></div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="don-submit">&#10084;&#65039; Proc&eacute;der au paiement s&eacute;curis&eacute;</button>
           </form>
 
           <div id="don-pending" style="display:none;margin-top:18px;padding:16px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;">
-            <p id="don-pending-msg" style="margin:0 0 8px;">Votre demande est en cours de traitement. La confirmation vous sera envoy&eacute;e par email d&egrave;s validation par le prestataire.</p>
+            <p id="don-pending-msg" style="margin:0 0 8px;">Votre demande est en cours de traitement. La confirmation vous sera envoy&eacute;e d&egrave;s validation par le prestataire.</p>
             <p style="margin:0;font-size:0.85rem;opacity:0.7;">R&eacute;f&eacute;rence : <span id="don-ref"></span></p>
           </div>
-        </div>
-      </section>
-
-      <section class="soutenir-section" style="margin:40px 0;">
-        <div style="max-width:820px;margin:0 auto;text-align:center;">
-          <h3>S&eacute;curit&eacute; et transparence</h3>
-          <p style="opacity:0.85;">Les paiements sont trait&eacute;s par des prestataires officiels (PayPal, op&eacute;rateurs de Mobile Money agr&eacute;&eacute;s, r&eacute;seaux bancaires Visa/Mastercard). La Chronique de James Mukeshaba ne stocke jamais vos donn&eacute;es bancaires. Le montant collect&eacute; affich&eacute; sur chaque campagne est confirm&eacute; par le prestataire avant d'&ecirc;tre comptabilis&eacute;.</p>
         </div>
       </section>
 

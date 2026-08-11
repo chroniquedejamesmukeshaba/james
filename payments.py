@@ -79,8 +79,11 @@ def public_config(read_json):
     out = {'mode': cfg.get('mode', 'sandbox'), 'providers': {}}
     for pid, p in cfg.get('providers', {}).items():
         if p.get('enabled'):
-            out['providers'][pid] = {'enabled': True, 'label': next(
+            item = {'enabled': True, 'label': next(
                 (x['label'] for x in PROVIDERS if x['id'] == pid), pid)}
+            if pid in ('airtel_money', 'orange_money', 'vodacom_mpesa'):
+                item['fee_pct'] = MAISHAPAY_FEE_PCT * 100.0
+            out['providers'][pid] = item
     out['payment_unavailable'] = not any(
         p.get('enabled') for p in cfg.get('providers', {}).values())
     return out
@@ -195,28 +198,38 @@ MAISHAPAY_COLLECT = MAISHAPAY_BASE + '/payment/rest/vers1.0/merchant'
 MAISHAPAY_CHECK = MAISHAPAY_BASE + '/transaction/rest/v2/check'
 MAISHAPAY_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                 '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+MAISHAPAY_FEE_PCT = 0.035  # frais de transfert MaishaPay, a la charge du client
 
 
-def _maishapay_post(url, payload):
+def _maishapay_request(url, payload, timeout=90):
     req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'),
                                  headers={'Content-Type': 'application/json',
                                           'Accept': 'application/json',
                                           'User-Agent': MAISHAPAY_UA})
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            raw = resp.read().decode('utf-8', 'replace')
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read().decode('utf-8', 'replace')
     except urllib.error.HTTPError as e:
         try:
-            raw = e.read().decode('utf-8', 'replace')
+            return e.read().decode('utf-8', 'replace')
         except Exception:
-            raw = '{}'
-    except Exception as e:
-        raise PaymentError('network_error', 'Impossible de joindre MaishaPay (%s).' % (e or 'erreur reseau'))
-    try:
-        body = json.loads(raw or '{}')
-    except Exception:
-        raise PaymentError('bad_response', 'Reponse MaishaPay illisible.')
-    return body
+            return '{}'
+
+
+def _maishapay_post(url, payload):
+    """POST avec une seconde tentative en cas de timeout / erreur reseau."""
+    last = None
+    for attempt in (1, 2):
+        try:
+            raw = _maishapay_request(url, payload)
+            body = json.loads(raw or '{}')
+            if isinstance(body, dict) and body.get('type') != 'error':
+                return body
+            return body
+        except Exception as e:
+            last = e
+            log.warning('maishapay requete echouee (tentative %d): %s', attempt, e)
+    raise PaymentError('network_error', 'Impossible de joindre MaishaPay (%s). Veuillez reessayer.' % (last or 'erreur reseau'))
 
 
 def _maishapay_unwrap(body):
@@ -257,10 +270,12 @@ class MaishaPayAdapter(ProviderAdapter):
         phone = str(txn.get('phone') or '').strip()
         if not phone:
             raise PaymentError('phone_required', 'Votre numéro de téléphone est requis pour le paiement mobile money.')
+        net = float(txn.get('amount') or 0)
+        gross = round(net * (1.0 + MAISHAPAY_FEE_PCT), 2)  # 3,5% de frais a la charge du client
         payload = dict(self._auth())
         payload.update({
             'transactionReference': str(txn.get('txn_id') or '')[:50],
-            'amount': float(txn.get('amount') or 0),
+            'amount': gross,
             'currency': str(txn.get('currency') or 'USD').upper(),
             'customerFullName': str(txn.get('name') or '')[:120],
             'customerPhoneNumber': phone[:20],
@@ -269,6 +284,7 @@ class MaishaPayAdapter(ProviderAdapter):
             'provider': self.maishapay_provider,
             'walletID': phone[:20],
         })
+        log.info('maishapay init: net=%s gross=%s (%s)', net, gross, self.maishapay_provider)
         body = _maishapay_post(MAISHAPAY_COLLECT, payload)
         data, original = _maishapay_unwrap(body)
         status_code = str(data.get('statusCode') or original.get('status') or '')

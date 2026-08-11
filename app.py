@@ -1642,7 +1642,7 @@ def _valid_donation_payload(data, required_key=True):
         if not str(data.get(field) or '').strip():
             errors[field] = 'Le champ "%s" est obligatoire.' % label
     if not anonymous:
-        for field, label in (('name', 'nom'), ('email', 'email')):
+        for field, label in (('name', 'nom'),):
             if not str(data.get(field) or '').strip():
                 errors[field] = 'Le champ "%s" est obligatoire.' % label
     if required_key and not str(data.get('idempotency_key') or '').strip():
