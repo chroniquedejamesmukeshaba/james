@@ -108,5 +108,15 @@
     "action": "article modifie",
     "target": "id 1786220900000",
     "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786450079100,
+    "ts": 1786450079.1002736,
+    "date": "2026-08-11T14:07:59",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
   }
 ]

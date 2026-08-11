@@ -180,6 +180,148 @@ class MobileMoneyAdapter(ProviderAdapter):
         raise PaymentError('payment_unavailable', 'Verification indisponible pour le moment.')
 
 
+# ---------------------------------------------------------------------------
+# MaishaPay (RDC) : agregateur mobile money (Airtel / Orange / M-Pesa).
+# API REST server-to-server :
+#   Init :  POST https://marchand.maishapay.online/api/payment/rest/vers1.0/merchant
+#   Check:  POST https://marchand.maishapay.online/api/transaction/rest/v2/check
+# Clés : publicApiKey (client_id) + secretApiKey (client_secret).
+# ---------------------------------------------------------------------------
+import urllib.request
+import urllib.error
+
+MAISHAPAY_BASE = 'https://marchand.maishapay.online/api'
+MAISHAPAY_COLLECT = MAISHAPAY_BASE + '/payment/rest/vers1.0/merchant'
+MAISHAPAY_CHECK = MAISHAPAY_BASE + '/transaction/rest/v2/check'
+MAISHAPAY_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+
+
+def _maishapay_post(url, payload):
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'),
+                                 headers={'Content-Type': 'application/json',
+                                          'Accept': 'application/json',
+                                          'User-Agent': MAISHAPAY_UA})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read().decode('utf-8', 'replace')
+    except urllib.error.HTTPError as e:
+        try:
+            raw = e.read().decode('utf-8', 'replace')
+        except Exception:
+            raw = '{}'
+    except Exception as e:
+        raise PaymentError('network_error', 'Impossible de joindre MaishaPay (%s).' % (e or 'erreur reseau'))
+    try:
+        body = json.loads(raw or '{}')
+    except Exception:
+        raise PaymentError('bad_response', 'Reponse MaishaPay illisible.')
+    return body
+
+
+def _maishapay_unwrap(body):
+    """Extrait la partie 'original.data' de la reponse MaishaPay (ou la reponse nue)."""
+    if isinstance(body, dict):
+        if body.get('type') == 'error':
+            return {}, {'error_title': body.get('title') or '', 'error_description': body.get('description') or ''}
+        original = body.get('original')
+        if isinstance(original, dict):
+            return original.get('data') or original, original
+        return body, body
+    return {}, {}
+
+
+def _maishapay_gateway_mode(cfg):
+    return 1 if cfg.get('mode') == 'live' else 0
+
+
+class MaishaPayAdapter(ProviderAdapter):
+    """Collecte mobile money via MaishaPay (RDC)."""
+
+    maishapay_provider = ''  # MPESA | ORANGE | AIRTEL
+
+    @property
+    def ready(self):
+        return bool(self.conf.get('enabled') and self.conf.get('client_id') and self.conf.get('client_secret'))
+
+    def _auth(self):
+        return {
+            'gatewayMode': _maishapay_gateway_mode(self.cfg),
+            'publicApiKey': self.conf.get('client_id') or '',
+            'secretApiKey': self.conf.get('client_secret') or '',
+        }
+
+    def init_payment(self, txn):
+        if not self.ready:
+            raise PaymentError('payment_unavailable', 'MaishaPay n est pas configure (clés manquantes).')
+        phone = str(txn.get('phone') or '').strip()
+        if not phone:
+            raise PaymentError('phone_required', 'Votre numéro de téléphone est requis pour le paiement mobile money.')
+        payload = dict(self._auth())
+        payload.update({
+            'transactionReference': str(txn.get('txn_id') or '')[:50],
+            'amount': float(txn.get('amount') or 0),
+            'currency': str(txn.get('currency') or 'USD').upper(),
+            'customerFullName': str(txn.get('name') or '')[:120],
+            'customerPhoneNumber': phone[:20],
+            'customerEmailAddress': str(txn.get('email') or '')[:200] or None,
+            'chanel': 'MOBILEMONEY',
+            'provider': self.maishapay_provider,
+            'walletID': phone[:20],
+        })
+        body = _maishapay_post(MAISHAPAY_COLLECT, payload)
+        data, original = _maishapay_unwrap(body)
+        status_code = str(data.get('statusCode') or original.get('status') or '')
+        if original.get('error_title') or original.get('error_description'):
+            raise PaymentError('init_failed', 'MaishaPay : %s' % (original.get('error_description') or original.get('error_title')))
+        if str(original.get('status')) not in ('200', 200) or not status_code.startswith('2'):
+            detail = data.get('statusDescription') or body.get('exception') or 'echec inconnu'
+            raise PaymentError('init_failed', 'MaishaPay : %s' % detail)
+        provider_txn_id = str(data.get('transactionId') or '')
+        if not provider_txn_id:
+            raise PaymentError('init_failed', 'MaishaPay : aucune référence de transaction retournée.')
+        log.info('maishapay init ok: ref=%s status=%s desc=%s',
+                 provider_txn_id, status_code, data.get('statusDescription'))
+        return {'provider_txn_id': provider_txn_id, 'redirect_url': ''}
+
+    def verify_txn(self, provider_txn_id):
+        if not self.ready:
+            raise PaymentError('payment_unavailable', 'MaishaPay n est pas configure (clés manquantes).')
+        payload = dict(self._auth())
+        payload['transactionId'] = str(provider_txn_id or '')[:50]
+        body = _maishapay_post(MAISHAPAY_CHECK, payload)
+        data, original = _maishapay_unwrap(body)
+        status = str(data.get('transactionStatus') or '').upper()
+        if not status:
+            # Certaines reponses placent le statut a un autre niveau.
+            status = str(data.get('statusDescription') or original.get('status') or '').upper()
+        if not status and not data:
+            return {'status': 'PENDING'}  # reponse vide : transaction pas encore visible
+        log.info('maishapay check: ref=%s status=%s', provider_txn_id, status)
+        if any(k in status for k in ('SUCCESS', 'COMPLETED', 'ACCEPTED', 'PAID')):
+            return {'status': 'SUCCESS'}
+        if any(k in status for k in ('FAIL', 'ERROR', 'DECLINED', 'REJECTED')):
+            return {'status': 'FAILED'}
+        if any(k in status for k in ('CANCEL', 'ABORT', 'TIMEOUT')):
+            return {'status': 'CANCELLED'}
+        return {'status': 'PENDING'}
+
+
+class MaishaAirtelAdapter(MaishaPayAdapter):
+    pid = 'airtel_money'
+    maishapay_provider = 'AIRTEL'
+
+
+class MaishaOrangeAdapter(MaishaPayAdapter):
+    pid = 'orange_money'
+    maishapay_provider = 'ORANGE'
+
+
+class MaishaVodacomAdapter(MaishaPayAdapter):
+    pid = 'vodacom_mpesa'
+    maishapay_provider = 'MPESA'
+
+
 class CardAdapter(ProviderAdapter):
     pid = 'card'
 
@@ -197,9 +339,9 @@ class CardAdapter(ProviderAdapter):
 
 ADAPTERS = {
     'paypal': PayPalAdapter,
-    'airtel_money': MobileMoneyAdapter,
-    'orange_money': MobileMoneyAdapter,
-    'vodacom_mpesa': MobileMoneyAdapter,
+    'airtel_money': MaishaAirtelAdapter,
+    'orange_money': MaishaOrangeAdapter,
+    'vodacom_mpesa': MaishaVodacomAdapter,
     'card': CardAdapter,
 }
 

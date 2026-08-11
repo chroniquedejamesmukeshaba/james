@@ -18,5 +18,35 @@
     "message": "Transaction DON-20260809135738-777A2A1787 — YAGIRWA GEDEON.",
     "link": "/admin/donations.html",
     "read": false
+  },
+  {
+    "id": 1786450090712,
+    "ts": 1786450090.7120123,
+    "date": "2026-08-11T14:08:10",
+    "kind": "probleme",
+    "title": "Problème système",
+    "message": "Une erreur interne est survenue sur le serveur (InternalServerError).",
+    "link": "/admin/journal.html",
+    "read": false
+  },
+  {
+    "id": 1786451490994,
+    "ts": 1786451490.9943964,
+    "date": "2026-08-11T14:31:30",
+    "kind": "don",
+    "title": "Nouveau don (5.0 $)",
+    "message": "YAGIRWA GEDEON GUIDE — RESPECTONS LES MESURES DE SECURITE via AIRTEL_MONEY.",
+    "link": "/admin/donations.html",
+    "read": false
+  },
+  {
+    "id": 1786453066050,
+    "ts": 1786453066.0503318,
+    "date": "2026-08-11T14:57:46",
+    "kind": "don",
+    "title": "Nouveau don (10.0 $)",
+    "message": "Test Integration — RESPECTONS LES MESURES DE SECURITE via VODACOM_MPESA.",
+    "link": "/admin/donations.html",
+    "read": false
   }
 ]

@@ -179,6 +179,11 @@
     var methodEl = document.querySelector('.pay-method input[name="pay-method"]:not(:disabled):checked');
     if (!methodEl) { showError('Aucun moyen de paiement disponible pour le moment.'); return; }
     var method = methodEl.value;
+    var phone = $('don-phone').value.trim();
+    if (['airtel_money', 'orange_money', 'vodacom_mpesa'].indexOf(method) !== -1) {
+      if (!phone) { showError('Veuillez indiquer votre num&eacute;ro de t&eacute;l&eacute;phone pour le paiement mobile money.'); return; }
+      if (phone.replace(/[^0-9]/g, '').length < 10) { showError('Num&eacute;ro de t&eacute;l&eacute;phone invalide (ex : +243XXXXXXXXX).'); return; }
+    }
 
     busy = true;
     var submit = $('don-submit');
@@ -191,6 +196,7 @@
       amount: amount.toFixed(2),
       name: name,
       email: email,
+      phone: phone,
       message: $('don-message').value.trim(),
       method: method,
       idempotency_key: idempotencyKey
@@ -223,6 +229,13 @@
           window.location.href = res.redirect_url;
           return;
         }
+        if (res.ok) {
+          // Paiement initie sans redirection web : mobile money via USSD.
+          $('don-pending').style.display = 'block';
+          $('don-pending-msg').textContent = 'Une demande de paiement a &eacute;t&eacute; envoy&eacute;e sur votre t&eacute;l&eacute;phone. Confirmez-la avec votre code PIN, puis patientez : la confirmation est v&eacute;rifi&eacute;e automatiquement.';
+          pollVerify(txnRef, 0);
+          return;
+        }
         // Paiement non configure : on garde l'intention mais on informe
         // honnetement (aucune simulation).
         $('don-pending').style.display = 'block';
@@ -253,6 +266,34 @@
   }
 
   /* ---------- Retour depuis le prestataire : verification serveur ---------- */
+  function pollVerify(txn, tries) {
+    if (tries > 40) {
+      $('don-pending-msg').textContent = 'La confirmation du paiement est en cours c&ocirc;t&eacute; prestataire. Vous recevrez un email d&egrave;s validation.';
+      return;
+    }
+    setTimeout(function () {
+      fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txn_id: txn })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.ok && d.status === 'confirmed') {
+          $('don-pending-msg').textContent = 'Merci ! Votre paiement a &eacute;t&eacute; confirm&eacute; et votre don comptabilis&eacute;. Un re&ccedil;u vous est envoy&eacute; par email.';
+          loadCampaigns();
+          return;
+        }
+        if (d.ok && (d.status === 'failed' || d.status === 'cancelled')) {
+          $('don-pending-msg').textContent = 'Votre paiement a &eacute;t&eacute; annul&eacute; ou n\u2019a pas abouti. Vous pouvez r&eacute;essayer ci-dessus.';
+          idempotencyKey = newIdem();
+          return;
+        }
+        pollVerify(txn, tries + 1);
+      }).catch(function () {
+        pollVerify(txn, tries + 1);
+      });
+    }, 6000);
+  }
+
   function checkReturn() {
     var q = new URLSearchParams(window.location.search);
     var txn = q.get('txn_id');
