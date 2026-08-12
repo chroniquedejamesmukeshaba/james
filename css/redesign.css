@@ -1983,6 +1983,31 @@ footer h4[data-i18n="logo_title"], footer h4:first-child {
   color: #fff !important;
   box-shadow: 0 2px 8px rgba(26, 58, 92, 0.3);
 }
+.top-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin: 0 4px;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(26, 58, 92, 0.25);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.top-login-btn:hover {
+  background: var(--primary-dark, #123a5c);
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(26, 58, 92, 0.35);
+}
+html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
 
 /* ---------- CARTE NEWSLETTER Â« Abonnez-vous Â» ---------- */
 .newsletter-section { margin-top: 8px; }

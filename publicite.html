@@ -133,7 +133,8 @@
                 <input type="file" id="ad-image-input" accept="image/*" style="display:none;">
                 <div style="font-size:2rem;margin-bottom:8px;">&#128247;</div>
                 <div style="font-weight:600;font-size:0.95rem;">Cliquez pour choisir une photo</div>
-                <div style="color:#94a3b8;font-size:0.82rem;margin-top:4px;">JPG, PNG, WebP - elle sera compress&eacute;e automatiquement</div>
+                <div style="color:#94a3b8;font-size:0.82rem;margin-top:4px;">JPG, PNG, WebP, HEIC... - toute photo est accept&eacute;e et compress&eacute;e automatiquement</div>
+                <div id="ad-img-status" style="display:none;color:#b7791f;font-size:0.82rem;margin-top:6px;">Compression de l'image en cours...</div>
                 <img class="appel-preview" id="ad-img-preview" alt="Aper&ccedil;u" style="max-width:100%;max-height:260px;border-radius:10px;margin-top:12px;display:none;">
               </div>
             </div>
@@ -346,18 +347,53 @@
       function clearErr() { err.style.display = 'none'; }
       function showOk(m) { info.textContent = m; info.style.display = 'block'; }
 
+      function compressImage(file, callback) {
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          var raw = ev.target.result;
+          var img = new Image();
+          img.onload = function () {
+            try {
+              var MAX = 1600;
+              var w = img.naturalWidth, h = img.naturalHeight;
+              if (w > MAX || h > MAX) {
+                var r = Math.min(MAX / w, MAX / h);
+                w = Math.round(w * r); h = Math.round(h * r);
+              }
+              var canvas = document.createElement('canvas');
+              canvas.width = w; canvas.height = h;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              callback(canvas.toDataURL('image/jpeg', 0.82), false);
+            } catch (e) {
+              callback(raw, false);
+            }
+          };
+          img.onerror = function () { callback(raw, false); };
+          img.src = raw;
+        };
+        reader.onerror = function () { callback('', false); };
+        reader.readAsDataURL(file);
+      }
+
       area.addEventListener('click', function () { input.click(); });
       input.addEventListener('change', function (e) {
         var file = e.target.files[0];
         if (!file) return;
-        if (file.size > 15 * 1024 * 1024) { showErr('Image trop volumineuse (15 Mo maximum).'); this.value = ''; return; }
-        var reader = new FileReader();
-        reader.onload = function (ev) {
-          imageData = ev.target.result;
+        var origSize = file.size;
+        var status = document.getElementById('ad-img-status');
+        if (status) status.style.display = 'block';
+        compressImage(file, function (data, isFallback) {
+          if (status) status.style.display = 'none';
+          if (!data) { showErr('Impossible de lire cette image. R\u00e9essayez avec un autre fichier.'); this.value = ''; return; }
+          imageData = data;
           preview.src = imageData; preview.style.display = 'block';
           clearErr();
-        };
-        reader.readAsDataURL(file);
+          if (origSize > 1024 * 1024) {
+            var saved = Math.max(0, Math.round((1 - data.length / (origSize * 1.333)) * 100));
+            if (status) { status.textContent = 'Image compress\u00e9e (' + saved + '% gagn\u00e9s).'; status.style.display = 'block'; }
+          }
+        });
       });
 
       form.addEventListener('submit', function (e) {

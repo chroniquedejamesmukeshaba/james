@@ -302,7 +302,7 @@ def _sanitize_ad(data):
         'name': str(data.get('name') or '').strip()[:120],
         'email': str(data.get('email') or '').strip()[:200],
         'description': str(data.get('description') or '').strip()[:2000],
-        'image': str(data.get('image') or '').strip()[:1000],
+        'image': str(data.get('image') or '').strip()[:40000000],
     }
 
 @app.route('/api/ad-requests', methods=['POST'])
@@ -325,16 +325,21 @@ def create_ad_request():
         raw = data['image'].split(',', 1)[1] if ',' in data['image'] else ''
         try:
             img_bytes = base64.b64decode(raw)
-            if len(img_bytes) > 15 * 1024 * 1024:
-                errors['image'] = 'Image trop volumineuse (15 Mo maximum).'
-            else:
-                img_bytes = compress_image(img_bytes, 70000)
+        except Exception:
+            img_bytes = b''
+        if not img_bytes:
+            errors['image'] = 'Image invalide.'
+        elif len(img_bytes) > 30 * 1024 * 1024:
+            errors['image'] = 'Image trop volumineuse (30 Mo maximum).'
+        else:
+            out, ok = try_compress_image(img_bytes, 70000)
+            if ok:
                 filename = str(uuid.uuid4()) + '.jpg'
                 with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
-                    f.write(img_bytes)
+                    f.write(out)
                 image_url = '/assets/uploads/' + filename
-        except Exception:
-            errors['image'] = 'Image invalide.'
+            else:
+                image_url = data['image']
     elif data['image'].startswith('/assets/') or data['image'].startswith('http'):
         image_url = data['image']
     else:
@@ -3402,6 +3407,19 @@ def delete_account(aid):
     return jsonify({'ok': True})
 
 # --- IMAGE UPLOAD ---
+def try_compress_image(img_bytes, target_bytes=70000, max_dim=1200):
+    """Compresse une image. Retourne (donnees, ok=True) si le format est
+    decodable par PIL, sinon (bytes originaux, False) : le fichier (HEIC,
+    AVIF, etc.) sera alors conserve tel quel en data URL."""
+    if not HAS_PIL:
+        return img_bytes, False
+    try:
+        img = Image.open(BytesIO(img_bytes))
+        img.load()
+    except Exception:
+        return img_bytes, False
+    return compress_image(img_bytes, target_bytes, max_dim), True
+
 def compress_image(img_bytes, target_bytes=70000, max_dim=1200):
     if not HAS_PIL:
         return img_bytes

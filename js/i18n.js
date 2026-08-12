@@ -147,6 +147,7 @@ var TRANSLATIONS = {
   home_alaune:        { fr:'\u00c0 la Une', en:'Top Stories', sw:'Habari kuu', es:'Portada', zh:'头条新闻', ln:'Makambo ya liboso'},
   home_ads:           { fr:'Espace publicitaire', en:'Advertising', sw:'Nafasi ya matangazo', es:'Espacio publicitario', zh:'广告位', ln:'Esika ya panzela'},
   ad_cta:             { fr:'VOTRE PUBLICIT\u00c9', en:'YOUR ADVERT', sw:'TANGAZO LAKO', es:'SU PUBLICIDAD', zh:'您的广告', ln:'PANZELA NA YO'},
+  admin_login:        { fr:'Connexion', en:'Login', sw:'Ingia', es:'Iniciar sesi\u00f3n', zh:'\u767b\u5f55', ln:'Kokota'},
   home_ads_empty:     { fr:'Votre publicit\u00e9 pourrait s\u2019afficher ici.', en:'Your advert could be displayed here.', sw:'Tangazo lako linaweza kuonyeshwa hapa.', es:'Su publicidad podr\u00eda mostrarse aqu\u00ed.', zh:'您的广告可以显示在这里。', ln:'Panzela na yo ekoki komonana awa.'},
   home_latest:        { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest News', sw:'Habari za hivi punde', es:'\u00daltimas noticias', zh:'最新新闻', ln:'Makambo ya sika'},
   home_view_more:     { fr:'Voir plus', en:'View more', sw:'Tazama zaidi', es:'Ver m\u00e1s', zh:'查看更多', ln:'Tala mosusu'},
@@ -268,6 +269,7 @@ function applyTranslations() {
     langHtml += '<button class="lang-btn'+(l===currentLang?' active':'')+'" data-lang="'+l+'" style="background:'+(l===currentLang?'var(--secondary)':'rgba(255,255,255,0.15)')+';color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;font-weight:600;">'+l.toUpperCase()+'</button>';
   });
   langHtml += '</div>';
+  langHtml += '<a class="top-login-btn" href="admin/login.html" data-i18n="admin_login" title="Administrateur">\ud83d\udd12 ' + t('admin_login') + '</a>';
 
   document.addEventListener('DOMContentLoaded', function(){
     var socialLinks = document.querySelector('.top-bar .container .social-links');
