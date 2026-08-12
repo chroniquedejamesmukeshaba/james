@@ -503,7 +503,7 @@ def apply_lang(a, lang):
 # Cle API gratuite : https://aistudio.google.com/apikey
 # Fichier server_data/ai_config.json : {"api_key": "VOTRE_CLE"}
 # (ou variable d'environnement GEMINI_API_KEY sur l'hebergement)
-GEMINI_MODEL = 'gemini-2.0-flash'
+GEMINI_MODEL = 'gemini-flash-latest'
 GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent'
 AI_LANG_NAMES = {'en': 'English', 'sw': 'Swahili', 'es': 'Spanish', 'zh': 'Chinese', 'ln': 'Lingala'}
 _ai_lock = threading.Lock()

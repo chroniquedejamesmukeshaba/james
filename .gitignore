@@ -24,6 +24,7 @@ venv/
 server_data/admins.json
 server_data/admin_tokens.json
 server_data/payments_config.json
+server_data/ai_config.json
 
 # Donnees volatiles (regenerees par le serveur)
 server_data/visits.json
@@ -32,3 +33,4 @@ server_data/media.json
 server_data/reports.json
 server_data/reads.json
 server_data/shares.json
+server_data/translations_cache.json
