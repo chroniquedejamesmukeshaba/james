@@ -1,4 +1,4 @@
-const CACHE = 'chronique-v12';
+const CACHE = 'chronique-v13';
 const STATIC = [
   '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',

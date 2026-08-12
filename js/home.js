@@ -213,7 +213,7 @@
     return '';
   }
 
-  var PER_PAGE = 12;
+  var PER_PAGE = 4;
 
   function renderSections() {
     var wrap = document.getElementById('home-sections');
@@ -344,10 +344,10 @@
     if (!wrap) return;
     if (window.location.protocol === 'file:') { wrap.style.display = 'none'; return; }
     wrap.innerHTML = '<div class="container"><div class="head"><h2>' + t('popular_title', 'Les plus lus') + '</h2></div>' +
-      '<div class="section-grid">' + Array.from({ length: 4 }).map(function () {
+      '<div class="section-grid">' + Array.from({ length: 3 }).map(function () {
         return '<div class="home-card sk-card"><div class="skeleton sk-thumb"></div><div class="sk-line skeleton"></div><div class="sk-line sk-w80 skeleton"></div><div class="sk-line sk-w60 skeleton"></div></div>';
       }).join('') + '</div></div>';
-    fetch('/api/popular?period=' + popPeriod + '&limit=8&lang=' + siteLang)
+    fetch('/api/popular?period=' + popPeriod + '&limit=3&lang=' + siteLang)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (d) {
         if (!d || !d.items || !d.items.length) { wrap.style.display = 'none'; return; }
@@ -383,99 +383,12 @@
       });
   }
 
-  // ---------- PUBLICITÉS (validées par l'admin) ----------
-  function renderAds() {
-    var wrap = document.getElementById('home-ads');
-    if (!wrap) return;
-    if (window.location.protocol === 'file:') { wrap.style.display = 'none'; return; }
-    fetch('/api/ads/public?lang=' + siteLang + '&_=' + Date.now())
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) {
-        if (!d || !d.length) { wrap.style.display = 'none'; return; }
-        wrap.style.display = '';
-        wrap.innerHTML = '<div class="container"><div class="head">' +
-          '<h2>' + t('home_ads', 'Espace publicitaire') + '</h2>' +
-          '<a class="head-link" href="publicite.html">' + t('home_ads_cta', 'Faire de la publicité') + ' ' + IC.arrow + '</a>' +
-          '</div><div class="ads-grid">' +
-          d.map(function (a) {
-            var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0) ? a.image : '';
-            return '<article class="ad-card">' +
-              (src ? '<img src="' + esc(src) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '<div class="ad-noimg">' + IC.megaphone + '</div>') +
-              '<div class="ad-body"><h3>' + esc(a.title) + '</h3>' +
-              '<p>' + esc(a.description) + '</p>' +
-              '<span class="ad-by">' + esc(a.name || '') + '</span></div></article>';
-          }).join('') + '</div></div>';
-      })
-      .catch(function () { wrap.style.display = 'none'; });
-  }
-
-  // ---------- CARROUSEL PUBLICITAIRE (colonne « Espace publicitaire ») ----------
-  function renderAdsCarousel() {
-    var car = document.getElementById('ad-carousel');
-    if (!car) return;
-    var slides = document.getElementById('ad-slides');
-    var dots = document.getElementById('ad-dots');
-    if (!slides) return;
-    var timer = null, idx = 0, items = [];
-
-    function startLoop(speed) {
-      if (timer) clearInterval(timer);
-      if (items.length < 2) return;
-      timer = setInterval(function () { idx = (idx + 1) % items.length; updateView(); }, speed);
-    }
-    function updateView() {
-      slides.style.transform = 'translateX(-' + (idx * 100) + '%)';
-      if (!dots) return;
-      dots.querySelectorAll('.campaign-dot').forEach(function (el, i) { el.classList.toggle('active', i === idx); });
-    }
-    function goTo(i) {
-      if (timer) clearInterval(timer);
-      idx = i; updateView(); startLoop(5000);
-    }
-    function render(list) {
-      if (!list || !list.length) {
-        slides.innerHTML = '<div class="ad-empty">' + t('home_ads_empty', 'Votre publicité pourrait s\'afficher ici.') + '</div>';
-        if (dots) dots.innerHTML = '';
-        items = []; return;
-      }
-      var slidesHtml = '', dotsHtml = '';
-      list.forEach(function (a, i) {
-        var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0) ? a.image : '';
-        slidesHtml += '<div class="ad-slide">' +
-          (src ? '<div class="ad-slide-img" style="background-image:url(' + esc(src) + ');"></div>' : '<div class="ad-slide-noimg">' + IC.megaphone + '</div>') +
-          '<div class="ad-slide-text"><strong>' + esc(a.title) + '</strong>' +
-          (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
-          '</div></div>';
-        dotsHtml += '<button class="campaign-dot' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '" aria-label="' + (i + 1) + '"></button>';
-      });
-      slides.innerHTML = slidesHtml;
-      slides.style.transform = 'translateX(0)';
-      if (dots) dots.innerHTML = dotsHtml;
-      items = list; idx = 0;
-      startLoop(5000);
-    }
-
-    if (window.location.protocol === 'file:') { render([]); return; }
-    fetch('/api/ads/public?lang=' + siteLang + '&_=' + Date.now())
-      .then(function (r) { return r.json(); })
-      .then(function (d) { render(d || []); })
-      .catch(function () { render([]); });
-    car.addEventListener('click', function (e) {
-      var tEl = e.target;
-      if (tEl.classList.contains('campaign-dot') && tEl.dataset.idx !== undefined) goTo(parseInt(tEl.dataset.idx, 10));
-      else if (tEl.classList.contains('ad-prev')) goTo((idx - 1 + items.length) % items.length);
-      else if (tEl.classList.contains('ad-next')) goTo((idx + 1) % items.length);
-    });
-  }
-
   // ---------- CHARGEMENT ----------
   function renderAll() {
     var list = sorted();
     renderTicker(list);
     renderHero(list);
     renderSections();
-    renderAds();
-    renderAdsCarousel();
     renderMostRead();
   }
 

@@ -146,7 +146,7 @@ html[data-theme="dark"] .btn.is-loading::after { border-color: rgba(0, 0, 0, 0.2
   transition: box-shadow 0.25s ease;
 }
 .site-header.is-scrolled { box-shadow: 0 6px 24px -12px rgba(16, 40, 68, 0.35); }
-html[data-theme="dark"] .site-header { background: rgba(21, 27, 35, 0.92); backdrop-filter: blur(10px); }
+html[data-theme="dark"] .site-header { background: rgba(21, 27, 35, 0.92); }
 html[data-theme="dark"] .site-header.is-scrolled { box-shadow: 0 6px 24px -12px rgba(0, 0, 0, 0.8); }
 
 .header-main { background: var(--surface); }
@@ -1922,9 +1922,14 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 /* ---------- HEADER LÃ‰GÃˆREMENT TRANSLUCIDE ---------- */
 .site-header {
   background: color-mix(in srgb, var(--color-surface) 88%, transparent) !important;
+  box-shadow: 0 1px 0 rgba(20, 40, 70, 0.05), 0 6px 24px rgba(16, 40, 68, 0.06);
+}
+/* NB: le backdrop-filter est sur .header-main (et PAS sur .site-header) :
+   sur mobile, #main-nav ul utilise position:fixed ; un backdrop-filter sur
+   un ancetre casserait le drawer (contenant de reference = header). */
+.header-main {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  box-shadow: 0 1px 0 rgba(20, 40, 70, 0.05), 0 6px 24px rgba(16, 40, 68, 0.06);
 }
 
 /* ---------- LOGO EN MAJUSCULES, STYLE PROFESSIONNEL ---------- */
@@ -2038,6 +2043,19 @@ html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
   box-shadow: 0 8px 20px rgba(192, 57, 43, 0.3);
 }
 .nl-card .nl-card-ico svg { width: 24px; height: 24px; }
+.nl-card .nl-photo {
+  width: 170px;
+  height: 140px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm), 0 8px 22px rgba(16, 40, 68, 0.14);
+}
+.nl-card .nl-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 640px) {
+  .nl-card .nl-photo { width: 100%; height: auto; max-height: 210px; }
+}
 .nl-card .nl-card-text { flex: 1; min-width: 220px; }
 .nl-card .nl-card-text h3 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: var(--text); }
 .nl-card .nl-card-text p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
