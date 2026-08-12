@@ -86,13 +86,12 @@
             <li><a href="heritage.html" data-i18n="nav_heritage">H&eacute;ritage</a></li>
             <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
             
-         <li><a href="publicite.html" data-i18n="nav_publicite">Publicit&eacute;</a></li>
+         <li><a href="publicite.html">Publicit&eacute;</a></li>
              </ul>
         </nav>
       </div>
     </div>
   </header>
-  <div id="global-ads-bar" aria-label="Espace publicitaire"></div>
 
   <main id="main-content">
     <div class="container">
@@ -109,6 +108,16 @@
     <section class="home-hero container" id="home-hero">
       <div id="hero-feature" class="hero-feature"></div>
       <div class="hero-sub" id="hero-sub" aria-label="Articles secondaires"></div>
+      <aside class="hero-side" aria-label="Publicit&eacute;s">
+        <div class="side-title" data-i18n="home_ads">Espace publicitaire</div>
+        <div class="ad-carousel" id="ad-carousel">
+          <div class="ad-slides" id="ad-slides"></div>
+          <button class="campaign-prev ad-prev" aria-label="Pr&eacute;c&eacute;dent">&#10094;</button>
+          <button class="campaign-next ad-next" aria-label="Suivant">&#10095;</button>
+          <div class="campaign-dots ad-dots" id="ad-dots"></div>
+        </div>
+        <a href="publicite.html" class="ad-cta-btn" data-i18n="ad_cta">VOTRE PUBLICIT&Eacute;</a>
+      </aside>
     </section>
 
     <div id="home-sections"></div>
@@ -165,16 +174,13 @@
   </section>
   <section class="newsletter-section" aria-label="Newsletter">
     <div class="container">
-      <div class="nl-card">
-        <div class="nl-card-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 7l-10 6L2 7"></path></svg>
+      <div class="nl-card nl-card-team">
+        <div class="nl-photo" aria-label="L'équipe de la Chronique">
+          <img src="assets/images/equipechronique.jpeg" alt="Équipe de la Chronique de James Mukeshaba" loading="lazy" decoding="async">
         </div>
         <div class="nl-card-text">
           <h3 data-i18n="newsletter_title">Abonnez-vous à notre newsletter</h3>
           <p data-i18n="newsletter_desc">Recevez les dernières actualités directement dans votre boîte mail.</p>
-        </div>
-        <div class="nl-photo">
-          <img src="assets/images/equipechronique.jpeg" alt="Équipe de la Chronique de James Mukeshaba" loading="lazy" decoding="async">
         </div>
         <form class="newsletter-form" id="newsletter-form">
           <div class="nl-row">

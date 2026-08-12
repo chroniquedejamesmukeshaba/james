@@ -188,5 +188,25 @@
     "action": "connexion",
     "target": "connexion a la plateforme",
     "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786500572957,
+    "ts": 1786500572.9571507,
+    "date": "2026-08-12T04:09:32",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": 1786500800287,
+    "ts": 1786500800.288002,
+    "date": "2026-08-12T04:13:20",
+    "user": "YAGIRWA GEDEON",
+    "role": "super_admin",
+    "action": "connexion",
+    "target": "connexion a la plateforme",
+    "ip": "127.0.0.1"
   }
 ]

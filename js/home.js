@@ -383,12 +383,72 @@
       });
   }
 
+  // ---------- CARROUSEL PUBLICITAIRE (colonne « Espace publicitaire ») ----------
+  function renderAdsCarousel() {
+    var car = document.getElementById('ad-carousel');
+    if (!car) return;
+    var slides = document.getElementById('ad-slides');
+    var dots = document.getElementById('ad-dots');
+    if (!slides) return;
+    var timer = null, idx = 0, items = [];
+
+    function startLoop(speed) {
+      if (timer) clearInterval(timer);
+      if (items.length < 2) return;
+      timer = setInterval(function () { idx = (idx + 1) % items.length; updateView(); }, speed);
+    }
+    function updateView() {
+      slides.style.transform = 'translateX(-' + (idx * 100) + '%)';
+      if (!dots) return;
+      dots.querySelectorAll('.campaign-dot').forEach(function (el, i) { el.classList.toggle('active', i === idx); });
+    }
+    function goTo(i) {
+      if (timer) clearInterval(timer);
+      idx = i; updateView(); startLoop(5000);
+    }
+    function render(list) {
+      if (!list || !list.length) {
+        slides.innerHTML = '<div class="ad-empty">' + t('home_ads_empty', 'Votre publicité pourrait s\'afficher ici.') + '</div>';
+        if (dots) dots.innerHTML = '';
+        items = []; return;
+      }
+      var slidesHtml = '', dotsHtml = '';
+      list.forEach(function (a, i) {
+        var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0) ? a.image : '';
+        slidesHtml += '<div class="ad-slide">' +
+          (src ? '<div class="ad-slide-img" style="background-image:url(' + esc(src) + ');"></div>' : '<div class="ad-slide-noimg">' + IC.megaphone + '</div>') +
+          '<div class="ad-slide-text"><strong>' + esc(a.title) + '</strong>' +
+          (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
+          '</div></div>';
+        dotsHtml += '<button class="campaign-dot' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '" aria-label="' + (i + 1) + '"></button>';
+      });
+      slides.innerHTML = slidesHtml;
+      slides.style.transform = 'translateX(0)';
+      if (dots) dots.innerHTML = dotsHtml;
+      items = list; idx = 0;
+      startLoop(5000);
+    }
+
+    if (window.location.protocol === 'file:') { render([]); return; }
+    fetch('/api/ads/public?lang=' + siteLang + '&_=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (d) { render(d || []); })
+      .catch(function () { render([]); });
+    car.addEventListener('click', function (e) {
+      var tEl = e.target;
+      if (tEl.classList.contains('campaign-dot') && tEl.dataset.idx !== undefined) goTo(parseInt(tEl.dataset.idx, 10));
+      else if (tEl.classList.contains('ad-prev')) goTo((idx - 1 + items.length) % items.length);
+      else if (tEl.classList.contains('ad-next')) goTo((idx + 1) % items.length);
+    });
+  }
+
   // ---------- CHARGEMENT ----------
   function renderAll() {
     var list = sorted();
     renderTicker(list);
     renderHero(list);
     renderSections();
+    renderAdsCarousel();
     renderMostRead();
   }
 

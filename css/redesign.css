@@ -2044,17 +2044,28 @@ html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
 }
 .nl-card .nl-card-ico svg { width: 24px; height: 24px; }
 .nl-card .nl-photo {
-  width: 170px;
-  height: 140px;
-  flex-shrink: 0;
-  border-radius: 16px;
+  flex: 0 0 220px;
+  width: 220px;
+  height: 165px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm), 0 8px 22px rgba(16, 40, 68, 0.14);
+  box-shadow: var(--shadow-sm), 0 10px 26px rgba(16, 40, 68, 0.16);
+  background: var(--color-surface-2);
 }
-.nl-card .nl-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nl-card .nl-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.nl-card .nl-photo:hover img { transform: scale(1.05); }
+.nl-card-team { padding: 24px 28px; gap: 24px; }
+.nl-card-team .nl-card-text { flex: 1; min-width: 230px; }
 @media (max-width: 640px) {
-  .nl-card .nl-photo { width: 100%; height: auto; max-height: 210px; }
+  .nl-card .nl-photo { flex: 0 0 auto; width: 100%; height: auto; max-height: 230px; }
+  .nl-card-team { padding: 20px; }
 }
 .nl-card .nl-card-text { flex: 1; min-width: 220px; }
 .nl-card .nl-card-text h3 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: var(--text); }
