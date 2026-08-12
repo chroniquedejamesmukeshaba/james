@@ -34,12 +34,51 @@ document.addEventListener('DOMContentLoaded', function () {
   if (loginForm) {
     const totpWrap = document.getElementById('totp-wrap');
     const totpInput = document.getElementById('totp-code');
+    const loginError = document.getElementById('login-error');
+    const loginSubmit = document.getElementById('login-submit');
+    const loginCard = document.getElementById('login-card');
+    function setError(msg, isInfo) {
+      if (!loginError) { showToast(msg, 'error'); return; }
+      loginError.hidden = false;
+      loginError.className = 'login-error' + (isInfo ? ' is-info' : '');
+      loginError.innerHTML =
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        (isInfo
+          ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+          : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>') +
+        '<span></span>';
+      loginError.querySelector('span').textContent = msg;
+      if (loginCard && !isInfo) {
+        loginCard.classList.remove('shake');
+        void loginCard.offsetWidth;
+        loginCard.classList.add('shake');
+      }
+    }
+    function clearError() { if (loginError) loginError.hidden = true; }
+    function setLoading(on) {
+      if (!loginSubmit) return;
+      loginSubmit.disabled = on;
+      var lbl = loginSubmit.querySelector('.login-btn-label');
+      var sp = loginSubmit.querySelector('.login-btn-spinner');
+      if (lbl) lbl.textContent = on ? 'Connexion en cours\u2026' : 'Se connecter';
+      if (sp) sp.hidden = !on;
+    }
+    function showTotp() {
+      if (!totpWrap) return;
+      totpWrap.hidden = false;
+      totpWrap.classList.remove('totp-reveal');
+      void totpWrap.offsetWidth;
+      totpWrap.classList.add('totp-reveal');
+      if (totpInput) totpInput.focus();
+    }
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
       if (window.location.protocol === 'file:') {
         showToast('La connexion nécessite le serveur (ouvrez le site via http://).', 'error');
         return;
       }
+      clearError();
+      setLoading(true);
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const payload = { user: username, pass: password };
@@ -55,19 +94,22 @@ document.addEventListener('DOMContentLoaded', function () {
       fetch('/api/auth', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
         .then(function(r){ return r.json().then(function(b){ return {status:r.status, body:b}; }); })
         .then(function(res){
+          setLoading(false);
           if (res.body && res.body.ok && res.body.token) { grant(res.body); return; }
           if (res.body && res.body.totp) {
-            if (totpWrap) {
-              totpWrap.style.display = 'block';
-              if (totpInput) totpInput.focus();
-              showToast('Entrez votre code de securite 2FA.', 'error');
-            }
+            showTotp();
+            setError('Entrez le code 2FA affiché dans votre application d\u2019authentification.', true);
             return;
           }
-          if (res.status === 429) { showToast('Trop de tentatives. Reessayez dans quelques minutes.', 'error'); return; }
+          if (res.status === 429) { setError('Trop de tentatives. Réessayez dans quelques minutes.'); showToast('Trop de tentatives. Reessayez dans quelques minutes.', 'error'); return; }
+          setError('Identifiants incorrects.');
           showToast('Identifiants incorrects.', 'error');
         })
-        .catch(function(){ showToast('Serveur injoignable. Vérifiez la connexion.', 'error'); });
+        .catch(function(){
+          setLoading(false);
+          setError('Serveur injoignable. Vérifiez la connexion.');
+          showToast('Serveur injoignable. Vérifiez la connexion.', 'error');
+        });
     });
   }
 
