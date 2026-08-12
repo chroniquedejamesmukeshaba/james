@@ -79,19 +79,11 @@
   }
   function injectHeroSkeleton() {
     var feat = document.getElementById('hero-feature');
-    var side = document.getElementById('side-list');
     var subWrap = document.getElementById('hero-sub');
     if (feat) feat.innerHTML = '<div class="skeleton" style="width:100%;height:100%;min-height:430px;border-radius:14px;"></div>';
     if (subWrap) subWrap.innerHTML = Array.from({ length: 2 }).map(function () {
       return '<div class="skeleton" style="width:100%;height:215px;border-radius:14px;"></div>';
     }).join('');
-    if (side) {
-      side.innerHTML = Array.from({ length: 5 }).map(function () {
-        return '<div class="side-item" style="pointer-events:none;"><div class="skeleton" style="width:82px;height:60px;border-radius:8px;"></div>' +
-          '<div style="flex:1;"><div class="skeleton" style="height:12px;margin-bottom:6px;"></div>' +
-          '<div class="skeleton" style="height:12px;width:60%;"></div></div></div>';
-      }).join('');
-    }
   }
 
   // ---------- BREAKING TICKER ----------
@@ -142,9 +134,8 @@
 
   function renderHero(list) {
     var feat = document.getElementById('hero-feature');
-    var side = document.getElementById('side-list');
     var subWrap = document.getElementById('hero-sub');
-    if (!feat || !side) return;
+    if (!feat) return;
     if (!list.length) {
       var zone = document.getElementById('home-hero');
       if (zone) zone.innerHTML = '<div class="card" style="padding:30px;text-align:center;color:var(--text-light);">' +
@@ -157,8 +148,6 @@
     list.forEach(function (a, i) { if (i !== mainIdx) rest.push(a); });
     var sub = [], subIdx = [];
     rest.forEach(function (a, i) { if (sub.length < 2 && hasImg(a)) { sub.push(a); subIdx.push(i); } });
-    rest = rest.filter(function (a, i) { return subIdx.indexOf(i) === -1; });
-    var sideList = rest.slice(0, 5);
 
     var bg = imgOf(main);
     feat.innerHTML =
@@ -177,14 +166,6 @@
       '<a href="' + linkOf(main) + '" class="btn btn-accent">' + t('read_article', 'Lire l\'article') + '</a>' +
       '</div>';
     if (subWrap) subWrap.innerHTML = sub.length ? sub.map(subItemHtml).join('') : '';
-    if (!sideList.length) { side.innerHTML = ''; return; }
-    side.innerHTML = sideList.map(function (a) {
-      var src = imgOf(a);
-      return '<a class="side-item" href="' + linkOf(a) + '">' +
-        (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async">' : '<span class="skeleton" style="width:82px;height:60px;border-radius:8px;flex-shrink:0;"></span>') +
-        '<div><div class="t">' + esc(a.title) + '</div>' +
-        '<div class="m">' + catOf(a) + ' • ' + fmtDate(a.date) + '</div></div></a>';
-    }).join('');
   }
 
   // ---------- NewsCard ----------
@@ -407,7 +388,7 @@
     var wrap = document.getElementById('home-ads');
     if (!wrap) return;
     if (window.location.protocol === 'file:') { wrap.style.display = 'none'; return; }
-    fetch('/api/ads/public?_=' + Date.now())
+    fetch('/api/ads/public?lang=' + siteLang + '&_=' + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (d) {
         if (!d || !d.length) { wrap.style.display = 'none'; return; }
@@ -428,6 +409,65 @@
       .catch(function () { wrap.style.display = 'none'; });
   }
 
+  // ---------- CARROUSEL PUBLICITAIRE (colonne « Espace publicitaire ») ----------
+  function renderAdsCarousel() {
+    var car = document.getElementById('ad-carousel');
+    if (!car) return;
+    var slides = document.getElementById('ad-slides');
+    var dots = document.getElementById('ad-dots');
+    if (!slides) return;
+    var timer = null, idx = 0, items = [];
+
+    function startLoop(speed) {
+      if (timer) clearInterval(timer);
+      if (items.length < 2) return;
+      timer = setInterval(function () { idx = (idx + 1) % items.length; updateView(); }, speed);
+    }
+    function updateView() {
+      slides.style.transform = 'translateX(-' + (idx * 100) + '%)';
+      if (!dots) return;
+      dots.querySelectorAll('.campaign-dot').forEach(function (el, i) { el.classList.toggle('active', i === idx); });
+    }
+    function goTo(i) {
+      if (timer) clearInterval(timer);
+      idx = i; updateView(); startLoop(5000);
+    }
+    function render(list) {
+      if (!list || !list.length) {
+        slides.innerHTML = '<div class="ad-empty">' + t('home_ads_empty', 'Votre publicité pourrait s\'afficher ici.') + '</div>';
+        if (dots) dots.innerHTML = '';
+        items = []; return;
+      }
+      var slidesHtml = '', dotsHtml = '';
+      list.forEach(function (a, i) {
+        var src = a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0) ? a.image : '';
+        slidesHtml += '<div class="ad-slide">' +
+          (src ? '<div class="ad-slide-img" style="background-image:url(' + esc(src) + ');"></div>' : '<div class="ad-slide-noimg">' + IC.megaphone + '</div>') +
+          '<div class="ad-slide-text"><strong>' + esc(a.title) + '</strong>' +
+          (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
+          '</div></div>';
+        dotsHtml += '<button class="campaign-dot' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '" aria-label="' + (i + 1) + '"></button>';
+      });
+      slides.innerHTML = slidesHtml;
+      slides.style.transform = 'translateX(0)';
+      if (dots) dots.innerHTML = dotsHtml;
+      items = list; idx = 0;
+      startLoop(5000);
+    }
+
+    if (window.location.protocol === 'file:') { render([]); return; }
+    fetch('/api/ads/public?lang=' + siteLang + '&_=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (d) { render(d || []); })
+      .catch(function () { render([]); });
+    car.addEventListener('click', function (e) {
+      var tEl = e.target;
+      if (tEl.classList.contains('campaign-dot') && tEl.dataset.idx !== undefined) goTo(parseInt(tEl.dataset.idx, 10));
+      else if (tEl.classList.contains('ad-prev')) goTo((idx - 1 + items.length) % items.length);
+      else if (tEl.classList.contains('ad-next')) goTo((idx + 1) % items.length);
+    });
+  }
+
   // ---------- CHARGEMENT ----------
   function renderAll() {
     var list = sorted();
@@ -435,6 +475,7 @@
     renderHero(list);
     renderSections();
     renderAds();
+    renderAdsCarousel();
     renderMostRead();
   }
 

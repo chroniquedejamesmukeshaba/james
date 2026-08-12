@@ -145,6 +145,9 @@ var TRANSLATIONS = {
   // === HOME MODERNE ===
   home_breaking:      { fr:'Derni\u00e8re heure', en:'Breaking News', sw:'Habari za mwisho', es:'\u00daltima hora', zh:'突发新闻', ln:'Sango ya suki'},
   home_alaune:        { fr:'\u00c0 la Une', en:'Top Stories', sw:'Habari kuu', es:'Portada', zh:'头条新闻', ln:'Makambo ya liboso'},
+  home_ads:           { fr:'Espace publicitaire', en:'Advertising', sw:'Nafasi ya matangazo', es:'Espacio publicitario', zh:'广告位', ln:'Esika ya panzela'},
+  ad_cta:             { fr:'VOTRE PUBLICIT\u00c9', en:'YOUR ADVERT', sw:'TANGAZO LAKO', es:'SU PUBLICIDAD', zh:'您的广告', ln:'PANZELA NA YO'},
+  home_ads_empty:     { fr:'Votre publicit\u00e9 pourrait s\u2019afficher ici.', en:'Your advert could be displayed here.', sw:'Tangazo lako linaweza kuonyeshwa hapa.', es:'Su publicidad podr\u00eda mostrarse aqu\u00ed.', zh:'您的广告可以显示在这里。', ln:'Panzela na yo ekoki komonana awa.'},
   home_latest:        { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest News', sw:'Habari za hivi punde', es:'\u00daltimas noticias', zh:'最新新闻', ln:'Makambo ya sika'},
   home_view_more:     { fr:'Voir plus', en:'View more', sw:'Tazama zaidi', es:'Ver m\u00e1s', zh:'查看更多', ln:'Tala mosusu'},
   home_support:       { fr:'Soutenir nos actions', en:'Support our actions', sw:'Tunga mkono shughuli zetu', es:'Apoyar nuestras acciones', zh:'支持我们的行动', ln:'Sunga misala na biso'},

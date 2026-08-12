@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar, html
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar, html, threading
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
@@ -379,10 +379,24 @@ def list_ads():
 
 @app.route('/api/ads/public', methods=['GET'])
 def list_public_ads():
+    lang = request.args.get('lang', 'fr')
     ads = read_json('ads')
     out = [{'id': a.get('id'), 'title': a.get('title'), 'name': a.get('name'),
             'description': a.get('description'), 'image': a.get('image')}
            for a in ads if a.get('status') == 'active']
+    if lang and lang != 'fr':
+        for ad in out:
+            apply_lang(ad, lang)
+    if lang and lang != 'fr' and ai_key():
+        ad_lang = {}
+        for a in ads:
+            if a.get('status') == 'active':
+                ad_lang[a.get('id')] = a
+        for ad in out:
+            orig = ad_lang.get(ad['id']) or {}
+            for f in ('title', 'description'):
+                if (ad.get(f) or '') and not orig.get(f + '_' + lang):
+                    ad[f] = ai_translate_one(ad[f], lang)
     return jsonify(out)
 
 @app.route('/api/ads/<int:aid>/approve', methods=['POST'])
@@ -484,6 +498,132 @@ def apply_lang(a, lang):
             if k in a and a[k]:
                 a[f] = a[k]
     return a
+
+# --- TRADUCTION IA (Google Gemini, API gratuite) ---
+# Cle API gratuite : https://aistudio.google.com/apikey
+# Fichier server_data/ai_config.json : {"api_key": "VOTRE_CLE"}
+# (ou variable d'environnement GEMINI_API_KEY sur l'hebergement)
+GEMINI_MODEL = 'gemini-2.0-flash'
+GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent'
+AI_LANG_NAMES = {'en': 'English', 'sw': 'Swahili', 'es': 'Spanish', 'zh': 'Chinese', 'ln': 'Lingala'}
+_ai_lock = threading.Lock()
+
+def ai_key():
+    cfg = read_obj('ai_config', {})
+    return (cfg.get('api_key') or '').strip() or os.environ.get('GEMINI_API_KEY', '').strip()
+
+def _ai_cache_key(text, lang):
+    return hashlib.sha256((lang + '|' + text).encode('utf-8')).hexdigest()[:40]
+
+def _ai_call(prompt, timeout=60):
+    key = ai_key()
+    if not key:
+        return ''
+    url = GEMINI_URL % GEMINI_MODEL + '?key=' + quote(key)
+    body = {'contents': [{'parts': [{'text': prompt}]}]}
+    req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'),
+                                 headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        resp = json.loads(r.read().decode('utf-8'))
+    try:
+        return (resp['candidates'][0]['content']['parts'][0]['text'] or '').strip()
+    except Exception:
+        return ''
+
+def ai_translate_one(text, lang):
+    """Traduit un texte via Gemini (cache persistant). Retourne l'original si echec."""
+    text = text or ''
+    if lang == 'fr' or not text.strip() or not ai_key():
+        return text
+    ck = _ai_cache_key(text, lang)
+    cache = read_obj('translations_cache', {})
+    if ck in cache:
+        return cache[ck]
+    lang_name = AI_LANG_NAMES.get(lang, lang)
+    prompt = ('Translate the following text into %s. Preserve HTML tags exactly as they are. '
+              'Return only the translation, nothing else.\n\n%s' % (lang_name, text))
+    try:
+        out = _ai_call(prompt)
+        if out:
+            with _ai_lock:
+                cache[ck] = out
+                if len(cache) > 20000:
+                    cache = dict(list(cache.items())[-15000:])
+                write_json('translations_cache', cache)
+            return out
+    except Exception:
+        pass
+    return text
+
+def ai_translate_batch(texts, lang, chunk=25):
+    """Traduit une liste de textes en un minimum d'appels Gemini (cache inclus)."""
+    texts = [t or '' for t in texts]
+    if lang == 'fr' or not ai_key():
+        return texts
+    cache = read_obj('translations_cache', {})
+    out = list(texts)
+    todo = []
+    for i, t in enumerate(texts):
+        if not t.strip():
+            continue
+        ck = _ai_cache_key(t, lang)
+        if ck in cache:
+            out[i] = cache[ck]
+        else:
+            todo.append((i, t, ck))
+    if not todo:
+        return out
+    lang_name = AI_LANG_NAMES.get(lang, lang)
+    for start in range(0, len(todo), chunk):
+        group = todo[start:start + chunk]
+        parts = ['<<<%d>>>\n%s' % (j, t) for j, (_, t, _) in enumerate(group)]
+        prompt = ('Translate each text into %s. Start every translation with its marker <<<N>>> on its own '
+                  'line, keep the marker, then the translation. Preserve HTML tags exactly. '
+                  'Return only the translations.\n\n%s' % (lang_name, '\n'.join(parts)))
+        try:
+            raw = _ai_call(prompt, timeout=90)
+            mapping = {}
+            pieces = re.split(r'<<<(\d+)>>>', raw or '')
+            i = 1
+            while i + 1 < len(pieces):
+                try:
+                    mapping[int(pieces[i])] = pieces[i + 1].strip()
+                except ValueError:
+                    pass
+                i += 2
+            for j, (orig_i, t, ck) in enumerate(group):
+                tr = mapping.get(j) or mapping.get(orig_i)
+                if tr and len(tr) >= 3:
+                    out[orig_i] = tr
+                    cache[ck] = tr
+        except Exception:
+            continue
+    with _ai_lock:
+        write_json('translations_cache', cache)
+    return out
+
+def translate_articles_batch(articles, lang):
+    """Traduit (IA + cache) title/excerpt des articles sans traduction manuelle."""
+    if lang == 'fr' or not ai_key():
+        return
+    nt = [i for i, a in enumerate(articles) if (a.get('title') or '') and not a.get('title_' + lang)]
+    ne = [i for i, a in enumerate(articles) if (a.get('excerpt') or '') and not a.get('excerpt_' + lang)]
+    if not nt and not ne:
+        return
+    t_res = ai_translate_batch([articles[i]['title'] for i in nt], lang)
+    e_res = ai_translate_batch([articles[i]['excerpt'] for i in ne], lang)
+    for i, v in zip(nt, t_res):
+        articles[i]['title'] = v
+    for i, v in zip(ne, e_res):
+        articles[i]['excerpt'] = v
+
+def translate_names(items, lang, field='name'):
+    """Traduit un champ texte d'une liste de dicts (categories, campagnes, pubs)."""
+    if lang == 'fr' or not ai_key() or not items:
+        return
+    res = ai_translate_batch([(it.get(field) or '') for it in items], lang)
+    for it, v in zip(items, res):
+        it[field] = v
 
 # --- RECHERCHE & CATEGORIES ---
 def fold(s):
@@ -817,16 +957,20 @@ def _sanitize_article(data):
 @app.route('/api/articles', methods=['GET'])
 def get_articles():
     lang = request.args.get('lang', 'fr')
-    articles = _public_articles()
+    articles = [dict(a) for a in _public_articles()]
     if lang and lang != 'fr':
         for a in articles:
             apply_lang(a, lang)
+        translate_articles_batch(articles, lang)
     return jsonify(articles)
 
 @app.route('/api/articles/lite')
 def get_articles_lite():
     lang = request.args.get('lang', 'fr')
-    return jsonify([article_lite(a, lang) for a in _public_articles()])
+    out = [article_lite(a, lang) for a in _public_articles()]
+    if lang and lang != 'fr':
+        translate_articles_batch(out, lang)
+    return jsonify(out)
 
 @app.route('/api/articles/<int:aid>')
 def get_article(aid):
@@ -835,6 +979,44 @@ def get_article(aid):
         if str(a.get('id')) == str(aid):
             cp = dict(a)
             apply_lang(cp, lang)
+            if lang and lang != 'fr':
+                for f in ('title', 'excerpt', 'content'):
+                    if (cp.get(f) or '') and not a.get(f + '_' + lang):
+                        cp[f] = ai_translate_one(cp[f], lang)
+            return jsonify(cp)
+    return jsonify({'error': 'not found'}), 404
+
+@app.route('/api/translate', methods=['POST'])
+@role_required('admin', 'super_admin')
+def api_translate():
+    """Traduit un texte ou une liste de textes via l'IA (endpoint admin)."""
+    data = request.json or {}
+    lang = (data.get('lang') or 'fr').strip()
+    if lang not in AI_LANG_NAMES and lang != 'fr':
+        return jsonify({'error': 'langue non supportee'}), 400
+    texts = data.get('texts')
+    if isinstance(texts, list):
+        return jsonify({'translations': ai_translate_batch(texts, lang)})
+    text = data.get('text')
+    if text is None:
+        return jsonify({'error': 'champ text ou texts requis'}), 400
+    return jsonify({'translation': ai_translate_one(text, lang)})
+
+@app.route('/api/articles/<int:aid>/ai-translate', methods=['POST'])
+@role_required('journaliste', 'editeur', 'admin', 'super_admin')
+def article_ai_translate(aid):
+    """Traduit un article complet (title/excerpt/content) pour la langue demandee."""
+    data = request.json or {}
+    lang = (data.get('lang') or 'fr').strip()
+    if lang not in AI_LANG_NAMES and lang != 'fr':
+        return jsonify({'error': 'langue non supportee'}), 400
+    for a in _public_articles():
+        if str(a.get('id')) == str(aid):
+            cp = dict(a)
+            apply_lang(cp, lang)
+            for f in ('title', 'excerpt', 'content'):
+                if cp.get(f):
+                    cp[f] = ai_translate_one(cp[f], lang)
             return jsonify(cp)
     return jsonify({'error': 'not found'}), 404
 
@@ -996,6 +1178,7 @@ def publish_article_now(aid):
 
 @app.route('/api/categories')
 def list_categories():
+    lang = request.args.get('lang', 'fr')
     cats = {}
     public_articles = _public_articles()
     for a in public_articles:
@@ -1009,6 +1192,8 @@ def list_categories():
                 raw = a.get('category') or ''
                 break
         out.append({'slug': slug, 'name': cat_display(slug, raw), 'count': count})
+    if lang and lang != 'fr':
+        translate_names(out, lang)
     return jsonify(out)
 
 
@@ -1048,14 +1233,27 @@ def get_category(slug):
         cats[s2] = cats.get(s2, 0) + 1
     all_cats = [{'slug': s2, 'name': cat_display(s2, ''), 'count': c}
                 for s2, c in sorted(cats.items(), key=lambda x: (-x[1], x[0]))]
+    principal_lite = article_lite(principal, lang) if principal else None
+    articles_lite = [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in sorted_members]
+    popular_lite = [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in by_pop[:5]]
+    if lang and lang != 'fr':
+        name_tr = ai_translate_one(cat_display(slug, raw), lang)
+        desc_tr = ai_translate_one(cat_desc(slug, raw), lang)
+        if principal_lite:
+            translate_articles_batch([principal_lite], lang)
+        translate_articles_batch(articles_lite, lang)
+        translate_articles_batch(popular_lite, lang)
+        translate_names(all_cats, lang)
+    else:
+        name_tr, desc_tr = None, None
     return jsonify({
         'slug': slug,
-        'name': cat_display(slug, raw),
-        'description': cat_desc(slug, raw),
+        'name': name_tr or cat_display(slug, raw),
+        'description': desc_tr or cat_desc(slug, raw),
         'count': len(members),
-        'principal': article_lite(principal, lang) if principal else None,
-        'articles': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in sorted_members],
-        'popular': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in by_pop[:5]],
+        'principal': principal_lite,
+        'articles': articles_lite,
+        'popular': popular_lite,
         'categories': all_cats
     })
 
@@ -1116,13 +1314,22 @@ def search_articles():
         cats_all[s2] = cats_all.get(s2, 0) + 1
     all_cats = [{'slug': s2, 'name': cat_display(s2, ''), 'count': c}
                 for s2, c in sorted(cats_all.items(), key=lambda x: (-x[1], x[0]))]
+    results_out = [dict(article_lite(a, lang), matched=matched, score=sc, pop=pop.get(str(a.get('id')), 0)) for sc, a, matched in results]
+    recent_out = [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in recent_all]
+    popular_out = [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in popular_all]
+    if lang and lang != 'fr':
+        translate_articles_batch(results_out, lang)
+        translate_articles_batch(recent_out, lang)
+        translate_articles_batch(popular_out, lang)
+        translate_names(cat_list, lang)
+        translate_names(all_cats, lang)
     return jsonify({
         'query': q,
         'total': len(results),
-        'results': [dict(article_lite(a, lang), matched=matched, score=sc, pop=pop.get(str(a.get('id')), 0)) for sc, a, matched in results],
+        'results': results_out,
         'categories': cat_list,
-        'recent': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in recent_all],
-        'popular': [dict(article_lite(a, lang), pop=pop.get(str(a.get('id')), 0)) for a in popular_all],
+        'recent': recent_out,
+        'popular': popular_out,
         'all_categories': all_cats
     })
 
@@ -1426,6 +1633,8 @@ def get_popular():
         out.append(item)
     order = {aid: i for i, aid in enumerate(top)}
     out.sort(key=lambda x: order.get(str(x.get('id')), 99))
+    if lang and lang != 'fr':
+        translate_articles_batch(out, lang)
     return jsonify({'period': period, 'items': out})
 
 # --- SETTINGS (BREAKING NEWS) ---
@@ -1743,9 +1952,19 @@ def _campaign_progress(c, donations=None):
 
 @app.route('/api/campaigns', methods=['GET'])
 def get_campaigns():
+    lang = request.args.get('lang', 'fr')
     campaigns = read_json('campaigns')
     donations = read_json('donations')
-    return jsonify([_campaign_progress(c, donations) for c in campaigns])
+    out = [_campaign_progress(c, donations) for c in campaigns]
+    if lang and lang != 'fr':
+        raw = {c.get('id'): c for c in campaigns}
+        for c in out:
+            orig = raw.get(c.get('id')) or {}
+            apply_lang(c, lang)
+            for f in ('title', 'description'):
+                if (c.get(f) or '') and not orig.get(f + '_' + lang):
+                    c[f] = ai_translate_one(c[f], lang)
+    return jsonify(out)
 
 @app.route('/api/campaigns', methods=['POST'])
 @role_required('admin', 'super_admin')

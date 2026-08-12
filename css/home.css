@@ -199,6 +199,41 @@
 .side-item:hover .t { color: var(--color-accent); }
 .side-item .m { font-size: 0.7rem; color: var(--color-muted); margin-top: 3px; }
 
+/* Carrousel publicitaire (remplace « À la une ») */
+.ad-carousel {
+  position: relative; overflow: hidden; border-radius: var(--radius-sm);
+  flex: 1; min-height: 260px; display: flex; flex-direction: column;
+}
+.ad-slides { display: flex; transition: transform 0.5s ease; height: 100%; flex: 1; }
+.ad-slide {
+  flex: 0 0 100%; min-width: 0; border-radius: var(--radius-sm); overflow: hidden;
+  display: flex; flex-direction: column; background: var(--color-surface-2);
+}
+.ad-slide-img { width: 100%; height: 150px; background-size: cover; background-position: center; flex-shrink: 0; }
+.ad-slide-noimg { width: 100%; height: 150px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: rgba(255,255,255,0.9); background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); }
+.ad-slide-text { padding: 12px 14px; overflow-y: auto; }
+.ad-slide-text strong { display: block; font-size: 0.9rem; color: var(--color-primary); margin-bottom: 5px; line-height: 1.3; }
+.ad-slide-text p { font-size: 0.78rem; color: var(--color-text); margin: 0; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.ad-prev, .ad-next {
+  position: absolute; top: 130px; transform: translateY(-50%); z-index: 2;
+  background: rgba(255,255,255,0.85); border: 1px solid var(--color-border); cursor: pointer;
+  width: 30px; height: 30px; border-radius: 50%; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; transition: 0.2s; color: var(--color-text);
+}
+.ad-prev { left: 8px; }
+.ad-next { right: 8px; }
+.ad-prev:hover, .ad-next:hover { background: #fff; }
+.ad-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 6px; }
+.ad-dots .campaign-dot { width: 9px; height: 9px; border: 2px solid rgba(255,255,255,0.9); }
+.ad-cta-btn {
+  display: block; margin-top: 14px; text-align: center; text-decoration: none;
+  background: var(--color-accent); color: #fff; font-weight: 800; letter-spacing: 0.6px;
+  font-size: 0.75rem; padding: 11px 12px; border-radius: var(--radius-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.ad-cta-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); color: #fff; }
+.ad-empty { padding: 18px 12px; text-align: center; font-size: 0.8rem; color: var(--color-muted); }
+
 /* ================== SECTIONS THÉMATIQUES ================== */
 .home-section { padding: 40px 0 4px; }
 .home-section .head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 22px; }

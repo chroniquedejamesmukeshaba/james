@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": 1786496652600,
+    "title": "Joyeux Anniversaire Monsieur Bubek",
+    "name": "Chronique de James Mukeshaba",
+    "email": "chroniquedejamesmukeshaba@gmail.com",
+    "description": "Toute la redaction de la Chronique de James Mukeshaba vous souhaite un tres joyeux anniversaire, cher Monsieur Bubek, en date du 10-08-2026. Que cette nouvelle annee soit remplie de bonheur, de sante, de reussite et de benedictions. Nous vous devons gratitude et reconnaissance pour votre soutien constant. Longue vie a vous, Monsieur Bubek !",
+    "image": "/assets/images/Bubek.jpg",
+    "status": "active",
+    "reason": "",
+    "createdAt": "2026-08-10T00:00:00Z",
+    "processedAt": "2026-08-10T00:05:00Z",
+    "ip": "test"
+  }
+]

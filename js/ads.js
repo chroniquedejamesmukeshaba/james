@@ -191,11 +191,13 @@
   function load() {
     var bar = document.getElementById('global-ads-bar');
     if (!bar || window.location.protocol === 'file:') return;
-    fetch('/api/ads/public?_=' + Date.now())
+    var lang = (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
+    fetch('/api/ads/public?lang=' + lang + '&_=' + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (d) { buildBar(d || []); })
       .catch(function () {});
   }
 
   document.addEventListener('DOMContentLoaded', load);
+  document.addEventListener('langchange', load);
 })();
