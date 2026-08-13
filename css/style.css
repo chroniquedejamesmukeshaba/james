@@ -1827,7 +1827,7 @@ html[data-theme="dark"] .gads-nav { background: #21262d; border-color: #30363d; 
   .gads-track { height: 56px; }
 }
 
-/* ===== Pop-up VOTRE PUBLICITÉ ICI ===== */
+/* ===== Pop-up VOTRE PUBLICITï¿½ ICI ===== */
 .ad-modal { position: fixed; inset: 0; z-index: 99999; display: none; }
 .ad-modal.open { display: block; }
 .ad-modal-backdrop { position: absolute; inset: 0; background: rgba(8, 18, 31, 0.68); backdrop-filter: blur(3px); }
@@ -1851,3 +1851,24 @@ html[data-theme="dark"] .gads-nav { background: #21262d; border-color: #30363d; 
 html[data-theme="dark"] .ad-modal-card { background: #161b22; }
 html[data-theme="dark"] .ad-modal-head { background: linear-gradient(135deg, #1c2330, #21262d); }
 html[data-theme="dark"] .ad-field input, html[data-theme="dark"] .ad-field textarea { background: #0d1117; border-color: #30363d; color: #c9d1d9; }
+
+/* ===== Pop-up CONTACT : Appel / WhatsApp ===== */
+.contact-modal { max-width: 400px; text-align: left; }
+.contact-modal .ui-title { font-size: 1.15rem; font-weight: 800; }
+.contact-modal .ui-message { margin: 4px 0 0; color: var(--text-light, #5d6b6e); font-size: 0.88rem; }
+.contact-number { margin: 12px 0 2px; font-size: 1.12rem; font-weight: 800; color: var(--text, #1c2b3a); letter-spacing: .01em; }
+.contact-options { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.contact-opt {
+  display: flex; align-items: center; gap: 13px; padding: 12px 14px; border-radius: 12px;
+  border: 2px solid; font-weight: 700; font-size: 0.95rem; text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.contact-opt:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+.contact-opt .co-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.contact-call { color: #0f6ab4; border-color: rgba(15,106,180,.35); background: rgba(15,106,180,.06); }
+.contact-call .co-ico { background: #0f6ab4; color: #fff; }
+.contact-wa { color: #128c4a; border-color: rgba(18,140,74,.35); background: rgba(18,140,74,.06); }
+.contact-wa .co-ico { background: #25D366; color: #fff; }
+html[data-theme="dark"] .contact-number { color: #e6edf3; }
+html[data-theme="dark"] .contact-call { color: #79c0ff; border-color: rgba(88,166,255,.4); background: rgba(88,166,255,.08); }
+html[data-theme="dark"] .contact-wa { color: #56d364; border-color: rgba(86,211,100,.4); background: rgba(86,211,100,.08); }

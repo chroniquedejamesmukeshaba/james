@@ -780,6 +780,7 @@ select.form-input { cursor: pointer; }
   padding: 10px 13px; font-size: 0.8rem; font-weight: 600;
   margin-bottom: 16px; animation: errIn 0.25s ease;
 }
+.login-error[hidden] { display: none; }
 .login-error.is-info { background: rgba(26, 90, 156, 0.09); color: #1a5a9c; border-color: rgba(26, 90, 156, 0.3); }
 .login-error svg { flex-shrink: 0; }
 @keyframes errIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }

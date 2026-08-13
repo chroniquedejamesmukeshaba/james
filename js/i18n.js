@@ -220,6 +220,13 @@ var TRANSLATIONS = {
   popular_month:      { fr:'Ce mois', en:'This month', sw:'Mwezi huu', es:'Este mes', zh:'本月', ln:'Sanze oyo'},
   popular_all:        { fr:'Depuis la publication', en:'All time', sw:'Tangu kuchapishwa', es:'Desde la publicaci\u00f3n', zh:'全部', ln:'Nyonso'},
 
+  // === CONTACT (APPEL / WHATSAPP) ===
+  contact_title:      { fr:'Contacter la r\u00e9daction', en:'Contact the newsroom', sw:'Wasiliana na wahariri', es:'Contactar a la redacci\u00f3n', zh:'联系编辑部', ln:'Kosakana na bakomi'},
+  contact_desc:       { fr:'Choisissez votre moyen de contact', en:'Choose how to contact us', sw:'Chagua jinsi ya kuwasiliana', es:'Elige c\u00f3mo contactarnos', zh:'选择联系方式', ln:'Pona lolenge ya kosakana'},
+  contact_call:       { fr:'Passer un appel', en:'Make a call', sw:'Piga simu', es:'Hacer una llamada', zh:'拨打电话', ln:'Kobenga na telef\u00f3ne'},
+  contact_whatsapp:   { fr:'Message WhatsApp', en:'WhatsApp message', sw:'Ujumbe wa WhatsApp', es:'Mensaje de WhatsApp', zh:'WhatsApp 消息', ln:'Sika na WhatsApp'},
+  contact_close:      { fr:'Fermer', en:'Close', sw:'Funga', es:'Cerrar', zh:'关闭', ln:'Kokanga'},
+
   // === GENERIC ===
   learn_more:         { fr:'En savoir plus', en:'Learn more', sw:'Jifunze zaidi', es:'Saber m\u00e1s', zh:'了解更多', ln:'Yéba mingi'},
   read_article:       { fr:'Lire l\'article', en:'Read article', sw:'Soma makala', es:'Leer art\u00edculo', zh:'阅读文章', ln:'Tangá mokanda'},
