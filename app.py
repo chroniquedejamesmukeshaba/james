@@ -2795,7 +2795,13 @@ def _classify_source(ref):
 def analytics_overview():
     period = request.args.get('period', '30d')
     days = {'7d': 7, '30d': 30, '90d': 90, '12m': 365}.get(period, 30)
-    cutoff = time.time() - days * 86400
+    now = time.time()
+    gmt = time.gmtime(now)
+    # Périodes stables alignées sur le calendrier UTC : la fenêtre couvre
+    # exactement les N derniers jours calendaires (aujourd'hui inclus), en
+    # cohérence avec la courbe. Les totaux ne changent qu'à minuit UTC.
+    today_start = calendar.timegm((gmt.tm_year, gmt.tm_mon, gmt.tm_mday, 0, 0, 0, 0, 0, 0))
+    cutoff = today_start - (days - 1) * 86400
     raw_visits = read_json('visits')
     visits = []
     for v in raw_visits:
@@ -2870,28 +2876,61 @@ def analytics_overview():
             'comments': len(read_json('comments_' + aid)),
         })
     now = time.time()
-    today_start = now - (now % 86400)
+    # today_start défini plus haut (minuit UTC du jour courant) : la courbe
+    # couvre exactement la fenêtre [cutoff, maintenant[, jours calendaires.
     labels, sv, su = [], [], []
-    # index des visites par jour (un seul passage au lieu de jours x visites)
-    day_visits = {}
-    for v in visits:
-        if not isinstance(v, dict):
-            continue
-        e = _visit_epoch(v)
-        if e is None:
-            continue
-        key = int(e // 86400)
-        day_visits.setdefault(key, {'cnt': 0, 'ips': set()})
-        day_visits[key]['cnt'] += 1
-        ip = (v.get('ip') or '').strip()
-        if ip:
-            day_visits[key]['ips'].add(ip)
-    for i in range(days - 1, -1, -1):
-        start = today_start - i * 86400
-        labels.append(time.strftime('%d/%m', time.gmtime(start)))
-        d = day_visits.get(int(start // 86400))
-        sv.append(d['cnt'] if d else 0)
-        su.append(len(d['ips']) if d else 0)
+    if days >= 365:
+        # 12 mois : courbe mensuelle (mois calendaires couvrant la fenêtre)
+        g0 = time.gmtime(cutoff)
+        cur = calendar.timegm((g0.tm_year, g0.tm_mon, 1, 0, 0, 0, 0, 0, 0))
+        mkeys, mips = [], []
+        while cur <= now:
+            g = time.gmtime(cur)
+            mkeys.append((g.tm_year, g.tm_mon))
+            labels.append('%02d/%04d' % (g.tm_mon, g.tm_year))
+            sv.append(0)
+            mips.append(set())
+            if g.tm_mon == 12:
+                cur = calendar.timegm((g.tm_year + 1, 1, 1, 0, 0, 0, 0, 0, 0))
+            else:
+                cur = calendar.timegm((g.tm_year, g.tm_mon + 1, 1, 0, 0, 0, 0, 0, 0))
+        for v in visits:
+            if not isinstance(v, dict):
+                continue
+            e = _visit_epoch(v)
+            if e is None:
+                continue
+            g = time.gmtime(e)
+            try:
+                idx = mkeys.index((g.tm_year, g.tm_mon))
+            except ValueError:
+                continue
+            sv[idx] += 1
+            ip = (v.get('ip') or '').strip()
+            if ip:
+                mips[idx].add(ip)
+        su = [len(s) for s in mips]
+    else:
+        # index des visites par jour (un seul passage au lieu de jours x visites)
+        day_visits = {}
+        for v in visits:
+            if not isinstance(v, dict):
+                continue
+            e = _visit_epoch(v)
+            if e is None:
+                continue
+            key = int(e // 86400)
+            day_visits.setdefault(key, {'cnt': 0, 'ips': set()})
+            day_visits[key]['cnt'] += 1
+            ip = (v.get('ip') or '').strip()
+            if ip:
+                day_visits[key]['ips'].add(ip)
+        for i in range(days - 1, -1, -1):
+            start = today_start - i * 86400
+            labels.append(time.strftime('%d/%m', time.gmtime(start)))
+            d = day_visits.get(int(start // 86400))
+            sv.append(d['cnt'] if d else 0)
+            su.append(len(d['ips']) if d else 0)
     # --- Tendances : comparaison avec la période précédente (même durée) ---
     trend_window = days * 86400
     prev_from = cutoff - trend_window
