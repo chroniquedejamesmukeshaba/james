@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SÃ©curitÃ© - Administration</title>
+  <title>Sécurité - Administration</title>
   <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
@@ -15,41 +15,41 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">ðŸ“Š Tableau de bord</a>
-      <a href="articles.html">ðŸ“ Gestion des articles</a>
-      <a href="pages.html">ðŸ“„ Gestion des pages</a>
-      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
-      <a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
       <a href="media.html">🖼️ Médiathèque</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="security.html" class="active">ðŸ” SÃ©curitÃ©</a>
-      <a href="../index.html">ðŸ  Voir le site</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html" class="active">🔐 Sécurité</a>
+      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <h2 style="color:var(--primary);margin-bottom:10px;">SÃ©curitÃ© du compte</h2>
-      <p style="font-size:0.9rem;color:var(--text-light);margin-bottom:25px;">Authentification sÃ©curisÃ©e : sessions Ã  jeton rÃ©vocables, verrouillage aprÃ¨s 5 tentatives Ã©chouÃ©es, double authentification et codes de rÃ©cupÃ©ration.</p>
+      <h2 style="color:var(--primary);margin-bottom:10px;">Sécurité du compte</h2>
+      <p style="font-size:0.9rem;color:var(--text-light);margin-bottom:25px;">Authentification sécurisée : sessions à jeton révocables, verrouillage après 5 tentatives échouées, double authentification et codes de récupération.</p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
 
         <div style="background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);">
-          <h3 style="color:var(--primary);margin-bottom:15px;">ðŸ”‘ Changer le mot de passe</h3>
+          <h3 style="color:var(--primary);margin-bottom:15px;">🔑 Changer le mot de passe</h3>
           <div class="form-group">
             <label>Mot de passe actuel</label>
             <input type="password" id="pwd-current" class="form-input">
           </div>
           <div class="form-group">
-            <label>Nouveau mot de passe (8 caractÃ¨res min.)</label>
+            <label>Nouveau mot de passe (8 caractères min.)</label>
             <input type="password" id="pwd-next" class="form-input">
           </div>
           <div class="form-group">
@@ -61,12 +61,12 @@
         </div>
 
         <div style="background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);">
-          <h3 style="color:var(--primary);margin-bottom:15px;">ðŸ” Authentification Ã  deux facteurs</h3>
-          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;" id="twofa-state">Ã‰tat : â€”</p>
+          <h3 style="color:var(--primary);margin-bottom:15px;">🔐 Authentification à deux facteurs</h3>
+          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;" id="twofa-state">État : —</p>
           <button type="button" class="btn btn-primary" id="twofa-start">Activer le 2FA</button>
-          <button type="button" class="btn btn-outline" id="twofa-off" style="display:none;">DÃ©sactiver le 2FA</button>
+          <button type="button" class="btn btn-outline" id="twofa-off" style="display:none;">Désactiver le 2FA</button>
           <div id="twofa-secret-box" style="display:none;margin-top:15px;border:1px dashed #ddd;border-radius:8px;padding:14px;">
-            <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:8px;">Ajoutez cette clÃ© dans votre application d'authentification (Google Authenticator, Aegis, Authy...) :</p>
+            <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:8px;">Ajoutez cette clé dans votre application d'authentification (Google Authenticator, Aegis, Authy...) :</p>
             <code id="twofa-secret" style="display:block;background:#f5f7fa;padding:10px;border-radius:8px;word-break:break-all;font-size:0.85rem;"></code>
             <div class="form-group" style="margin-top:10px;">
               <label>Code de confirmation</label>
@@ -78,11 +78,11 @@
         </div>
 
         <div style="background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);">
-          <h3 style="color:var(--primary);margin-bottom:12px;">ðŸ›Ÿ Codes de rÃ©cupÃ©ration</h3>
+          <h3 style="color:var(--primary);margin-bottom:12px;">🛟 Codes de récupération</h3>
           <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
-            En cas d'oubli du mot de passe, chaque code permet <b>une seule fois</b> de dÃ©finir un nouveau mot de passe. RÃ©gÃ©nÃ©rez-les et conservez-les dans un endroit sÃ»r.
+            En cas d'oubli du mot de passe, chaque code permet <b>une seule fois</b> de définir un nouveau mot de passe. Régénérez-les et conservez-les dans un endroit sûr.
           </p>
-          <button type="button" class="btn btn-primary" id="recovery-generate">RÃ©gÃ©nÃ©rer mes codes</button>
+          <button type="button" class="btn btn-primary" id="recovery-generate">Régénérer mes codes</button>
           <div id="recovery-codes" style="margin-top:14px;font-family:monospace;font-size:0.95rem;line-height:1.9;"></div>
         </div>
 
@@ -154,7 +154,7 @@
         var n2 = document.getElementById('pwd-next2').value;
         if (n !== n2) { msg(st, 'Les nouveaux mots de passe ne correspondent pas.', false); return; }
         api('/api/auth/password', { current: c, next: n }, 'POST').then(function (r) {
-          if (r.body && r.body.ok) { msg(st, 'Mot de passe modifiÃ©. Toutes les sessions ont Ã©tÃ© rÃ©voquÃ©es â€” reconnectez-vous.', true); setTimeout(function(){ window.location.href = 'login.html'; }, 1600); }
+          if (r.body && r.body.ok) { msg(st, 'Mot de passe modifié. Toutes les sessions ont été révoquées — reconnectez-vous.', true); setTimeout(function(){ window.location.href = 'login.html'; }, 1600); }
           else msg(st, (r.body && r.body.error) || 'Erreur.', false);
         });
       });
@@ -162,7 +162,7 @@
       var ts = document.getElementById('twofa-status2');
       api('/api/auth/status').then(function (r) {
         var on = !!(r.body && r.body.twofa);
-        document.getElementById('twofa-status').textContent = 'Ã‰tat : ' + (on ? 'âœ… Actif' : 'â€” inactif');
+        document.getElementById('twofa-status').textContent = 'État : ' + (on ? '✅ Actif' : '— inactif');
         document.getElementById('twofa-off').style.display = on ? 'inline-block' : 'none';
         document.getElementById('twofa-start').style.display = on ? 'none' : 'inline-block';
       });
@@ -171,21 +171,21 @@
           if (r.body && r.body.ok) {
             document.getElementById('twofa-secret').textContent = r.body.secret;
             document.getElementById('twofa-secret-box').style.display = 'block';
-            msg(ts, 'Saisissez la clÃ© dans votre application puis confirmez avec le code affichÃ©.', true);
-          } else msg(ts, 'Erreur lors de la gÃ©nÃ©ration.', false);
+            msg(ts, 'Saisissez la clé dans votre application puis confirmez avec le code affiché.', true);
+          } else msg(ts, 'Erreur lors de la génération.', false);
         });
       });
       document.getElementById('twofa-confirm').addEventListener('click', function () {
         api('/api/auth/totp/activate', { code: document.getElementById('twofa-code').value }, 'POST').then(function (r) {
-          if (r.body && r.body.ok) { msg(ts, '2FA actif. Ã€ la prochaine connexion, un code vous sera demandÃ©.', true); document.getElementById('twofa-secret-box').style.display = 'none'; window.location.reload(); }
+          if (r.body && r.body.ok) { msg(ts, '2FA actif. À la prochaine connexion, un code vous sera demandé.', true); document.getElementById('twofa-secret-box').style.display = 'none'; window.location.reload(); }
           else msg(ts, (r.body && r.body.error) || 'Code invalide.', false);
         });
       });
       document.getElementById('twofa-off').addEventListener('click', function () {
-        var code = window.prompt('Entrez votre code 2FA actuel pour dÃ©sactiver :');
+        var code = window.prompt('Entrez votre code 2FA actuel pour désactiver :');
         if (!code) return;
         api('/api/auth/totp/deactivate', { code: code }, 'POST').then(function (r) {
-          if (r.body && r.body.ok) { msg(ts, '2FA dÃ©sactivÃ©.', true); window.location.reload(); }
+          if (r.body && r.body.ok) { msg(ts, '2FA désactivé.', true); window.location.reload(); }
           else msg(ts, (r.body && r.body.error) || 'Code invalide.', false);
         });
       });

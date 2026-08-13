@@ -150,7 +150,7 @@
   <script src="../js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      loadAnalytics('all');
+      loadAnalytics('day');
 
       document.querySelectorAll('.period-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -181,9 +181,13 @@
             var bars = '';
             data.chart.labels.forEach(function(label, i) {
               var h = Math.max(4, (data.chart.data[i]/maxVal)*150);
+              var short = label;
+              if (label.indexOf('T') > 0) short = label.slice(11, 16);
+              else if (label.length === 7) short = label.slice(5);
+              else short = label.slice(5);
               bars += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">' +
-                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+data.chart.data[i]+' visites"></div>' +
-                '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">'+label.slice(5)+'</span>' +
+                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+label+' — '+data.chart.data[i]+' visites"></div>' +
+                '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">'+short+'</span>' +
                 '<span style="font-size:0.7rem;font-weight:600;">'+data.chart.data[i]+'</span></div>';
             });
             chart.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 0;overflow-x:auto;">'+bars+'</div>';

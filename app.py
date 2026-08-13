@@ -2575,7 +2575,7 @@ def get_visits():
     return jsonify(read_json('visits'))
 
 @app.route('/api/visits', methods=['POST'])
-@rate_limit('visit_post', 180, 24 * 3600)
+@rate_limit('visit_post', 1000, 24 * 3600)
 def track_visit():
     visits = read_json('visits')
     data = request.json or {}
@@ -2625,18 +2625,17 @@ def visit_analytics():
         else:
             visits.append(v)
     now = time.time()
-    cutoff_time = None
-    if period == 'day':
-        cutoff_time = now - 86400
-    elif period == 'week':
-        cutoff_time = now - 7 * 86400
-    elif period == 'month':
-        cutoff_time = now - 30 * 86400
-    elif period == 'year':
-        cutoff_time = now - 365 * 86400
-    if cutoff_time:
-        cutoff_str = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(cutoff_time))
-        visits = [v for v in visits if v.get('date', '')[:19] >= cutoff_str]
+    gmt = time.gmtime(now)
+    # Périodes calendaires stables : jour = depuis minuit UTC, semaine = depuis
+    # lundi minuit UTC, mois = depuis le 1er du mois, année = depuis le 1er janvier.
+    day_start = calendar.timegm((gmt.tm_year, gmt.tm_mon, gmt.tm_mday, 0, 0, 0, 0, 0, 0))
+    week_start = calendar.timegm((gmt.tm_year, gmt.tm_mon, gmt.tm_mday - gmt.tm_wday, 0, 0, 0, 0, 0, 0))
+    month_start = calendar.timegm((gmt.tm_year, gmt.tm_mon, 1, 0, 0, 0, 0, 0, 0))
+    year_start = calendar.timegm((gmt.tm_year, 1, 1, 0, 0, 0, 0, 0, 0))
+    cutoff_time = {'day': day_start, 'week': week_start, 'month': month_start,
+                   'year': year_start}.get(period)
+    if cutoff_time is not None:
+        visits = [v for v in visits if (_visit_epoch(v) or 0) >= cutoff_time]
     article_data = {}
     page_data = {}
     country_data = {}
@@ -2662,18 +2661,74 @@ def visit_analytics():
     countries_out = []
     for c, cnt in sorted(country_data.items(), key=lambda x: -x[1]):
         countries_out.append({'country': c, 'visits': cnt})
-    days = {}
-    for v in visits:
-        d = v.get('date', '')[:10]
-        if d: days[d] = days.get(d, 0) + 1
-    day_labels = sorted(days.keys())
-    day_data = [days[d] for d in day_labels]
+    # Courbe continue : tous les jours (ou toutes les heures pour « jour ») de la
+    # période sont présents, avec 0 pour les créneaux sans visite.
+    if period == 'day':
+        labels, data = [], []
+        for h in range(24):
+            lbl = time.strftime('%Y-%m-%dT%H:00:00', time.gmtime(day_start + h * 3600))
+            labels.append(lbl)
+            data.append(0)
+        for v in visits:
+            e = _visit_epoch(v)
+            if e is None:
+                continue
+            hour_start = int(e // 3600) * 3600
+            idx = int((hour_start - day_start) // 3600)
+            if 0 <= idx < 24:
+                data[idx] += 1
+    elif period == 'year':
+        # Année : courbe mensuelle (12 barres, lisibles).
+        labels, data = [], []
+        cur = year_start
+        while cur <= now:
+            labels.append(time.strftime('%Y-%m', time.gmtime(cur)))
+            data.append(0)
+            nm = cur + 2678400
+            g = time.gmtime(cur)
+            if g.tm_mon == 12:
+                cur = calendar.timegm((g.tm_year + 1, 1, 1, 0, 0, 0, 0, 0, 0))
+            else:
+                cur = calendar.timegm((g.tm_year, g.tm_mon + 1, 1, 0, 0, 0, 0, 0, 0))
+        for v in visits:
+            e = _visit_epoch(v)
+            if e is None:
+                continue
+            g = time.gmtime(e)
+            idx = (g.tm_year - gmt.tm_year) * 12 + (g.tm_mon - 1)
+            if 0 <= idx < len(data):
+                data[idx] += 1
+    else:
+        from_ts = cutoff_time if cutoff_time is not None else None
+        labels, data = [], []
+        if from_ts is not None:
+            cur = from_ts
+            today_key = int(day_start // 86400)
+            while cur <= now:
+                labels.append(time.strftime('%Y-%m-%d', time.gmtime(cur)))
+                data.append(0)
+                cur += 86400
+        day_counts = {}
+        for v in visits:
+            e = _visit_epoch(v)
+            if e is None:
+                continue
+            d = int(e // 86400)
+            day_counts[d] = day_counts.get(d, 0) + 1
+        if labels:
+            for i, lbl in enumerate(labels):
+                key = calendar.timegm(time.strptime(lbl, '%Y-%m-%d')) // 86400
+                data[i] = day_counts.get(key, 0)
+        else:
+            for d, cnt in sorted(day_counts.items()):
+                labels.append(time.strftime('%Y-%m-%d', time.gmtime(d * 86400)))
+                data.append(cnt)
     return jsonify({
         'total': len(visits),
         'articles': articles_out,
         'pages': pages_out,
         'countries': countries_out,
-        'chart': {'labels': day_labels, 'data': day_data}
+        'chart': {'labels': labels, 'data': data}
     })
 
 # --- STATS ---
@@ -2696,7 +2751,10 @@ def _visit_epoch(v):
     try:
         return calendar.timegm(time.strptime(d[:19], '%Y-%m-%dT%H:%M:%S'))
     except Exception:
-        return None
+        try:
+            return calendar.timegm(time.strptime(d[:10], '%Y-%m-%d'))
+        except Exception:
+            return None
 
 def _detect_device(ua):
     ua = (ua or '').lower()

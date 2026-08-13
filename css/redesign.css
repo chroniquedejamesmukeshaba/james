@@ -1,10 +1,10 @@
 /* ============================================================
-   REFONTE 2026 â€” DESIGN SYSTEM DE LA CHRONIQUE DE JAMES MUKESHABA
+   REFONTE 2026 — DESIGN SYSTEM DE LA CHRONIQUE DE JAMES MUKESHABA
    Couche de modernisation par-dessus style.css / home.css
    (aucune structure HTML obligatoire en moins ; classes nouvelles)
    ============================================================ */
 
-/* ---------- 16. COULEURS : tokens sÃ©mantiques complets ---------- */
+/* ---------- 16. COULEURS : tokens sémantiques complets ---------- */
 
 
 
@@ -30,7 +30,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: 6px;
 }
 
-/* ---------- 14. BOUTONS : hiÃ©rarchie + Ã©tats ---------- */
+/* ---------- 14. BOUTONS : hiérarchie + états ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -102,7 +102,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @keyframes btn-spin { to { transform: rotate(360deg); } }
 html[data-theme="dark"] .btn.is-loading::after { border-color: rgba(0, 0, 0, 0.25); border-top-color: currentColor; }
 
-/* Alias anciens boutons restylÃ©s */
+/* Alias anciens boutons restylés */
 .btn-support {
   background: var(--secondary);
   color: #fff;
@@ -159,7 +159,7 @@ html[data-theme="dark"] .site-header.is-scrolled { box-shadow: 0 6px 24px -12px 
 .header-actions { gap: 10px; }
 .menu-toggle { width: 44px; height: 44px; border-radius: 12px; }
 
-/* Navbar : onglets avec soulignement animÃ© */
+/* Navbar : onglets avec soulignement animé */
 .main-nav-bar {
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -211,7 +211,7 @@ html[data-theme="dark"] .site-header.is-scrolled { box-shadow: 0 6px 24px -12px 
 .top-nav .top-bar { font-size: 0.82rem; padding: 7px 0; }
 .tb-date { color: rgba(255, 255, 255, 0.82); font-weight: 500; }
 
-/* ---------- 12. MENU MOBILE : drawer animÃ© ---------- */
+/* ---------- 12. MENU MOBILE : drawer animé ---------- */
 @media (max-width: 1024px) {
   .menu-toggle { display: inline-flex; }
   #main-nav ul {
@@ -308,7 +308,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
   background: var(--surface);
 }
 
-/* ---------- 6. HERO HOMEPAGE : grille mÃ©dia professionnelle ---------- */
+/* ---------- 6. HERO HOMEPAGE : grille média professionnelle ---------- */
 .home-hero {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -567,13 +567,13 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .read-link:hover { gap: 8px; }
 .read-link:hover svg { transform: translateX(2px); }
 
-/* FeaturedNewsCard : grande carte (1Ã¨re de la section DerniÃ¨res actualitÃ©s) */
+/* FeaturedNewsCard : grande carte (1ère de la section Dernières actualités) */
 .home-card.nc-featured { grid-column: span 2; grid-row: span 2; }
 .home-card.nc-featured .thumb { aspect-ratio: 16 / 10; }
 .home-card.nc-featured h3 { font-size: 1.4rem; }
 .home-card.nc-featured .p-summary { -webkit-line-clamp: 3; font-size: 0.98rem; }
 
-/* TrendingNewsCard : liste numÃ©rotÃ©e (les plus lus) */
+/* TrendingNewsCard : liste numérotée (les plus lus) */
 .pop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .pop-card {
   position: relative;
@@ -662,7 +662,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .compact-card .cc-meta { font-size: 0.74rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
 .compact-card .cc-meta svg { width: 13px; height: 13px; }
 
-/* CategoryCard (widget catÃ©gories) */
+/* CategoryCard (widget catégories) */
 .category-chip {
   display: inline-flex;
   align-items: center;
@@ -983,7 +983,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .reaction-btn:hover { border-color: var(--secondary); color: var(--text); transform: translateY(-1px); }
 .reaction-btn.active { background: var(--secondary-soft); border-color: var(--secondary); color: var(--secondary); }
 
-/* Pager prÃ©cedent / suivant */
+/* Pager précedent / suivant */
 .article-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
 .pager-card {
   display: flex;
@@ -1041,7 +1041,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 #comment-form .form-input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 #comment-form textarea.form-input { min-height: 110px; resize: vertical; }
 
-/* ---------- 10. PAGE CATÃ‰GORIE ---------- */
+/* ---------- 10. PAGE CATÉGORIE ---------- */
 .cat-hero {
   background: linear-gradient(140deg, var(--primary), var(--primary-hover));
   border-radius: var(--radius-card);
@@ -1231,7 +1231,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .search-results { max-height: 60vh; overflow-y: auto; }
 .search-empty { padding: 26px; text-align: center; color: var(--muted); }
 
-/* ---------- 10b. RECHERCHE : page rÃ©sultats ---------- */
+/* ---------- 10b. RECHERCHE : page résultats ---------- */
 .search-hero {
   background: linear-gradient(140deg, var(--primary), var(--primary-hover));
   border-radius: var(--radius-card);
@@ -1245,7 +1245,7 @@ body:not(.admin-body) .theme-toggle:not(.in-header) {
 .search-filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; align-items: center; }
 .search-filters label { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* ---------- FOOTER modernisÃ© ---------- */
+/* ---------- FOOTER modernisé ---------- */
 footer {
   background: #0e2338;
   color: #c7d4e2;
@@ -1684,7 +1684,7 @@ html[data-theme="dark"] .search-panel, html[data-theme="dark"] .live-panel { bac
 html[data-theme="dark"] .cat-hero, html[data-theme="dark"] .search-hero { background: linear-gradient(140deg, #10233a, #0a1a2c); box-shadow: none; }
 html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { background: var(--surface); }
 
-/* ---------- AccessibilitÃ© : rÃ©duit mouvement ---------- */
+/* ---------- Accessibilité : réduit mouvement ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
@@ -1719,7 +1719,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
 .mne-cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .mne-support { width: 100%; justify-content: center; }
 
-/* ---------- Page catÃ©gorie : article principal ---------- */
+/* ---------- Page catégorie : article principal ---------- */
 .cat-hero-top { position: relative; z-index: 1; }
 .cat-principal {
   display: grid;
@@ -1757,7 +1757,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
   display: inline-block;
 }
 
-/* ---------- Page catÃ©gorie : sidebar ---------- */
+/* ---------- Page catégorie : sidebar ---------- */
 .cat-side {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1769,7 +1769,7 @@ html[data-theme="dark"] .mission-banner, html[data-theme="dark"] .card { backgro
   gap: 8px;
 }
 
-/* ---------- RÃ©sultats (recherche / catÃ©gorie) : cartes harmonisÃ©es ---------- */
+/* ---------- Résultats (recherche / catégorie) : cartes harmonisées ---------- */
 .r-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; margin: 22px 0; }
 .r-card {
   background: var(--surface);
@@ -1840,7 +1840,7 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 .sr-block-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; margin: 26px 0 14px; display: flex; align-items: center; gap: 12px; }
 .sr-block-title::before { content: ""; width: 5px; height: 22px; border-radius: 3px; background: linear-gradient(180deg, var(--secondary), var(--secondary-hover)); }
 
-/* ---------- Chips catÃ©gories ---------- */
+/* ---------- Chips catégories ---------- */
 .cat-chip {
   display: inline-flex;
   align-items: center;
@@ -1863,7 +1863,7 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 .sg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .f-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-right: 6px; }
 
-/* ---------- Suggestions instantanÃ©es ---------- */
+/* ---------- Suggestions instantanées ---------- */
 .sg-note { padding: 18px; text-align: center; color: var(--muted); font-size: 0.9rem; }
 .sg-title { padding: 12px 14px 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
 .sg-item {
@@ -1899,13 +1899,13 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 }
 .widget-nl-form input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 
-/* ---------- Pages : contenu Ã©ditorial ---------- */
+/* ---------- Pages : contenu éditorial ---------- */
 .section-title { margin: 40px 0 20px; font-weight: 800; letter-spacing: -0.3px; }
 .page-content { font-size: 1.02rem; line-height: 1.8; color: var(--text); }
 
 /* =====================================================
    AJUSTEMENTS DEMANDE CLIENT : top-bar transparent,
-   logo en majuscules, cartes newsletter, sÃ©lecteur langue
+   logo en majuscules, cartes newsletter, sélecteur langue
    ===================================================== */
 
 /* ---------- TOP-BAR TRANSPARENT (au lieu du fond bleu) ---------- */
@@ -1919,7 +1919,7 @@ html[data-theme="dark"] .filters-extras label { color: var(--muted); }
 .top-bar .social-links a { color: var(--muted); }
 .top-bar .social-links a:hover { background: var(--primary-soft); color: var(--primary); }
 
-/* ---------- HEADER LÃ‰GÃˆREMENT TRANSLUCIDE ---------- */
+/* ---------- HEADER LÉGÈREMENT TRANSLUCIDE ---------- */
 .site-header {
   background: color-mix(in srgb, var(--color-surface) 88%, transparent) !important;
   box-shadow: 0 1px 0 rgba(20, 40, 70, 0.05), 0 6px 24px rgba(16, 40, 68, 0.06);
@@ -1959,7 +1959,7 @@ footer h4[data-i18n="logo_title"], footer h4:first-child {
   font-family: 'Montserrat', sans-serif;
 }
 
-/* ---------- SÃ‰LECTEUR DE LANGUE MODERNE ---------- */
+/* ---------- SÉLECTEUR DE LANGUE MODERNE ---------- */
 .lang-selector {
   display: inline-flex;
   align-items: center;
@@ -2014,7 +2014,7 @@ footer h4[data-i18n="logo_title"], footer h4:first-child {
 }
 html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
 
-/* ---------- CARTE NEWSLETTER Â« Abonnez-vous Â» ---------- */
+/* ---------- CARTE NEWSLETTER « Abonnez-vous » ---------- */
 .newsletter-section { margin-top: 8px; }
 .newsletter-inner { display: block !important; }
 .nl-card {
@@ -2111,7 +2111,7 @@ html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
 .newsletter-form .btn { align-self: flex-start; }
 .newsletter-form .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ---------- CARTE NOTIFICATIONS Â« Recevez les derniÃ¨res actualitÃ©s Â» ---------- */
+/* ---------- CARTE NOTIFICATIONS « Recevez les dernières actualités » ---------- */
 .newsletter-inner.notif-inner { display: flex !important; align-items: center; gap: 22px; flex-wrap: wrap; }
 .ntf-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 6px; color: var(--text); }
 .ntf-desc { font-size: 0.88rem; color: var(--muted); margin: 0; line-height: 1.5; }

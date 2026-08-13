@@ -24,12 +24,12 @@
   <meta property="og:locale" content="fr_FR">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Article - Chronique de James Mukeshaba">
-  <meta property="og:description" content="MÃ©dia d'information en ligne, sensibilisation et projets communautaires.">
+  <meta property="og:description" content="Média d'information en ligne, sensibilisation et projets communautaires.">
   <meta property="og:url" content="https://chroniquedejamesmukeshaba.pythonanywhere.com/article.html">
   <meta property="og:image" content="https://chroniquedejamesmukeshaba.pythonanywhere.com/assets/images/logo.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Article - Chronique de James Mukeshaba">
-  <meta name="twitter:description" content="MÃ©dia d'information en ligne, sensibilisation et projets communautaires.">
+  <meta name="twitter:description" content="Média d'information en ligne, sensibilisation et projets communautaires.">
   <meta name="twitter:image" content="https://chroniquedejamesmukeshaba.pythonanywhere.com/assets/images/logo.png">
 </head>
 <body>
@@ -86,7 +86,7 @@
 
   <section class="breadcrumb">
     <div class="container" id="breadcrumb-article">
-      <a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <a href="actualites.html" data-i18n="breadcrumb_actualites">ActualitÃ©s</a> / <span id="article-breadcrumb-title" data-i18n="breadcrumb_article">Article</span>
+      <a href="index.html" data-i18n="breadcrumb_home">Accueil</a> / <a href="actualites.html" data-i18n="breadcrumb_actualites">Actualités</a> / <span id="article-breadcrumb-title" data-i18n="breadcrumb_article">Article</span>
     </div>
   </section>
 
@@ -95,7 +95,7 @@
       <div class="side-main">
       <article class="article-detail">
         <div class="article-kicker">
-          <span class="chip" id="article-category" style="background:rgba(192,57,43,0.08);color:var(--secondary);border-color:transparent;">ActualitÃ©</span>
+          <span class="chip" id="article-category" style="background:rgba(192,57,43,0.08);color:var(--secondary);border-color:transparent;">Actualité</span>
           <span class="priority-badge" id="article-priority" style="display:none;"></span>
         </div>
 
@@ -130,7 +130,7 @@
           <button class="share-btn share-copy" id="share-copy" aria-label="Copier le lien"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg><span data-i18n="share_copy">Copier le lien</span></button>
         </div>
 
-        <div class="reactions" id="reactions" aria-label="RÃ©actions"></div>
+        <div class="reactions" id="reactions" aria-label="Réactions"></div>
       </article>
 
       <nav class="article-pager" aria-label="Navigation entre articles">
@@ -389,7 +389,7 @@ function renderShare(article) {
         document.getElementById('share-li').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u;
         document.getElementById('share-copy').onclick = function () {
           (navigator.clipboard ? navigator.clipboard.writeText(window.location.href) : Promise.reject())
-            .then(function () { showToast(typeof t === 'function' ? t('copied_link') : 'Lien copiÃ© dans le presse-papiers.'); trackShare('copy'); })
+            .then(function () { showToast(typeof t === 'function' ? t('copied_link') : 'Lien copié dans le presse-papiers.'); trackShare('copy'); })
             .catch(function () { showToast('Impossible de copier le lien.', 'error'); });
         };
         ['fb', 'wa', 'x', 'li'].forEach(function (ch) {
@@ -406,11 +406,11 @@ function renderShare(article) {
       }
 
       var REACTIONS = [
-        { id: 'like', emoji: 'ðŸ‘', label: 'J\'aime' },
-        { id: 'love', emoji: 'â¤ï¸', label: 'J\'adore' },
-        { id: 'wow', emoji: 'ðŸ˜®', label: 'Important' },
-        { id: 'sad', emoji: 'ðŸ˜¢', label: 'Triste' },
-        { id: 'angry', emoji: 'ðŸ˜¡', label: 'RÃ©voltant' }
+        { id: 'like', emoji: '👍', label: 'J\'aime' },
+        { id: 'love', emoji: '❤️', label: 'J\'adore' },
+        { id: 'wow', emoji: '😮', label: 'Important' },
+        { id: 'sad', emoji: '😢', label: 'Triste' },
+        { id: 'angry', emoji: '😡', label: 'Révoltant' }
       ];
       function renderReactions(counts) {
         var box = document.getElementById('reactions');
@@ -447,7 +447,7 @@ function renderShare(article) {
         document.getElementById('article-breadcrumb-title').textContent = article.title;
         var catEl = document.getElementById('article-category');
         if (catEl) {
-          catEl.textContent = article.category || 'ActualitÃ©';
+          catEl.textContent = article.category || 'Actualité';
           catEl.style.cursor = article.cat ? 'pointer' : 'default';
           catEl.addEventListener('click', function () {
             if (article.cat) window.location.href = '/categorie/' + article.cat;
@@ -458,7 +458,7 @@ function renderShare(article) {
         var pb = document.getElementById('article-priority');
         if (article.priority === 'breaking') {
           pb.className = 'priority-badge breaking';
-          pb.textContent = 'ðŸ”´ ' + (typeof t === 'function' ? t('home_breaking') : 'DerniÃ¨re heure');
+          pb.textContent = '🔴 ' + (typeof t === 'function' ? t('home_breaking') : 'Dernière heure');
           pb.style.display = 'inline-block';
         } else if (article.priority === 'important') {
           pb.className = 'priority-badge important';
@@ -475,11 +475,11 @@ function renderShare(article) {
         avatar.textContent = authorName.trim().charAt(0).toUpperCase();
         document.getElementById('article-author').textContent = authorName;
         document.getElementById('article-meta').textContent =
-          (article.date || '') + ' â€¢ ' + (typeof t === 'function' ? t('reading_time') : 'Lecture') + ' : ' + readingMinutes(article.content) + ' min';
+          (article.date || '') + ' • ' + (typeof t === 'function' ? t('reading_time') : 'Lecture') + ' : ' + readingMinutes(article.content) + ' min';
         var mod = document.getElementById('article-modified');
         if (article.modified) {
           mod.style.display = 'inline';
-          mod.textContent = (typeof t === 'function' ? t('modified') : 'Mis Ã  jour') + ' : ' + String(article.modified).slice(0, 10);
+          mod.textContent = (typeof t === 'function' ? t('modified') : 'Mis à jour') + ' : ' + String(article.modified).slice(0, 10);
         } else mod.style.display = 'none';
 
         var imgEl = document.getElementById('article-image');
@@ -514,7 +514,7 @@ function renderShare(article) {
           vids.innerHTML = videoList.map(function (v) {
             var m = String(v).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]+)/);
             var src = m ? 'https://www.youtube.com/embed/' + m[1] : v;
-            return '<iframe src="' + esc(src) + '" loading="lazy" allowfullscreen title="VidÃ©o"></iframe>';
+            return '<iframe src="' + esc(src) + '" loading="lazy" allowfullscreen title="Vidéo"></iframe>';
           }).join('');
         } else vids.style.display = 'none';
 
@@ -612,7 +612,7 @@ function renderShare(article) {
         }
         var article = articles.find(function (a) { return a.id == articleId; });
         if (!article) {
-          article = { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Test', content: '<p>Article par dÃ©faut.</p>', date: '2026-06-20', author: 'James Mukeshaba' };
+          article = { id: 1, title: 'Lancement officiel de la Chronique au Canada', category: 'International', excerpt: 'Test', content: '<p>Article par défaut.</p>', date: '2026-06-20', author: 'James Mukeshaba' };
         }
         displayArticle(article);
       }
