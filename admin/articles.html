@@ -226,7 +226,7 @@
   <script src="../js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      fetch('/api/admin/articles', { headers: { 'Cache-Control': 'no-cache' } })
+      fetch('/api/admin/articles', { headers: (function () { var h = { 'Cache-Control': 'no-cache' }; var t = localStorage.getItem('admin_token'); if (t) h['X-Admin-Token'] = t; return h; })() })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (articles) {
           var cats = document.getElementById('cats-wrap');
