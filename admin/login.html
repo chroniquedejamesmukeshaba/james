@@ -2,89 +2,150 @@
 <html lang="fr">
 <head>
   <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connexion - Administration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Chronique de James Mukeshaba</title>
   <link rel="stylesheet" href="../css/tokens.css">
-<link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body class="admin-body login-page">
   <div class="login-shell">
 
-    <aside class="login-brand" aria-hidden="true">
-      <div class="login-brand-bg"></div>
-      <div class="login-brand-inner">
+    <!-- ===== Panneau visuel : photo de l'equipe ===== -->
+    <aside class="login-visual" aria-hidden="true">
+      <img src="../assets/images/equipechronique.jpeg" alt="" class="login-visual-photo" loading="lazy" decoding="async">
+      <div class="login-visual-overlay"></div>
+      <div class="login-visual-shade"></div>
+
+      <div class="login-visual-top">
         <img src="../assets/images/logo.png" alt="" class="login-brand-logo" loading="lazy" decoding="async">
-        <h1>Chronique de James&nbsp;Mukeshaba</h1>
-        <p>Espace r&eacute;serv&eacute; &agrave; la r&eacute;daction</p>
+        <span class="login-visual-badge">Espace r&eacute;daction</span>
+      </div>
+
+      <div class="login-visual-body">
+        <h1>Chronique de<br>James&nbsp;Mukeshaba</h1>
+        <p>Journalisme en continu depuis la RDC, au service des communaut&eacute;s.</p>
         <ul class="login-feats">
           <li>
             <span class="lf-ico">&#128274;</span>
-            <span><strong>S&eacute;curit&eacute; renforc&eacute;e</strong><small>Connexion prot&eacute;g&eacute;e avec code 2FA</small></span>
+            <span><strong>V&eacute;rification en deux &eacute;tapes</strong><small>Protection renforc&eacute;e de chaque session</small></span>
           </li>
           <li>
             <span class="lf-ico">&#9998;</span>
-            <span><strong>Journalisme en continu</strong><small>Publiez et traduisez en 6 langues</small></span>
+            <span><strong>R&eacute;daction en 6 langues</strong><small>Publiez, traduisez, partagez</small></span>
           </li>
           <li>
             <span class="lf-ico">&#128200;</span>
-            <span><strong>Audience en temps r&eacute;el</strong><small>Suivez lectures, partages et r&eacute;actions</small></span>
+            <span><strong>Audience en temps r&eacute;el</strong><small>Lectures, partages, r&eacute;actions</small></span>
           </li>
         </ul>
       </div>
-      <div class="login-brand-foot">&copy; 2026 Chronique de James Mukeshaba &mdash; RDC &amp; Canada</div>
+
+      <div class="login-visual-team">
+        <div class="login-team-avatars">
+          <img src="../assets/images/Yagirwa Gedeon Guide.jpg" alt="Yagirwa G&eacute;d&eacute;on" loading="lazy" decoding="async">
+          <img src="../assets/images/Blaise Irenge.jpg" alt="Blaise Irenge" loading="lazy" decoding="async">
+          <img src="../assets/images/Lufungulo MIchael.jpg" alt="Lufungulo Michael" loading="lazy" decoding="async">
+          <img src="../assets/images/serge irenge.jpeg" alt="Serge Irenge" loading="lazy" decoding="async">
+          <img src="../assets/images/Bubek.jpg" alt="Bubek" loading="lazy" decoding="async">
+        </div>
+        <div class="login-team-caption">
+          <strong>L&rsquo;&eacute;quipe de la Chronique</strong>
+          <small>Journalistes &amp; correspondants &mdash; RDC &amp; Canada</small>
+        </div>
+      </div>
+
+      <div class="login-visual-foot">&copy; 2026 Chronique de James Mukeshaba</div>
     </aside>
 
+    <!-- ===== Panneau de connexion : 2 etapes ===== -->
     <main class="login-main">
       <div class="login-card" id="login-card">
+
         <div class="login-head">
-          <div class="adm-logo-big" aria-hidden="true">&#128273;</div>
-          <h1>Connexion</h1>
-          <p class="login-sub">Acc&eacute;dez &agrave; votre espace d&rsquo;administration</p>
+          <div class="login-head-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h1 id="login-title">Connexion</h1>
+          <p class="login-sub" id="login-sub">Acc&eacute;dez &agrave; votre espace d&rsquo;administration</p>
+        </div>
+
+        <div class="login-steps" id="login-steps" aria-hidden="true">
+          <span class="login-step-dot is-active" id="step-dot-1">1</span>
+          <span class="login-step-line" id="step-line"></span>
+          <span class="login-step-dot" id="step-dot-2">2</span>
+          <span class="login-step-tags">
+            <span id="step-tag-1">Identifiants</span>
+            <span id="step-tag-2">V&eacute;rification</span>
+          </span>
         </div>
 
         <div id="login-error" class="login-error" role="alert" hidden></div>
 
         <form id="login-form" novalidate autocomplete="on">
-          <div class="login-field">
-            <label for="username">Identifiant</label>
-            <div class="login-input-wrap">
-              <span class="login-ico" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </span>
-              <input type="text" id="username" class="login-input" placeholder="Nom d'utilisateur" required autocomplete="username" autocapitalize="none" spellcheck="false">
+
+          <!-- Etape 1 : identifiants -->
+          <div id="login-step-1">
+            <div class="login-field">
+              <label for="username">Identifiant</label>
+              <div class="login-input-wrap">
+                <span class="login-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <input type="text" id="username" class="login-input" placeholder="Nom d'utilisateur" required autocomplete="username" autocapitalize="none" spellcheck="false">
+              </div>
+            </div>
+
+            <div class="login-field">
+              <label for="password">Mot de passe</label>
+              <div class="login-input-wrap">
+                <span class="login-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <input type="password" id="password" class="login-input" placeholder="Mot de passe" required autocomplete="current-password">
+                <button type="button" class="login-eye" id="toggle-pass" aria-label="Afficher ou masquer le mot de passe" aria-pressed="false">
+                  <svg class="eye-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="login-field">
-            <label for="password">Mot de passe</label>
-            <div class="login-input-wrap">
-              <span class="login-ico" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </span>
-              <input type="password" id="password" class="login-input" placeholder="Mot de passe" required autocomplete="current-password">
-              <button type="button" class="login-eye" id="toggle-pass" aria-label="Afficher ou masquer le mot de passe" aria-pressed="false">
-                <svg class="eye-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-              </button>
+          <!-- Etape 2 : code 2FA -->
+          <div id="login-step-2" hidden>
+            <div class="login-2fa-head">
+              <div class="login-2fa-user" id="login-2fa-user">
+                <span class="login-2fa-avatar" id="login-2fa-avatar">?</span>
+                <span>
+                  <small>Connect&eacute; en tant que</small>
+                  <strong id="login-2fa-name">&hellip;</strong>
+                </span>
+              </div>
+              <p class="login-2fa-tip">Entrez le code &agrave; 6 chiffres g&eacute;n&eacute;r&eacute; par votre application d&rsquo;authentification (Google Authenticator, Aegis, Authy&hellip;).</p>
             </div>
-          </div>
 
-          <div class="login-field" id="totp-wrap" hidden>
-            <label for="totp-code">Code de s&eacute;curit&eacute; (2FA)</label>
-            <div class="login-input-wrap">
-              <span class="login-ico" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </span>
-              <input type="text" id="totp-code" class="login-input" placeholder="6 chiffres" inputmode="numeric" maxlength="6" autocomplete="one-time-code" pattern="[0-9]*">
+            <div class="login-field">
+              <label for="otp-box-0">Code de s&eacute;curit&eacute; (2FA)</label>
+              <div class="login-otp" id="login-otp">
+                <input type="text" id="otp-box-0" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" pattern="[0-9]" aria-label="Chiffre 1">
+                <input type="text" id="otp-box-1" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="off" pattern="[0-9]" aria-label="Chiffre 2">
+                <input type="text" id="otp-box-2" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="off" pattern="[0-9]" aria-label="Chiffre 3">
+                <input type="text" id="otp-box-3" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="off" pattern="[0-9]" aria-label="Chiffre 4">
+                <input type="text" id="otp-box-4" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="off" pattern="[0-9]" aria-label="Chiffre 5">
+                <input type="text" id="otp-box-5" class="login-otp-box" inputmode="numeric" maxlength="1" autocomplete="off" pattern="[0-9]" aria-label="Chiffre 6">
+              </div>
+              <input type="hidden" id="totp-code" autocomplete="off">
+              <small class="login-hint" id="totp-hint">Le code expire apr&egrave;s quelques secondes.</small>
             </div>
-            <small class="login-hint">Entrez le code de votre application d&rsquo;authentification.</small>
+
+            <button type="button" class="login-back" id="totp-back">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Revenir aux identifiants
+            </button>
           </div>
 
           <button type="submit" class="login-btn" id="login-submit">
@@ -95,7 +156,10 @@
 
         <div class="login-foot">
           <a href="../index.html" class="adm-link">&larr; Retour au site</a>
-          <span class="login-secure">&#128274; Connexion s&eacute;curis&eacute;e</span>
+          <span class="login-secure">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Connexion s&eacute;curis&eacute;e
+          </span>
         </div>
       </div>
     </main>
@@ -103,8 +167,46 @@
   </div>
   <script>
     window.addEventListener('load', function () {
-      var t = document.getElementById('totp-code');
-      if (t) t.addEventListener('input', function () { t.value = t.value.replace(/\D/g, ''); });
+      var boxes = [0, 1, 2, 3, 4, 5].map(function (i) { return document.getElementById('otp-box-' + i); });
+      var hiddenCode = document.getElementById('totp-code');
+      function syncOtp() {
+        var v = '';
+        boxes.forEach(function (b) { v += (b && b.value) || ''; });
+        if (hiddenCode) hiddenCode.value = v;
+        boxes.forEach(function (b, i) {
+          if (b) b.classList.toggle('is-filled', !!b.value);
+        });
+        return v;
+      }
+      boxes.forEach(function (box, i) {
+        if (!box) return;
+        box.addEventListener('input', function () {
+          box.value = box.value.replace(/\D/g, '');
+          syncOtp();
+          if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+          if (syncOtp().length === 6 && i === boxes.length - 1) {
+            var f = document.getElementById('login-form');
+            if (f && f.requestSubmit) f.requestSubmit(); else if (f) f.submit();
+          }
+        });
+        box.addEventListener('keydown', function (e) {
+          if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+          if (e.key === 'ArrowLeft' && i > 0) boxes[i - 1].focus();
+          if (e.key === 'ArrowRight' && i < boxes.length - 1) boxes[i + 1].focus();
+        });
+        box.addEventListener('paste', function (e) {
+          e.preventDefault();
+          var text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+          for (var k = 0; k < text.length && k < boxes.length; k++) boxes[k].value = text[k];
+          syncOtp();
+          if (text.length === 6) {
+            var f = document.getElementById('login-form');
+            if (f && f.requestSubmit) f.requestSubmit(); else if (f) f.submit();
+          } else if (text.length > 0 && text.length < 6) {
+            boxes[text.length].focus();
+          }
+        });
+      });
       var eye = document.getElementById('toggle-pass');
       var pwd = document.getElementById('password');
       if (eye && pwd) {

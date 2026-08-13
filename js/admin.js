@@ -32,11 +32,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===== LOGIN (authentification securisee : token serveur + 2FA) =====
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
-    const totpWrap = document.getElementById('totp-wrap');
     const totpInput = document.getElementById('totp-code');
     const loginError = document.getElementById('login-error');
     const loginSubmit = document.getElementById('login-submit');
     const loginCard = document.getElementById('login-card');
+    const step1 = document.getElementById('login-step-1');
+    const step2 = document.getElementById('login-step-2');
+    const dot1 = document.getElementById('step-dot-1');
+    const dot2 = document.getElementById('step-dot-2');
+    const line = document.getElementById('step-line');
+    const tag1 = document.getElementById('step-tag-1');
+    const tag2 = document.getElementById('step-tag-2');
+    const totpBack = document.getElementById('totp-back');
     function setError(msg, isInfo) {
       if (!loginError) { showToast(msg, 'error'); return; }
       loginError.hidden = false;
@@ -63,13 +70,56 @@ document.addEventListener('DOMContentLoaded', function () {
       if (lbl) lbl.textContent = on ? 'Connexion en cours\u2026' : 'Se connecter';
       if (sp) sp.hidden = !on;
     }
+    function setStep(step) {
+      if (step === 2) {
+        if (step1) { step1.style.display = 'none'; }
+        if (step2) {
+          step2.hidden = false;
+          step2.classList.remove('totp-reveal');
+          void step2.offsetWidth;
+          step2.classList.add('totp-reveal');
+        }
+        if (dot1) dot1.classList.remove('is-active');
+        if (dot2) dot2.classList.add('is-active');
+        if (line) line.classList.add('is-active');
+        if (tag1) tag1.classList.remove('is-on');
+        if (tag2) tag2.classList.add('is-on');
+        var t = document.getElementById('login-title');
+        if (t) t.textContent = 'V\u00e9rification';
+        var s = document.getElementById('login-sub');
+        if (s) s.textContent = 'Confirmez votre identit\u00e9 avec le code 2FA';
+        if (totpBack) totpBack.style.display = 'inline-flex';
+        var box0 = document.getElementById('otp-box-0');
+        if (box0) box0.focus();
+      } else {
+        if (step1) step1.style.display = '';
+        if (step2) step2.hidden = true;
+        if (dot1) dot1.classList.add('is-active');
+        if (dot2) dot2.classList.remove('is-active');
+        if (line) line.classList.remove('is-active');
+        if (tag1) tag1.classList.add('is-on');
+        if (tag2) tag2.classList.remove('is-on');
+        var t2 = document.getElementById('login-title');
+        if (t2) t2.textContent = 'Connexion';
+        var s2 = document.getElementById('login-sub');
+        if (s2) s2.textContent = 'Acc\u00e9dez \u00e0 votre espace d\u2019administration';
+        if (totpBack) totpBack.style.display = 'none';
+        var u2 = document.getElementById('username');
+        if (u2) u2.focus();
+      }
+    }
     function showTotp() {
-      if (!totpWrap) return;
-      totpWrap.hidden = false;
-      totpWrap.classList.remove('totp-reveal');
-      void totpWrap.offsetWidth;
-      totpWrap.classList.add('totp-reveal');
-      if (totpInput) totpInput.focus();
+      setStep(2);
+    }
+    if (totpBack) {
+      totpBack.addEventListener('click', function () {
+        if (totpInput) totpInput.value = '';
+        [0,1,2,3,4,5].forEach(function (i) {
+          var b = document.getElementById('otp-box-' + i);
+          if (b) b.value = '';
+        });
+        setStep(1);
+      });
     }
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -97,6 +147,10 @@ document.addEventListener('DOMContentLoaded', function () {
           setLoading(false);
           if (res.body && res.body.ok && res.body.token) { grant(res.body); return; }
           if (res.body && res.body.totp) {
+            var nm = document.getElementById('login-2fa-name');
+            if (nm && res.body.name) nm.textContent = res.body.name;
+            var av = document.getElementById('login-2fa-avatar');
+            if (av && res.body.name) av.textContent = res.body.name.trim().charAt(0).toUpperCase();
             showTotp();
             setError('Entrez le code 2FA affiché dans votre application d\u2019authentification.', true);
             return;

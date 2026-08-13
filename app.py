@@ -3149,7 +3149,8 @@ def auth():
         code = re.sub(r'\D', '', str(d.get('totp') or ''))
         if not totp_valid(acct.get('totp_secret') or '', code):
             _record_fail(ip)
-            return jsonify({'ok': False, 'error': 'code de securite invalide', 'totp': True}), 401
+            return jsonify({'ok': False, 'error': 'code de securite invalide',
+                            'totp': True, 'name': acct.get('name')}), 401
     AUTH_FAILS.pop(ip, None)
     token = _grant_token(acct)
     log_activity('connexion', 'connexion a la plateforme', ip=ip, acct=acct)
