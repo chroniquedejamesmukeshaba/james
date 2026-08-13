@@ -27,6 +27,97 @@ function editorPreview(src) {
   return html.join('');
 }
 
+// ===== HELPERS GLOBAUX (utilisés aussi par les scripts inline des pages admin) =====
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+var useServer = window.location.protocol !== 'file:';
+function authHeaders(extra) {
+  var h = extra || {'Content-Type':'application/json'};
+  var token = localStorage.getItem('admin_token');
+  if (token) h['X-Admin-Token'] = token;
+  return h;
+}
+
+function apiGet(path) {
+  if (!useServer) return null;
+  return fetch('/api' + path, {headers: authHeaders()}).then(function(r){
+    if (r.status === 401) { forceLogin(); return null; }
+    return r.ok ? r.json() : null;
+  }).catch(function(){return null});
+}
+function apiPost(path, data) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'POST',headers:authHeaders(),body:JSON.stringify(data)})
+    .then(function(r){
+      if (r.status === 401) { forceLogin(); return null; }
+      return r.ok ? r.json() : null;
+    }).catch(function(){return null});
+}
+function apiDel(path) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){
+    if (r.status === 401) { forceLogin(); return null; }
+    return r.ok;
+  }).catch(function(){return false});
+}
+function apiPut(path, data) {
+  if (!useServer) return null;
+  return fetch('/api' + path,{method:'PUT',headers:authHeaders(),body:JSON.stringify(data)})
+    .then(function(r){
+      if (r.status === 401) { forceLogin(); return null; }
+      return r.ok ? r.json() : null;
+    }).catch(function(){return null});
+}
+function forceLogin() {
+  if (window.location.protocol === 'file:') return;
+  var last = parseInt(localStorage.getItem('admin_redirecting') || '0', 10);
+  var now = Date.now();
+  // anti-boucle : max 1 redirection / 3 s (le flag n'est plus permanent)
+  if (now - last < 3000) return;
+  localStorage.setItem('admin_redirecting', String(now));
+  localStorage.removeItem('admin_logged');
+  localStorage.removeItem('admin_name');
+  localStorage.removeItem('admin_token');
+  window.location.href = 'login.html';
+}
+
+// ===== RBAC : roles et acces aux pages (exposés globalement pour admin-layout.js) =====
+const ROLE_LABELS = { super_admin:'Super administrateur', admin:'Administrateur', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
+const ROLE_PAGES = {
+  'index.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
+  'articles.html': ['super_admin','admin','editeur','journaliste'],
+  'media.html': ['super_admin','admin','editeur','journaliste'],
+  'comments.html': ['super_admin','admin','moderateur'],
+  'analytics.html': ['super_admin','admin','analyste'],
+  'pages.html': ['super_admin','admin'],
+  'campaigns.html': ['super_admin','admin'],
+  'donations.html': ['super_admin','admin'],
+  'ads.html': ['super_admin','admin'],
+  'newsletter.html': ['super_admin','admin'],
+  'security.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
+  'journal.html': ['super_admin','admin']
+};
+function currentAdminRole() { return localStorage.getItem('admin_role') || ''; }
+function pageAllowed(page, role) {
+  var allowed = ROLE_PAGES[page] || [];
+  return allowed.indexOf(role) !== -1;
+}
+window.ROLE_LABELS = ROLE_LABELS;
+window.ROLE_PAGES = ROLE_PAGES;
+window.currentAdminRole = currentAdminRole;
+window.pageAllowed = pageAllowed;
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+window.apiPut = apiPut;
+window.apiDel = apiDel;
+window.authHeaders = authHeaders;
+window.forceLogin = forceLogin;
+window.esc = escHtml;
+
 document.addEventListener('DOMContentLoaded', function () {
 
   // ===== LOGIN (authentification securisee : token serveur + 2FA) =====
@@ -167,81 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== DATA API HELPERS =====
-var useServer = window.location.protocol !== 'file:';
-function authHeaders(extra) {
-  var h = extra || {'Content-Type':'application/json'};
-  var token = localStorage.getItem('admin_token');
-  if (token) h['X-Admin-Token'] = token;
-  return h;
-}
-
-function apiGet(path) {
-  if (!useServer) return null;
-  return fetch('/api' + path, {headers: authHeaders()}).then(function(r){
-    if (r.status === 401) { forceLogin(); return null; }
-    return r.ok ? r.json() : null;
-  }).catch(function(){return null});
-}
-function apiPost(path, data) {
-  if (!useServer) return null;
-  return fetch('/api' + path,{method:'POST',headers:authHeaders(),body:JSON.stringify(data)})
-    .then(function(r){
-      if (r.status === 401) { forceLogin(); return null; }
-      return r.ok ? r.json() : null;
-    }).catch(function(){return null});
-}
-function apiDel(path) {
-  if (!useServer) return null;
-  return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){
-    if (r.status === 401) { forceLogin(); return null; }
-    return r.ok;
-  }).catch(function(){return false});
-}
-function apiPut(path, data) {
-  if (!useServer) return null;
-  return fetch('/api' + path,{method:'PUT',headers:authHeaders(),body:JSON.stringify(data)})
-    .then(function(r){
-      if (r.status === 401) { forceLogin(); return null; }
-      return r.ok ? r.json() : null;
-    }).catch(function(){return null});
-}
-function forceLogin() {
-  if (window.location.protocol === 'file:') return;
-  var last = parseInt(localStorage.getItem('admin_redirecting') || '0', 10);
-  var now = Date.now();
-  // anti-boucle : max 1 redirection / 3 s (le flag n'est plus permanent)
-  if (now - last < 3000) return;
-  localStorage.setItem('admin_redirecting', String(now));
-  localStorage.removeItem('admin_logged');
-  localStorage.removeItem('admin_name');
-  localStorage.removeItem('admin_token');
-  window.location.href = 'login.html';
-}
-
-// ===== RBAC : roles et acces aux pages =====
-const ROLE_LABELS = { super_admin:'Super administrateur', admin:'Administrateur', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
-const ROLE_PAGES = {
-  'index.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
-  'articles.html': ['super_admin','admin','editeur','journaliste'],
-  'media.html': ['super_admin','admin','editeur','journaliste'],
-  'comments.html': ['super_admin','admin','moderateur'],
-  'analytics.html': ['super_admin','admin','analyste'],
-  'pages.html': ['super_admin','admin'],
-  'campaigns.html': ['super_admin','admin'],
-  'donations.html': ['super_admin','admin'],
-  'ads.html': ['super_admin','admin'],
-  'newsletter.html': ['super_admin','admin'],
-  'security.html': ['super_admin','admin','editeur','moderateur','journaliste','analyste'],
-  'journal.html': ['super_admin','admin']
-};
-function currentAdminRole() { return localStorage.getItem('admin_role') || ''; }
-function pageAllowed(page, role) {
-  var allowed = ROLE_PAGES[page] || [];
-  return allowed.indexOf(role) !== -1;
-}
-
-// ===== CHECK AUTH =====
+  // ===== CHECK AUTH =====
   if (document.querySelector('.admin-body') && !document.querySelector('.login-page')) {
     if (localStorage.getItem('admin_logged') !== 'true') {
       window.location.href = 'login.html';
@@ -302,10 +319,11 @@ function pageAllowed(page, role) {
       }
       // filtre la sidebar : masque les liens inaccesibles + injecte Comptes & Journal
       var sidebar = document.querySelector('.admin-sidebar');
-      if (sidebar) {        sidebar.querySelectorAll('a[href$=".html"]').forEach(function (a) {
+      if (sidebar) {        sidebar.querySelectorAll('a[href]').forEach(function (a) {
           var href = a.getAttribute('href').split('/').pop();
           if (href === '../index.html') href = 'index.html';
-          if (!pageAllowed(href, role)) a.style.display = 'none';
+          var page = href.split('#')[0];
+          if (page && !pageAllowed(page, role)) a.style.display = 'none';
         });
         if (pageAllowed('journal.html', role) && !sidebar.querySelector('a[href="journal.html"]')) {
           var li = document.createElement('a');
@@ -400,6 +418,7 @@ function pageAllowed(page, role) {
       var mediaUploadInput = document.getElementById('media-upload-input');
       var editorMediaBtn = document.getElementById('editor-media-btn');
       window.loadedMediaPicker = function(){ mediaFilterAndDraw(); };
+      window.loadedMediaContent = function(){ mediaFilterAndDraw(); };
       function mediaFilterAndDraw() {
         apiGet('/media').then(function(media){
           if (!mediaGrid) return;
@@ -990,10 +1009,11 @@ function pageAllowed(page, role) {
       }
       ctx.textAlign = 'center';
       var step = Math.max(1, Math.ceil(n / 12));
+      var denom = Math.max(1, n - 1);
       for (var li = 0; li < n; li += step) {
-        ctx.fillText(series[0].labels[li], padL + plotW * li / (n - 1), h - 7);
+        ctx.fillText(series[0].labels[li], padL + plotW * li / denom, h - 7);
       }
-      function xAt(k) { return padL + plotW * k / (n - 1); }
+      function xAt(k) { return padL + plotW * k / denom; }
       function yAt(v) { return padT + plotH - (v / max) * plotH; }
       series.forEach(function (s, si) {
         var color = s.color || palette[si % palette.length];
@@ -1042,7 +1062,12 @@ function pageAllowed(page, role) {
         t.style.display = 'block';
         window.Dash.line(canvas, series, palette);
       };
-      canvas.addEventListener('mousemove', canvas._draw);
+      if (!canvas._hasMove) {
+        canvas._hasMove = true;
+        canvas.addEventListener('mousemove', function (ev) {
+          if (canvas._draw) canvas._draw(ev);
+        });
+      }
       if (!canvas._cl) {
         canvas._cl = true;
         canvas.addEventListener('mouseleave', function () {
