@@ -140,7 +140,7 @@ html[data-theme="dark"] .btn.is-loading::after { border-color: rgba(0, 0, 0, 0.2
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 900;
+  z-index: 2000;
   background: var(--surface);
   box-shadow: 0 1px 0 rgba(16, 40, 68, 0.08);
   transition: box-shadow 0.25s ease;
