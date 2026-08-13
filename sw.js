@@ -1,4 +1,4 @@
-const CACHE = 'chronique-v15';
+const CACHE = 'chronique-v16';
 const STATIC = [
   '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
@@ -58,7 +58,17 @@ self.addEventListener('fetch', function(e) {
   }
 
   e.respondWith(
-    caches.match(req).then(function(r) { return r || fetch(req); })
+    caches.match(req).then(function(r) {
+      if (r) {
+        fetch(req).then(function(netResp) {
+          if (netResp && netResp.ok) {
+            caches.open(CACHE).then(function(c) { c.put(req, netResp); });
+          }
+        }).catch(function() {});
+        return r;
+      }
+      return fetch(req);
+    })
   );
 });
 
