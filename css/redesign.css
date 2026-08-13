@@ -2044,9 +2044,9 @@ html[data-theme="dark"] .top-login-btn { background: var(--color-primary); }
 }
 .nl-card .nl-card-ico svg { width: 24px; height: 24px; }
 .nl-card .nl-photo {
-  flex: 0 0 220px;
-  width: 220px;
-  height: 165px;
+  flex: 0 0 320px;
+  width: 320px;
+  height: 235px;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--color-border);
