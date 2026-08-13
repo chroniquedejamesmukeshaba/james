@@ -152,6 +152,7 @@ var TRANSLATIONS = {
   home_latest:        { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest News', sw:'Habari za hivi punde', es:'\u00daltimas noticias', zh:'最新新闻', ln:'Makambo ya sika'},
   home_view_more:     { fr:'Voir plus', en:'View more', sw:'Tazama zaidi', es:'Ver m\u00e1s', zh:'查看更多', ln:'Tala mosusu'},
   home_support:       { fr:'Soutenir nos actions', en:'Support our actions', sw:'Tunga mkono shughuli zetu', es:'Apoyar nuestras acciones', zh:'支持我们的行动', ln:'Sunga misala na biso'},
+  wa_channel:         { fr:'Rejoindre notre cha\u00eene WhatsApp', en:'Join our WhatsApp channel', sw:'Jiunge na kituo chetu cha WhatsApp', es:'\u00danete a nuestro canal de WhatsApp', zh:'加入我们的WhatsApp频道', ln:'Kota na kanal na biso ya WhatsApp'},
   home_search_ph:     { fr:'Rechercher un article\u2026', en:'Search an article\u2026', sw:'Tafuta makala\u2026', es:'Buscar un art\u00edculo\u2026', zh:'搜索文章、主题、地点…', ln:'Boluka makomi, makambo, esika…'},
   home_search_hint:   { fr:'Tapez pour rechercher un article\u2026', en:'Type to search an article\u2026', sw:'Andika kutafuta makala\u2026', es:'Escriba para buscar un art\u00edculo\u2026', zh:'至少输入 2 个字符', ln:'Koma búku mibale to mingi'},
   home_search_none:   { fr:'Aucun r\u00e9sultat pour cette recherche.', en:'No results for this search.', sw:'Hakuna matokeo ya utafutaji huu.', es:'Sin resultados para esta b\u00fasqueda.', zh:'没有找到结果。', ln:'Ezwami eloko te.'},
