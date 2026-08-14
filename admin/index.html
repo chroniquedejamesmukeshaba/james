@@ -15,26 +15,26 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html" class="active">ðŸ“Š Tableau de bord</a>
-      <a href="articles.html">ðŸ“ Gestion des articles</a>
-      <a href="pages.html">ðŸ“„ Gestion des pages</a>
-      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="index.html" class="active">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
-      <a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
-      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
-      <a href="../index.html">ðŸ  Voir le site</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:15px;">
@@ -49,7 +49,7 @@
         <div class="stat-card">
           <div class="number" id="db-visits">0</div>
           <div class="label">Visites</div>
-          <div class="sub" id="db-visits-sub">pÃ©riode</div>
+          <div class="sub" id="db-visits-sub">période</div>
           <div class="trend" id="db-visits-trend"></div>
         </div>
         <div class="stat-card">
@@ -61,7 +61,7 @@
         <div class="stat-card">
           <div class="number" id="db-readers">0</div>
           <div class="label">Lecteurs</div>
-          <div class="sub">temps moyen : <span id="db-avg-read">â€”</span></div>
+          <div class="sub">temps moyen : <span id="db-avg-read">—</span></div>
           <div class="trend" id="db-readers-trend"></div>
         </div>
         <div class="stat-card">
@@ -71,7 +71,7 @@
         </div>
         <div class="stat-card">
           <div class="number" id="db-articles">0</div>
-          <div class="label">Articles publiÃ©s</div>
+          <div class="label">Articles publiés</div>
         </div>
         <div class="stat-card accent-warn">
           <div class="number" id="db-drafts">0</div>
@@ -81,7 +81,7 @@
         <div class="stat-card">
           <div class="number" id="db-totalviews">0</div>
           <div class="label">Vues d'articles</div>
-          <div class="sub">total cumulÃ©</div>
+          <div class="sub">total cumulé</div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-comments">0</div>
@@ -91,7 +91,7 @@
         <div class="stat-card accent-ok">
           <div class="number" id="db-users">0</div>
           <div class="label">Utilisateurs</div>
-          <div class="sub"><a href="security.html#comptes" class="adm-link" style="font-size:0.78rem;">Comptes &amp; rÃ´les</a></div>
+          <div class="sub"><a href="security.html#comptes" class="adm-link" style="font-size:0.78rem;">Comptes &amp; rôles</a></div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-shares">0</div>
@@ -100,17 +100,17 @@
         </div>
         <div class="stat-card">
           <div class="number" id="db-subs">0</div>
-          <div class="label">AbonnÃ©s newsletter</div>
+          <div class="label">Abonnés newsletter</div>
         </div>
         <div class="stat-card">
           <div class="number" id="db-donations">0</div>
-          <div class="label">Dons confirmÃ©s</div>
+          <div class="label">Dons confirmés</div>
           <div class="trend" id="db-donations-trend"></div>
         </div>
       </div>
 
       <div class="dash-card" style="margin-bottom:24px;">
-        <h3>FrÃ©quence des visites
+        <h3>Fréquence des visites
           <span class="dash-tabs" id="db-period-tabs">
             <button class="dash-tab" data-period="7d">7 jours</button>
             <button class="dash-tab active" data-period="30d">30 jours</button>
@@ -129,7 +129,7 @@
         <div class="dash-card">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
             <h3 style="margin:0;">Top articles <span class="hint" id="db-top-hint"></span></h3>
-            <input type="search" id="db-top-search" class="form-input" placeholder="ðŸ” Rechercher un article..." style="max-width:260px;padding:7px 12px;font-size:0.82rem;">
+            <input type="search" id="db-top-search" class="form-input" placeholder="🔍 Rechercher un article..." style="max-width:260px;padding:7px 12px;font-size:0.82rem;">
           </div>
           <div class="admin-table">
             <table>
@@ -139,7 +139,7 @@
           </div>
         </div>
         <div class="dash-card">
-          <h3>Top catÃ©gories</h3>
+          <h3>Top catégories</h3>
           <canvas id="db-cat-chart" height="230"></canvas>
           <div class="dash-legend"></div>
         </div>
@@ -166,71 +166,71 @@
       </div>
 
       <div class="dash-card" style="margin-bottom:24px;">
-        <h3>RÃ©partition des articles
-          <span class="hint">donnÃ©es rÃ©elles</span>
+        <h3>Répartition des articles
+          <span class="hint">données réelles</span>
         </h3>
         <div id="db-status-dist" style="max-width:560px;"></div>
       </div>
 
       <div class="dash-card" style="margin-bottom:24px;">
-        <h3>Contenus rÃ©cents
+        <h3>Contenus récents
           <span class="hint" id="db-recent-hint"></span>
         </h3>
         <div class="admin-table">
           <table>
-            <thead><tr><th>Titre</th><th>CatÃ©gorie</th><th>Statut</th><th>Vues</th><th>Date</th></tr></thead>
+            <thead><tr><th>Titre</th><th>Catégorie</th><th>Statut</th><th>Vues</th><th>Date</th></tr></thead>
             <tbody id="db-recent-body"></tbody>
           </table>
         </div>
         <div class="ui-state" id="db-recent-empty" style="display:none;">
-          <div class="ui-ico">ðŸ“„</div>
+          <div class="ui-ico">📄</div>
           <div class="ui-title">Aucun article pour le moment</div>
-          <div class="ui-msg">CrÃ©ez votre premier article depuis la gestion des articles.</div>
+          <div class="ui-msg">Créez votre premier article depuis la gestion des articles.</div>
         </div>
       </div>
 
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
-        <h3 style="color:var(--primary);margin-bottom:15px;">âš¡ Breaking News</h3>
-        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">Activez la barre d'actualitÃ© affichÃ©e en haut du site et choisissez l'article mis en avant. L'article doit Ãªtre marquÃ© Â« Breaking News Â» dans la gestion des articles.</p>
+        <h3 style="color:var(--primary);margin-bottom:15px;">⚡ Breaking News</h3>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">Activez la barre d'actualité affichée en haut du site et choisissez l'article mis en avant. L'article doit être marqué « Breaking News » dans la gestion des articles.</p>
         <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">
-            <input type="checkbox" id="bns-enabled" style="width:18px;height:18px;cursor:pointer;"> Barre Breaking News activÃ©e
+            <input type="checkbox" id="bns-enabled" style="width:18px;height:18px;cursor:pointer;"> Barre Breaking News activée
           </label>
           <select id="bns-article" class="form-input" style="max-width:340px;cursor:pointer;">
             <option value="">Article Breaking (auto)</option>
           </select>
-          <button type="button" class="btn btn-primary" id="bns-save">ðŸ’¾ Enregistrer</button>
+          <button type="button" class="btn btn-primary" id="bns-save">💾 Enregistrer</button>
         </div>
         <div id="bns-status" style="font-size:0.8rem;color:#27ae60;margin-top:10px;"></div>
       </div>
 
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
-        <h3 style="color:var(--primary);margin-bottom:6px;">âš¡ Raccourcis rapides</h3>
+        <h3 style="color:var(--primary);margin-bottom:6px;">⚡ Raccourcis rapides</h3>
         <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:16px;">Travaillez plus vite : lancez directement les actions courantes.</p>
         <div class="quick-actions">
           <a href="articles.html" class="quick-action">
-            <span class="qa-ico">âœï¸</span><span>Nouvel article</span><small>RÃ©diger et publier</small>
+            <span class="qa-ico">✍️</span><span>Nouvel article</span><small>Rédiger et publier</small>
           </a>
           <a href="articles.html#cats" class="quick-action">
-            <span class="qa-ico">ðŸ·ï¸</span><span>Nouvelle catÃ©gorie</span><small>Organiser les articles</small>
+            <span class="qa-ico">🏷️</span><span>Nouvelle catégorie</span><small>Organiser les articles</small>
           </a>
           <a href="campaigns.html" class="quick-action">
-            <span class="qa-ico">ðŸ“¢</span><span>Nouvelle campagne</span><small>Lancer une collecte</small>
+            <span class="qa-ico">📢</span><span>Nouvelle campagne</span><small>Lancer une collecte</small>
           </a>
           <a href="media.html" class="quick-action">
-            <span class="qa-ico">ðŸ–¼ï¸</span><span>Ajouter un mÃ©dia</span><small>Images et vidÃ©os</small>
+            <span class="qa-ico">🖼️</span><span>Ajouter un média</span><small>Images et vidéos</small>
           </a>
           <a href="analytics.html" class="quick-action">
-            <span class="qa-ico">ðŸ“ˆ</span><span>Voir les statistiques</span><small>Audience dÃ©taillÃ©e</small>
+            <span class="qa-ico">📈</span><span>Voir les statistiques</span><small>Audience détaillée</small>
           </a>
           <a href="comments.html" class="quick-action">
-            <span class="qa-ico">ðŸ’¬</span><span>ModÃ©rer les commentaires</span><small>Valider et filtrer</small>
+            <span class="qa-ico">💬</span><span>Modérer les commentaires</span><small>Valider et filtrer</small>
           </a>
           <a href="donations.html" class="quick-action">
-            <span class="qa-ico">ðŸ’°</span><span>Dons &amp; paiements</span><small>Suivre les transactions</small>
+            <span class="qa-ico">💰</span><span>Dons &amp; paiements</span><small>Suivre les transactions</small>
           </a>
           <a href="newsletter.html" class="quick-action">
-            <span class="qa-ico">ðŸ“§</span><span>Newsletter</span><small>AbonnÃ©s et envois</small>
+            <span class="qa-ico">📧</span><span>Newsletter</span><small>Abonnés et envois</small>
           </a>
         </div>
       </div>

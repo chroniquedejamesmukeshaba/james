@@ -13,31 +13,31 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">ðŸ“Š Tableau de bord</a>
-      <a href="articles.html" class="active">ðŸ“ Gestion des articles</a>
-      <a href="pages.html">ðŸ“„ Gestion des pages</a>
-      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html" class="active">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
-<a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
-      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
-      <a href="../index.html">ðŸ  Voir le site</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px;">
         <h2 style="color:var(--primary);">Gestion des articles</h2>
-        <button class="btn btn-primary" id="new-article-btn">âž• Nouvel article</button>
+        <button class="btn btn-primary" id="new-article-btn">➕ Nouvel article</button>
       </div>
 
       <!-- Formulaire ajout/modification article -->
@@ -48,23 +48,23 @@
 
           <!-- Language tabs -->
           <div style="display:flex;gap:2px;margin-bottom:15px;border-bottom:2px solid #eee;padding-bottom:8px;">
-            <button type="button" class="lang-tab active" data-lang="" style="background:var(--primary);color:#fff;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">FranÃ§ais</button>
+            <button type="button" class="lang-tab active" data-lang="" style="background:var(--primary);color:#fff;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Français</button>
             <button type="button" class="lang-tab" data-lang="_en" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">English</button>
             <button type="button" class="lang-tab" data-lang="_sw" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Kiswahili</button>
-            <button type="button" class="lang-tab" data-lang="_es" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">EspaÃ±ol</button>
-            <span style="margin-left:auto;font-size:0.8rem;color:#999;align-self:center;">Seul le FranÃ§ais est obligatoire</span>
+            <button type="button" class="lang-tab" data-lang="_es" style="background:#ddd;color:#333;border:none;padding:6px 16px;border-radius:4px 4px 0 0;cursor:pointer;font-weight:600;">Español</button>
+            <span style="margin-left:auto;font-size:0.8rem;color:#999;align-self:center;">Seul le Français est obligatoire</span>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
             <div class="form-group">
-              <label>Titre <span class="lang-label">(FranÃ§ais)</span></label>
-              <input type="text" id="art-title" class="form-input" placeholder="Titre en franÃ§ais" required>
+              <label>Titre <span class="lang-label">(Français)</span></label>
+              <input type="text" id="art-title" class="form-input" placeholder="Titre en français" required>
               <input type="text" id="art-title_en" class="form-input lang-field" data-lang="_en" placeholder="Titre en anglais" style="display:none;">
               <input type="text" id="art-title_sw" class="form-input lang-field" data-lang="_sw" placeholder="Titre en swahili" style="display:none;">
               <input type="text" id="art-title_es" class="form-input lang-field" data-lang="_es" placeholder="Titre en espagnol" style="display:none;">
             </div>
             <div class="form-group">
-              <label>CatÃ©gorie</label>
+              <label>Catégorie</label>
               <input type="text" id="art-category" class="form-input" placeholder="Ex: International, Projets, Sensibilisation" required>
             </div>
           </div>
@@ -73,25 +73,25 @@
             <div class="img-upload-wrapper">
               <div class="img-upload-area" id="img-upload-area" onclick="document.getElementById('art-image-input').click()">
                 <input type="file" id="art-image-input" accept="image/*">
-                <div class="upload-icon">ðŸ–¼ï¸</div>
+                <div class="upload-icon">🖼️</div>
                 <div class="upload-text">Cliquez pour parcourir et choisir une photo</div>
-                <div class="upload-hint">JPG, PNG, WEBP acceptÃ©s</div>
-                <img class="img-preview" id="img-preview" alt="AperÃ§u">
+                <div class="upload-hint">JPG, PNG, WEBP acceptés</div>
+                <img class="img-preview" id="img-preview" alt="Aperçu">
               </div>
-              <button type="button" class="img-remove-btn" id="img-remove-btn" onclick="removeImage()">âœ• Supprimer l'image</button>
+              <button type="button" class="img-remove-btn" id="img-remove-btn" onclick="removeImage()">✕ Supprimer l'image</button>
             </div>
           </div>
           <div class="form-group">
-            <label>Extrait <span class="lang-label">(FranÃ§ais)</span></label>
-            <textarea id="art-excerpt" class="form-input" placeholder="Court rÃ©sumÃ© en franÃ§ais..." rows="2" required></textarea>
-            <textarea id="art-excerpt_en" class="form-input lang-field" data-lang="_en" placeholder="RÃ©sumÃ© en anglais" rows="2" style="display:none;"></textarea>
-            <textarea id="art-excerpt_sw" class="form-input lang-field" data-lang="_sw" placeholder="RÃ©sumÃ© en swahili" rows="2" style="display:none;"></textarea>
-            <textarea id="art-excerpt_es" class="form-input lang-field" data-lang="_es" placeholder="RÃ©sumÃ© en espagnol" rows="2" style="display:none;"></textarea>
+            <label>Extrait <span class="lang-label">(Français)</span></label>
+            <textarea id="art-excerpt" class="form-input" placeholder="Court résumé en français..." rows="2" required></textarea>
+            <textarea id="art-excerpt_en" class="form-input lang-field" data-lang="_en" placeholder="Résumé en anglais" rows="2" style="display:none;"></textarea>
+            <textarea id="art-excerpt_sw" class="form-input lang-field" data-lang="_sw" placeholder="Résumé en swahili" rows="2" style="display:none;"></textarea>
+            <textarea id="art-excerpt_es" class="form-input lang-field" data-lang="_es" placeholder="Résumé en espagnol" rows="2" style="display:none;"></textarea>
           </div>
           <div class="form-group">
-            <label>Contenu <span class="lang-label">(FranÃ§ais)</span>
+            <label>Contenu <span class="lang-label">(Français)</span>
               <span style="float:right;font-size:0.8rem;">
-                <button type="button" class="btn btn-sm editor-preview-toggle" data-preview="0" style="padding:2px 10px;font-size:0.78rem;">ðŸ‘ï¸ AperÃ§u</button>
+                <button type="button" class="btn btn-sm editor-preview-toggle" data-preview="0" style="padding:2px 10px;font-size:0.78rem;">👁️ Aperçu</button>
               </span>
             </label>
             <div class="editor-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;background:#f7f7f7;border:1px solid #e0e0e0;border-bottom:none;padding:6px 8px;border-radius:6px 6px 0 0;">
@@ -99,21 +99,21 @@
               <button type="button" class="editor-btn" data-wrap="*" title="Italique" style="font-style:italic;">I</button>
               <button type="button" class="editor-btn" data-line="## " title="Titre H2">H2</button>
               <button type="button" class="editor-btn" data-line="### " title="Titre H3">H3</button>
-              <button type="button" class="editor-btn" data-prefix="- " title="Liste Ã  puces">â€¢ Liste</button>
-              <button type="button" class="editor-btn" data-prefix="&gt; " title="Citation">â Citation</button>
-              <button type="button" class="editor-btn" data-link="1" title="InsÃ©rer un lien">ðŸ”— Lien</button>
-              <button type="button" class="editor-btn" id="editor-media-btn" title="InsÃ©rer une image depuis la mÃ©diathÃ¨que">ðŸ–¼ï¸ Image</button>
+              <button type="button" class="editor-btn" data-prefix="- " title="Liste à puces">• Liste</button>
+              <button type="button" class="editor-btn" data-prefix="&gt; " title="Citation">❝ Citation</button>
+              <button type="button" class="editor-btn" data-link="1" title="Insérer un lien">🔗 Lien</button>
+              <button type="button" class="editor-btn" id="editor-media-btn" title="Insérer une image depuis la médiathèque">🖼️ Image</button>
               <span style="flex:1;"></span>
               <span style="font-size:0.72rem;color:#999;align-self:center;">Formatage simple : **gras**, *italique*, ## titre, - liste, &gt; citation</span>
             </div>
-            <textarea id="art-content" class="form-input" placeholder="Contenu complet en franÃ§ais..." rows="8" required style="border-radius:0 0 6px 6px;min-height:240px;"></textarea>
+            <textarea id="art-content" class="form-input" placeholder="Contenu complet en français..." rows="8" required style="border-radius:0 0 6px 6px;min-height:240px;"></textarea>
             <div id="art-content-preview" class="editor-preview-pane" style="display:none;border:1px solid #e0e0e0;border-radius:0 0 6px 6px;padding:16px;min-height:200px;background:#fff;font-size:0.95rem;line-height:1.6;"></div>
             <div id="media-picker" style="display:none;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-top:10px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                <strong style="color:var(--primary);">ðŸ–¼ï¸ MÃ©diathÃ¨que</strong>
+                <strong style="color:var(--primary);">🖼️ Médiathèque</strong>
                 <div style="display:flex;gap:8px;align-items:center;">
                   <input type="text" id="media-search" class="form-input" placeholder="Rechercher..." style="width:180px;padding:4px 10px;font-size:0.8rem;">
-                  <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">â¬†ï¸ Importer
+                  <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">⬆️ Importer
                     <input type="file" id="media-upload-input" accept="image/*" style="display:none;">
                   </label>
                 </div>
@@ -130,45 +130,45 @@
               <input type="text" id="art-author" class="form-input" placeholder="Nom de l'auteur" required>
             </div>
             <div class="form-group">
-              <label>PrioritÃ©</label>
+              <label>Priorité</label>
               <select id="art-priority" class="form-input" style="cursor:pointer;">
                 <option value="normal">Normal</option>
-                <option value="important">â­ Important</option>
-                <option value="breaking">ðŸ”´ Breaking News</option>
+                <option value="important">⭐ Important</option>
+                <option value="breaking">🔴 Breaking News</option>
               </select>
             </div>
             <div class="form-group">
               <label>Statut</label>
               <select id="art-status" class="form-input" style="cursor:pointer;border-color:var(--primary);">
-                <option value="publie">âœ… PubliÃ© (visible immÃ©diatement)</option>
-                <option value="brouillon">ðŸ“ Brouillon (masquÃ© du public)</option>
-                <option value="programme">â° ProgrammÃ© (publication Ã  une date)</option>
+                <option value="publie">✅ Publié (visible immédiatement)</option>
+                <option value="brouillon">📝 Brouillon (masqué du public)</option>
+                <option value="programme">⏰ Programmé (publication à une date)</option>
               </select>
             </div>
           </div>
           <div class="form-group" id="art-sched-wrap" style="display:none;">
-            <label>ðŸ“… Date et heure de publication programmÃ©e</label>
+            <label>📅 Date et heure de publication programmée</label>
             <input type="datetime-local" id="art-scheduled-at" class="form-input">
-            <div style="font-size:0.78rem;color:#999;margin-top:4px;">L'article deviendra automatiquement public Ã  cette date et cette heure.</div>
+            <div style="font-size:0.78rem;color:#999;margin-top:4px;">L'article deviendra automatiquement public à cette date et cette heure.</div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
             <div class="form-group">
-              <label>Tags (sÃ©parÃ©s par des virgules)</label>
-              <input type="text" id="art-tags" class="form-input" placeholder="Ex: Goma, SÃ©curitÃ©, Ã‰ducation">
+              <label>Tags (séparés par des virgules)</label>
+              <input type="text" id="art-tags" class="form-input" placeholder="Ex: Goma, Sécurité, Éducation">
             </div>
             <div class="form-group">
-              <label>VidÃ©o intÃ©grÃ©e (URL YouTube/Vimeo)</label>
+              <label>Vidéo intégrée (URL YouTube/Vimeo)</label>
               <input type="text" id="art-video" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
             <div class="form-group">
               <label>SEO - Titre (optionnel)</label>
-              <input type="text" id="art-seo-title" class="form-input" placeholder="Titre optimisÃ© pour les moteurs de recherche">
+              <input type="text" id="art-seo-title" class="form-input" placeholder="Titre optimisé pour les moteurs de recherche">
             </div>
             <div class="form-group">
               <label>SEO - Description (optionnel)</label>
-              <input type="text" id="art-seo-desc" class="form-input" placeholder="Description pour le rÃ©fÃ©rencement (max 300)">
+              <input type="text" id="art-seo-desc" class="form-input" placeholder="Description pour le référencement (max 300)">
             </div>
           </div>
           <div class="form-group">
@@ -176,21 +176,21 @@
             <textarea id="art-gallery" class="form-input" placeholder="/assets/uploads/photo1.jpg&#10;/assets/uploads/photo2.jpg" rows="2"></textarea>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary">ðŸš€ Enregistrer / publier</button>
-            <button type="button" class="btn btn-secondary" id="save-draft-btn">ðŸ“ Enregistrer le brouillon</button>
+            <button type="submit" class="btn btn-primary">🚀 Enregistrer / publier</button>
+            <button type="button" class="btn btn-secondary" id="save-draft-btn">📝 Enregistrer le brouillon</button>
             <button type="button" class="btn btn-outline" id="cancel-article">Annuler</button>
           </div>
-          <div style="font-size:0.75rem;color:#999;margin-top:10px;">Astuce : Â« Enregistrer le brouillon Â» masque l'article du public tant qu'il n'est pas publiÃ©.</div>
+          <div style="font-size:0.75rem;color:#999;margin-top:10px;">Astuce : « Enregistrer le brouillon » masque l'article du public tant qu'il n'est pas publié.</div>
         </form>
       </div>
 
       <!-- Filtres par statut -->
       <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
         <button class="btn btn-sm art-filter-tab active" data-filter="all" style="background:var(--primary);color:#fff;border:1px solid var(--primary);"><span class="art-filter-count">0</span> Tous</button>
-        <button class="btn btn-sm art-filter-tab" data-filter="publie" style="background:#fff;color:#333;border:1px solid #ccc;">âœ… PubliÃ©s <span class="art-filter-count" style="opacity:0.7;"></span></button>
-        <button class="btn btn-sm art-filter-tab" data-filter="brouillon" style="background:#fff;color:#333;border:1px solid #ccc;">ðŸ“ Brouillons <span class="art-filter-count" style="opacity:0.7;"></span></button>
-        <button class="btn btn-sm art-filter-tab" data-filter="programme" style="background:#fff;color:#333;border:1px solid #ccc;">â° ProgrammÃ©s <span class="art-filter-count" style="opacity:0.7;"></span></button>
-        <button class="btn btn-sm art-filter-tab" data-filter="corbeille" style="background:#fff;color:#333;border:1px solid #ccc;">ðŸ—‘ï¸ Corbeille <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="publie" style="background:#fff;color:#333;border:1px solid #ccc;">✅ Publiés <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="brouillon" style="background:#fff;color:#333;border:1px solid #ccc;">📝 Brouillons <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="programme" style="background:#fff;color:#333;border:1px solid #ccc;">⏰ Programmés <span class="art-filter-count" style="opacity:0.7;"></span></button>
+        <button class="btn btn-sm art-filter-tab" data-filter="corbeille" style="background:#fff;color:#333;border:1px solid #ccc;">🗑️ Corbeille <span class="art-filter-count" style="opacity:0.7;"></span></button>
       </div>
 
       <!-- Liste des articles -->
@@ -200,7 +200,7 @@
             <tr>
               <th>ID</th>
               <th>Titre</th>
-              <th>CatÃ©gorie</th>
+              <th>Catégorie</th>
               <th>Date</th>
               <th>Statut</th>
               <th>Actions</th>
@@ -211,12 +211,12 @@
       </div>
 
       <div class="panel" id="cats" style="margin-top:26px;">
-        <h3>ðŸ·ï¸ CatÃ©gories utilisÃ©es <span class="hint">dÃ©duites des articles existants</span></h3>
+        <h3>🏷️ Catégories utilisées <span class="hint">déduites des articles existants</span></h3>
         <div id="cats-wrap"><div class="skeleton" style="height:16px;margin:6px 0;"></div></div>
       </div>
 
       <div class="panel" id="auteurs" style="margin-top:20px;">
-        <h3>ðŸ‘¤ Auteurs <span class="hint">dÃ©duits des articles existants</span></h3>
+        <h3>👤 Auteurs <span class="hint">déduits des articles existants</span></h3>
         <div id="authors-wrap"><div class="skeleton" style="height:16px;margin:6px 0;"></div></div>
       </div>
     </main>
@@ -232,14 +232,14 @@
           var cats = document.getElementById('cats-wrap');
           var auth = document.getElementById('authors-wrap');
           if (!articles) {
-            if (cats) cats.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez rÃ©essayer.</div></div>';
-            if (auth) auth.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez rÃ©essayer.</div></div>';
+            if (cats) cats.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div></div>';
+            if (auth) auth.innerHTML = '<div class="ui-state"><div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div></div>';
             return;
           }
           var byCat = {};
           var byAuth = {};
           articles.forEach(function (a) {
-            var c = (a.category || 'Sans catÃ©gorie').trim();
+            var c = (a.category || 'Sans catégorie').trim();
             byCat[c] = (byCat[c] || 0) + 1;
             var au = (a.author || 'Inconnu').trim();
             byAuth[au] = (byAuth[au] || 0) + 1;
@@ -249,14 +249,14 @@
           if (cats) {
             cats.innerHTML = catKeys.length
               ? '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + catKeys.map(function (k) {
-                  return '<span class="badge badge-info">' + k + ' <strong>Â· ' + byCat[k] + '</strong></span>';
+                  return '<span class="badge badge-info">' + k + ' <strong>· ' + byCat[k] + '</strong></span>';
                 }).join('') + '</div>'
               : '<div class="ui-state"><div class="ui-title">Aucun article pour le moment</div></div>';
           }
           if (auth) {
             auth.innerHTML = authKeys.length
               ? '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + authKeys.map(function (k) {
-                  return '<span class="badge badge-muted">' + k + ' <strong>Â· ' + byAuth[k] + '</strong></span>';
+                  return '<span class="badge badge-muted">' + k + ' <strong>· ' + byAuth[k] + '</strong></span>';
                 }).join('') + '</div>'
               : '<div class="ui-state"><div class="ui-title">Aucun auteur pour le moment</div></div>';
           }

@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Journal d'activitÃ©s - Administration</title>
+  <title>Journal d'activités - Administration</title>
   <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
@@ -15,41 +15,41 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">ðŸ“Š Tableau de bord</a>
-      <a href="articles.html">ðŸ“ Gestion des articles</a>
-      <a href="pages.html">ðŸ“„ Gestion des pages</a>
-      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
-      <a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
-      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="journal.html" class="active">ðŸ“œ Journal d'activitÃ©s</a>
-      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
-      <a href="../index.html">ðŸ  Voir le site</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="journal.html" class="active">📜 Journal d'activités</a>
+      <a href="security.html">🔐 Sécurité</a>
+      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
-      <h2 style="color:var(--primary);margin-bottom:10px;">ðŸ“œ Journal d'activitÃ©s</h2>
+      <h2 style="color:var(--primary);margin-bottom:10px;">📜 Journal d'activités</h2>
       <p style="font-size:0.9rem;color:var(--text-light);margin-bottom:20px;">
-        Trace de chaque action : utilisateur, action, date, adresse IP et Ã©lÃ©ment concernÃ©.
+        Trace de chaque action : utilisateur, action, date, adresse IP et élément concerné.
       </p>
 
       <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-          <div style="font-size:0.85rem;color:var(--text-light);">Total : <b id="act-total">0</b> Ã©vÃ©nements</div>
-          <button type="button" class="btn btn-outline" id="act-refresh" style="padding:6px 16px;font-size:0.85rem;">âŸ³ Actualiser</button>
+          <div style="font-size:0.85rem;color:var(--text-light);">Total : <b id="act-total">0</b> événements</div>
+          <button type="button" class="btn btn-outline" id="act-refresh" style="padding:6px 16px;font-size:0.85rem;">⟳ Actualiser</button>
         </div>
         <div class="admin-table">
           <table>
-            <thead><tr><th>Date</th><th>Utilisateur</th><th>RÃ´le</th><th>Action</th><th>Ã‰lÃ©ment concernÃ©</th><th>IP</th></tr></thead>
+            <thead><tr><th>Date</th><th>Utilisateur</th><th>Rôle</th><th>Action</th><th>Élément concerné</th><th>IP</th></tr></thead>
             <tbody id="act-body"><tr><td colspan="6" style="text-align:center;color:#999;padding:26px;">Chargement...</td></tr></tbody>
           </table>
         </div>
@@ -67,7 +67,7 @@
       var page = 1;
       var total = 0;
       var body = document.getElementById('act-body');
-      var roleLabels = { super_admin:'Super admin', admin:'Admin', editeur:'Ã‰diteur', moderateur:'ModÃ©rateur', journaliste:'Journaliste', analyste:'Analyste' };
+      var roleLabels = { super_admin:'Super admin', admin:'Admin', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
       var badgeColors = { super_admin:'#e6f6e6', admin:'#e3f2fd', editeur:'#f3e5f5', moderateur:'#fff3e0', journaliste:'#e0f7fa', analyste:'#fce4ec' };
 
       function esc(x) { return String(x == null ? '' : x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -85,12 +85,12 @@
             document.getElementById('act-total').textContent = total;
             var rows = (d.items || []).map(function (e) {
               var role = e.role || '';
-              var badge = role ? '<span style="font-size:0.7rem;padding:2px 8px;border-radius:10px;background:' + (badgeColors[role] || '#eee') + ';">' + esc(roleLabels[role] || role) + '</span>' : 'â€”';
+              var badge = role ? '<span style="font-size:0.7rem;padding:2px 8px;border-radius:10px;background:' + (badgeColors[role] || '#eee') + ';">' + esc(roleLabels[role] || role) + '</span>' : '—';
               return '<tr><td style="white-space:nowrap;">' + esc(e.date || '') + '</td>' +
                 '<td><strong>' + esc(e.user || '') + '</strong></td><td>' + badge + '</td>' +
                 '<td>' + esc(e.action || '') + '</td><td>' + esc(e.target || '') + '</td><td style="color:#888;">' + esc(e.ip || '') + '</td></tr>';
             }).join('');
-            if (page === 1) body.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#999;padding:26px;">Aucune activitÃ© pour le moment.</td></tr>';
+            if (page === 1) body.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#999;padding:26px;">Aucune activité pour le moment.</td></tr>';
             else body.insertAdjacentHTML('beforeend', rows);
             document.getElementById('act-more').style.display = (page * 50 < total) ? 'inline-block' : 'none';
           });

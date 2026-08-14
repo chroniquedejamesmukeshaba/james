@@ -18,7 +18,7 @@ var saved = null;
     btn.id = 'theme-toggle';
     btn.className = 'theme-toggle';
     btn.title = 'Basculer entre le mode clair et le mode sombre';
-    btn.setAttribute('aria-label', 'Basculer le thÃ¨me');
+    btn.setAttribute('aria-label', 'Basculer le thème');
     function icon() {
       btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'dark' ? SVG_SUN : SVG_MOON;
     }
@@ -55,7 +55,7 @@ if ('serviceWorker' in navigator) {
   });
   window.addEventListener('appinstalled', function () {
     var btn = document.getElementById('pwa-install-btn');
-    if (btn) btn.textContent = 'âœ… InstallÃ©';
+    if (btn) btn.textContent = '✅ Installé';
   });
 }
 function getBrowser() {
@@ -72,29 +72,29 @@ function showInstallGuide() {
   var browser = getBrowser();
   var steps = {
     chrome: [
-      { icon: 'ðŸ”', text: 'Ouvrez le menu â‹® en haut Ã  droite' },
-      { icon: 'ðŸ“²', text: 'Appuyez sur "Installer l\'application" ou "Ajouter Ã  l\'Ã©cran d\'accueil"' },
-      { icon: 'âœ…', text: 'Confirmez l\'installation' }
+      { icon: '🔍', text: 'Ouvrez le menu ⋮ en haut à droite' },
+      { icon: '📲', text: 'Appuyez sur "Installer l\'application" ou "Ajouter à l\'écran d\'accueil"' },
+      { icon: '✅', text: 'Confirmez l\'installation' }
     ],
     edge: [
-      { icon: 'ðŸ”', text: 'Ouvrez le menu â‹¯ en haut Ã  droite' },
-      { icon: 'ðŸ“²', text: 'Appuyez sur "Applications" â†’ "Installer ce site en tant qu\'application"' },
-      { icon: 'âœ…', text: 'Confirmez l\'installation' }
+      { icon: '🔍', text: 'Ouvrez le menu ⋯ en haut à droite' },
+      { icon: '📲', text: 'Appuyez sur "Applications" → "Installer ce site en tant qu\'application"' },
+      { icon: '✅', text: 'Confirmez l\'installation' }
     ],
     safari: [
-      { icon: 'ðŸ”', text: 'Appuyez sur le bouton Partager ðŸ“¤' },
-      { icon: 'ðŸ“²', text: 'Faites dÃ©filer et appuyez sur "Ajouter Ã  l\'Ã©cran d\'accueil"' },
-      { icon: 'âœ…', text: 'Appuyez sur "Ajouter" en haut Ã  droite' }
+      { icon: '🔍', text: 'Appuyez sur le bouton Partager 📤' },
+      { icon: '📲', text: 'Faites défiler et appuyez sur "Ajouter à l\'écran d\'accueil"' },
+      { icon: '✅', text: 'Appuyez sur "Ajouter" en haut à droite' }
     ],
     firefox: [
-      { icon: 'ðŸ”', text: 'Ouvrez le menu â˜° en haut Ã  droite' },
-      { icon: 'ðŸ“²', text: 'Appuyez sur "Installer" ou "Ajouter Ã  l\'Ã©cran d\'accueil"' },
-      { icon: 'âœ…', text: 'Confirmez l\'installation' }
+      { icon: '🔍', text: 'Ouvrez le menu ☰ en haut à droite' },
+      { icon: '📲', text: 'Appuyez sur "Installer" ou "Ajouter à l\'écran d\'accueil"' },
+      { icon: '✅', text: 'Confirmez l\'installation' }
     ],
     other: [
-      { icon: 'ðŸ”', text: 'Ouvrez le menu du navigateur' },
-      { icon: 'ðŸ“²', text: 'Cherchez "Installer l\'application" ou "Ajouter Ã  l\'Ã©cran d\'accueil"' },
-      { icon: 'âœ…', text: 'Suivez les instructions Ã  l\'Ã©cran' }
+      { icon: '🔍', text: 'Ouvrez le menu du navigateur' },
+      { icon: '📲', text: 'Cherchez "Installer l\'application" ou "Ajouter à l\'écran d\'accueil"' },
+      { icon: '✅', text: 'Suivez les instructions à l\'écran' }
     ]
   };
   var s = steps[browser] || steps.other;
@@ -103,9 +103,9 @@ function showInstallGuide() {
   modal.innerHTML =
     '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)document.getElementById(\'install-modal\').remove()">' +
     '<div style="background:#fff;border-radius:12px;padding:30px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.3);position:relative;">' +
-    '<button onclick="document.getElementById(\'install-modal\').remove()" style="position:absolute;top:10px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999;">âœ•</button>' +
-    '<h3 style="color:var(--primary);margin-bottom:15px;font-size:1.3rem;">ðŸ“² Installer l\'application</h3>' +
-    '<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:20px;">Suivez ces Ã©tapes pour installer la Chronique de James Mukeshaba sur votre appareil :</p>' +
+    '<button onclick="document.getElementById(\'install-modal\').remove()" style="position:absolute;top:10px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999;">✕</button>' +
+    '<h3 style="color:var(--primary);margin-bottom:15px;font-size:1.3rem;">📲 Installer l\'application</h3>' +
+    '<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:20px;">Suivez ces étapes pour installer la Chronique de James Mukeshaba sur votre appareil :</p>' +
     '<div style="display:flex;flex-direction:column;gap:15px;">' +
     s.map(function (step, i) {
       return '<div style="display:flex;align-items:center;gap:12px;background:#f8f9fa;border-radius:8px;padding:12px;">' +
@@ -114,7 +114,7 @@ function showInstallGuide() {
     }).join('') +
     '</div>' +
     '<p style="margin-top:20px;font-size:0.8rem;color:var(--text-light);text-align:center;">' +
-    'Si vous utilisez un autre navigateur, cherchez "Installer" ou "Ajouter Ã  l\'Ã©cran d\'accueil" dans le menu.</p></div></div>';
+    'Si vous utilisez un autre navigateur, cherchez "Installer" ou "Ajouter à l\'écran d\'accueil" dans le menu.</p></div></div>';
   document.body.appendChild(modal);
 }
 window.installPWA = function () {
@@ -130,10 +130,10 @@ window.installPWA = function () {
 (function initPages() {
   if (localStorage.getItem('cms_pages_init')) return;
   var defaults = [
-    { id: 1, slug: 'qui-sommes-nous', title: 'Qui sommes-nous', meta: 'Histoire, vision, Ã©quipe et prÃ©sence internationale de la Chronique de James Mukeshaba.', content: '<h2 style="color:var(--primary);margin-bottom:20px;">Notre Histoire</h2><p style="margin-bottom:15px;font-size:1.05rem;">La Chronique de James Mukeshaba est nÃ©e de la volontÃ© de crÃ©er un espace d\'information indÃ©pendant, ancrÃ© dans les rÃ©alitÃ©s du Sud-Kivu tout en rayonnant Ã  l\'international. FondÃ©e Ã  Bukavu, notre plateforme s\'est rapidement imposÃ©e comme une rÃ©fÃ©rence pour l\'actualitÃ© locale, les projets communautaires et les campagnes de sensibilisation.</p><p style="margin-bottom:15px;font-size:1.05rem;">Aujourd\'hui, nous sommes prÃ©sents dans plusieurs villes de la RDC (Goma, Kinshasa, Lubumbashi) et avons ouvert un bureau Ã  Alberta, Canada, pour servir la diaspora congolaise.</p><h2 class="section-title" style="margin-top:50px;">Notre PrÃ©sence</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;"><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">ðŸ“</div><h3 style="color:var(--primary);">Bukavu</h3><p style="font-size:0.9rem;color:var(--text-light);">SiÃ¨ge social</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">ðŸ“</div><h3 style="color:var(--primary);">Goma</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau rÃ©gional</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">ðŸ“</div><h3 style="color:var(--primary);">Kinshasa</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau rÃ©gional</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">ðŸ“</div><h3 style="color:var(--primary);">Alberta, Canada</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau international</p></div></div>', date: '2026-06-25', image: '' },
-    { id: 2, slug: 'projets', title: 'Nos Projets', meta: 'DÃ©couvrez les initiatives et projets communautaires portÃ©s par la Chronique de James Mukeshaba en RDC.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:3rem;">ðŸŒ±</div><div class="card-body"><div class="card-category">Environnement</div><h2 class="card-title">Bukavu Ville Propre</h2><p class="card-text">Mobilisation citoyenne pour le nettoyage et l\'assainissement des quartiers pÃ©riphÃ©riques de Bukavu.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#3498db,#2980b9);color:white;font-size:3rem;">ðŸ“š</div><div class="card-body"><div class="card-category">Ã‰ducation</div><h2 class="card-title">BibliothÃ¨que Mobile</h2><p class="card-text">Un projet de bibliothÃ¨que itinÃ©rante pour offrir l\'accÃ¨s Ã  la lecture aux enfants des zones rurales.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">ðŸ’»</div><div class="card-body"><div class="card-category">NumÃ©rique</div><h2 class="card-title">Formation au NumÃ©rique</h2><p class="card-text">Ateliers de formation aux compÃ©tences numÃ©riques pour les jeunes de Bukavu et Goma.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:3rem;">ðŸ¤</div><div class="card-body"><div class="card-category">CommunautÃ©</div><h2 class="card-title">Diaspora Connect</h2><p class="card-text">Programme de connexion entre la diaspora congolaise au Canada et les communautÃ©s locales en RDC.</p></div></div></div>', date: '2026-06-25', image: '' },
-    { id: 3, slug: 'sensibilisation', title: 'Sensibilisation', meta: 'Campagnes d\'impact social et communautaire de la Chronique de James Mukeshaba.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:3rem;">âœ‹</div><div class="card-body"><div class="card-category">Violences faites aux femmes</div><h2 class="card-title">Brisons le Silence</h2><p class="card-text">Campagne de sensibilisation contre les violences basÃ©es sur le genre Ã  Bukavu.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#2980b9,#3498db);color:white;font-size:3rem;">ðŸ’§</div><div class="card-body"><div class="card-category">SantÃ© publique</div><h2 class="card-title">Eau Potable pour Tous</h2><p class="card-text">Campagne d\'information sur l\'eau potable dans les communautÃ©s rurales.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:3rem;">ðŸŒ</div><div class="card-body"><div class="card-category">Environnement</div><h2 class="card-title">Agir pour le Climat</h2><p class="card-text">Protection de l\'environnement contre la dÃ©forestation dans la rÃ©gion des Grands Lacs.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">ðŸŽ“</div><div class="card-body"><div class="card-category">Ã‰ducation</div><h2 class="card-title">Tous Ã  l\'Ã‰cole</h2><p class="card-text">Scolarisation des enfants dans les zones rurales du Sud-Kivu.</p></div></div></div>', date: '2026-06-25', image: '' },
-    { id: 4, slug: 'heritage', title: 'HÃ©ritage', meta: 'Archives, culture et mÃ©moires du Congo. Plongez au coeur du patrimoine congolais.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">ðŸ’ƒ</div><div class="card-body"><div class="card-category">Culture</div><h2 class="card-title">Les danses traditionnelles du Sud-Kivu</h2><p class="card-text">PlongÃ©e au coeur du patrimoine culturel du Sud-Kivu Ã  travers les danses et rituels.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:3rem;">ðŸ“œ</div><div class="card-body"><div class="card-category">Histoire</div><h2 class="card-title">L\'histoire du Royaume du Bushi</h2><p class="card-text">Ã€ la dÃ©couverte des traditions et de l\'histoire du Royaume du Bushi.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#2980b9,#3498db);color:white;font-size:3rem;">ðŸŽµ</div><div class="card-body"><div class="card-category">Musique</div><h2 class="card-title">Anthologie de la musique congolaise</h2><p class="card-text">Voyage Ã  travers les grands classiques de la musique congolaise.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:3rem;">ðŸ“–</div><div class="card-body"><div class="card-category">LittÃ©rature</div><h2 class="card-title">Les Ã©crivains du Sud-Kivu</h2><p class="card-text">Portraits des figures littÃ©raires du Sud-Kivu.</p></div></div></div>', date: '2026-06-25', image: '' }
+    { id: 1, slug: 'qui-sommes-nous', title: 'Qui sommes-nous', meta: 'Histoire, vision, équipe et présence internationale de la Chronique de James Mukeshaba.', content: '<h2 style="color:var(--primary);margin-bottom:20px;">Notre Histoire</h2><p style="margin-bottom:15px;font-size:1.05rem;">La Chronique de James Mukeshaba est née de la volonté de créer un espace d\'information indépendant, ancré dans les réalités du Sud-Kivu tout en rayonnant à l\'international. Fondée à Bukavu, notre plateforme s\'est rapidement imposée comme une référence pour l\'actualité locale, les projets communautaires et les campagnes de sensibilisation.</p><p style="margin-bottom:15px;font-size:1.05rem;">Aujourd\'hui, nous sommes présents dans plusieurs villes de la RDC (Goma, Kinshasa, Lubumbashi) et avons ouvert un bureau à Alberta, Canada, pour servir la diaspora congolaise.</p><h2 class="section-title" style="margin-top:50px;">Notre Présence</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;"><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">📍</div><h3 style="color:var(--primary);">Bukavu</h3><p style="font-size:0.9rem;color:var(--text-light);">Siège social</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">📍</div><h3 style="color:var(--primary);">Goma</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau régional</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">📍</div><h3 style="color:var(--primary);">Kinshasa</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau régional</p></div><div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;"><div style="font-size:2rem;margin-bottom:10px;">📍</div><h3 style="color:var(--primary);">Alberta, Canada</h3><p style="font-size:0.9rem;color:var(--text-light);">Bureau international</p></div></div>', date: '2026-06-25', image: '' },
+    { id: 2, slug: 'projets', title: 'Nos Projets', meta: 'Découvrez les initiatives et projets communautaires portés par la Chronique de James Mukeshaba en RDC.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:3rem;">🌱</div><div class="card-body"><div class="card-category">Environnement</div><h2 class="card-title">Bukavu Ville Propre</h2><p class="card-text">Mobilisation citoyenne pour le nettoyage et l\'assainissement des quartiers périphériques de Bukavu.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#3498db,#2980b9);color:white;font-size:3rem;">📚</div><div class="card-body"><div class="card-category">Éducation</div><h2 class="card-title">Bibliothèque Mobile</h2><p class="card-text">Un projet de bibliothèque itinérante pour offrir l\'accès à la lecture aux enfants des zones rurales.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">💻</div><div class="card-body"><div class="card-category">Numérique</div><h2 class="card-title">Formation au Numérique</h2><p class="card-text">Ateliers de formation aux compétences numériques pour les jeunes de Bukavu et Goma.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:3rem;">🤝</div><div class="card-body"><div class="card-category">Communauté</div><h2 class="card-title">Diaspora Connect</h2><p class="card-text">Programme de connexion entre la diaspora congolaise au Canada et les communautés locales en RDC.</p></div></div></div>', date: '2026-06-25', image: '' },
+    { id: 3, slug: 'sensibilisation', title: 'Sensibilisation', meta: 'Campagnes d\'impact social et communautaire de la Chronique de James Mukeshaba.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:3rem;">✋</div><div class="card-body"><div class="card-category">Violences faites aux femmes</div><h2 class="card-title">Brisons le Silence</h2><p class="card-text">Campagne de sensibilisation contre les violences basées sur le genre à Bukavu.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#2980b9,#3498db);color:white;font-size:3rem;">💧</div><div class="card-body"><div class="card-category">Santé publique</div><h2 class="card-title">Eau Potable pour Tous</h2><p class="card-text">Campagne d\'information sur l\'eau potable dans les communautés rurales.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:3rem;">🌍</div><div class="card-body"><div class="card-category">Environnement</div><h2 class="card-title">Agir pour le Climat</h2><p class="card-text">Protection de l\'environnement contre la déforestation dans la région des Grands Lacs.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">🎓</div><div class="card-body"><div class="card-category">Éducation</div><h2 class="card-title">Tous à l\'École</h2><p class="card-text">Scolarisation des enfants dans les zones rurales du Sud-Kivu.</p></div></div></div>', date: '2026-06-25', image: '' },
+    { id: 4, slug: 'heritage', title: 'Héritage', meta: 'Archives, culture et mémoires du Congo. Plongez au coeur du patrimoine congolais.', content: '<div class="cards-grid"><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;font-size:3rem;">💃</div><div class="card-body"><div class="card-category">Culture</div><h2 class="card-title">Les danses traditionnelles du Sud-Kivu</h2><p class="card-text">Plongée au coeur du patrimoine culturel du Sud-Kivu à travers les danses et rituels.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:3rem;">📜</div><div class="card-body"><div class="card-category">Histoire</div><h2 class="card-title">L\'histoire du Royaume du Bushi</h2><p class="card-text">À la découverte des traditions et de l\'histoire du Royaume du Bushi.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#2980b9,#3498db);color:white;font-size:3rem;">🎵</div><div class="card-body"><div class="card-category">Musique</div><h2 class="card-title">Anthologie de la musique congolaise</h2><p class="card-text">Voyage à travers les grands classiques de la musique congolaise.</p></div></div><div class="card"><div class="card-img" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:3rem;">📖</div><div class="card-body"><div class="card-category">Littérature</div><h2 class="card-title">Les écrivains du Sud-Kivu</h2><p class="card-text">Portraits des figures littéraires du Sud-Kivu.</p></div></div></div>', date: '2026-06-25', image: '' }
   ];
   var existing = JSON.parse(localStorage.getItem('cms_pages') || '[]');
   var slugs = existing.map(function (p) { return p.slug; });
@@ -146,7 +146,7 @@ window.installPWA = function () {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ===== MOBILE MENU (drawer animÃ©) =====
+  // ===== MOBILE MENU (drawer animé) =====
   const menuToggle = document.querySelector('.menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navMenu = mainNav ? mainNav.querySelector('ul') : document.querySelector('nav ul');
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
       '<input type="search" class="mne-input" placeholder="' + (typeof t === 'function' ? t('home_search_ph') : 'Rechercher un article...') + '" autocomplete="off" aria-label="Rechercher">' +
       '</label>' +
-      '<div class="mne-cats" aria-label="CatÃ©gories"></div>' +
+      '<div class="mne-cats" aria-label="Catégories"></div>' +
       '<a class="btn btn-primary btn-sm mne-support" href="soutenir.html"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>' + (typeof t === 'function' ? t('home_support') : 'Soutenir nos actions') + '</a>' +
       '</div>';
     navMenu.appendChild(li);
@@ -295,10 +295,10 @@ document.addEventListener('DOMContentLoaded', function () {
         subs.push(email);
         localStorage.setItem('nl_subscribers', JSON.stringify(subs));
       }
-      showToast('Merci ! Vous Ãªtes abonnÃ© Ã  notre newsletter.');
+      showToast('Merci ! Vous êtes abonné à notre newsletter.');
       this.reset();
     });
-    // CatÃ©gories prÃ©fÃ©rÃ©es remplies depuis l'API
+    // Catégories préférées remplies depuis l'API
     const nlCats = nlForm.querySelector('.nl-cats');
     if (nlCats) {
       function fillCats() {
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
       data.id = Date.now(); data.pending = true;
       comments.push(data);
       localStorage.setItem('comments_' + articleId, JSON.stringify(comments));
-      showToast('Commentaire soumis et en attente de modÃ©ration.');
+      showToast('Commentaire soumis et en attente de modération.');
       this.reset();
     });
   }
@@ -372,13 +372,13 @@ window._renderComments = function(list) {
   const container = document.getElementById('comments-list');
   if (!container) return;
   if (!list || list.length === 0) {
-    container.innerHTML = '<p class="text-muted">'+(typeof t==='function'?t('no_comments'):'Aucun commentaire pour le moment. Soyez le premier Ã  commenter !')+'</p>';
+    container.innerHTML = '<p class="text-muted">'+(typeof t==='function'?t('no_comments'):'Aucun commentaire pour le moment. Soyez le premier à commenter !')+'</p>';
     return;
   }
   container.innerHTML = list.map(c =>
     '<div class="comment"><div><span class="comment-author">' + window._esc(c.name) + '</span><span class="comment-date">' + window._esc(c.date) + '</span></div>' +
     '<div class="comment-text">' + window._esc(c.text) + '</div>' +
-    '<div><button class="comment-report" data-cid="' + window._esc(c.id) + '" aria-label="Signaler ce commentaire">ðŸš© Signaler</button></div></div>'
+    '<div><button class="comment-report" data-cid="' + window._esc(c.id) + '" aria-label="Signaler ce commentaire">🚩 Signaler</button></div></div>'
   ).join('');
   container.querySelectorAll('.comment-report').forEach(function(btn){
     btn.onclick = function(){
@@ -388,13 +388,13 @@ window._renderComments = function(list) {
 };
 
 window.flagComment = function (cid, btn) {
-  if (!confirm('Signaler ce commentaire Ã  la modÃ©ration ?')) return;
+  if (!confirm('Signaler ce commentaire à la modération ?')) return;
   const aid = document.getElementById('comments-list') ? document.getElementById('comments-list').dataset.articleId : null;
   if (window.location.protocol !== 'file:' && aid) {
     fetch('/api/comments/' + aid + '/' + cid + '/flag', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason:'signale par un lecteur'})})
       .then(function(r){ if(r.ok) done(); }).catch(function(){ done(); });
   } else { done(); }
-  function done(){ if (btn) btn.textContent = 'ðŸš© SignalÃ©'; showToast('Merci, votre signalement a Ã©tÃ© transmis Ã  la modÃ©ration.'); }
+  function done(){ if (btn) btn.textContent = '🚩 Signalé'; showToast('Merci, votre signalement a été transmis à la modération.'); }
 };
 
 // ===== AUTO-CLEAN EVERY 3 MIN =====
@@ -450,7 +450,7 @@ window.showToast = function (message, type) {
   }, 3500);
 };
 
-// ===== UI : icÃ´nes SVG cohÃ©rentes + date du jour (header) =====
+// ===== UI : icônes SVG cohérentes + date du jour (header) =====
 (function () {
   if (document.body.classList.contains('admin-body')) return;
 
@@ -469,17 +469,17 @@ window.showToast = function (message, type) {
 
   function init() {
     var s = document.getElementById('search-open');
-    if (s && s.textContent.replace(/\s/g, '') === 'ðŸ”') s.innerHTML = ICONS.search;
+    if (s && s.textContent.replace(/\s/g, '') === '🔍') s.innerHTML = ICONS.search;
     var m = document.querySelector('.menu-toggle');
-    if (m && m.textContent.replace(/\s/g, '') === 'â˜°') m.innerHTML = ICONS.menu;
+    if (m && m.textContent.replace(/\s/g, '') === '☰') m.innerHTML = ICONS.menu;
     document.querySelectorAll('.btn-support span[aria-hidden="true"]').forEach(function (sp) { sp.innerHTML = ICONS.heart; });
-    document.querySelectorAll('.breaking-label span[aria-hidden="true"]').forEach(function (sp) { if (sp.textContent === 'âš¡') sp.innerHTML = ICONS.zap; });
+    document.querySelectorAll('.breaking-label span[aria-hidden="true"]').forEach(function (sp) { if (sp.textContent === '⚡') sp.innerHTML = ICONS.zap; });
     document.querySelectorAll('.ticker-prev').forEach(function (b) { b.innerHTML = ICONS.chevL; });
     document.querySelectorAll('.ticker-next').forEach(function (b) { b.innerHTML = ICONS.chevR; });
     document.querySelectorAll('.search-overlay .qrow > span[aria-hidden="true"]').forEach(function (sp) { sp.innerHTML = ICONS.search; });
-    document.querySelectorAll('.sr-searchbox > span[aria-hidden="true"]').forEach(function (sp) { if (sp.textContent.indexOf('ðŸ”') !== -1) sp.innerHTML = ICONS.search; });
+    document.querySelectorAll('.sr-searchbox > span[aria-hidden="true"]').forEach(function (sp) { if (sp.textContent.indexOf('🔍') !== -1) sp.innerHTML = ICONS.search; });
     var ICON_X = S + '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    document.querySelectorAll('.search-panel #search-close').forEach(function (b) { if (b.textContent.indexOf('âœ•') !== -1) b.innerHTML = ICON_X; });
+    document.querySelectorAll('.search-panel #search-close').forEach(function (b) { if (b.textContent.indexOf('✕') !== -1) b.innerHTML = ICON_X; });
     document.querySelectorAll('.top-bar .container').forEach(function (c) {
       if (c.querySelector('.tb-date')) return;
       var d = document.createElement('span');
@@ -498,7 +498,7 @@ window.showToast = function (message, type) {
   else init();
 })();
 
-// ===== SIDEBAR INTELLIGENTE (widgets Ã€ la une / populaires / catÃ©gories / newsletter) =====
+// ===== SIDEBAR INTELLIGENTE (widgets À la une / populaires / catégories / newsletter) =====
 (function () {
   if (document.body.classList.contains('admin-body')) return;
   var S = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
@@ -547,7 +547,7 @@ window.showToast = function (message, type) {
       var subs = JSON.parse(localStorage.getItem('nl_subscribers') || '[]');
       if (subs.indexOf(email) === -1) subs.push(email);
       localStorage.setItem('nl_subscribers', JSON.stringify(subs));
-      window.showToast('Merci ! Vous Ãªtes abonnÃ© Ã  notre newsletter.');
+      window.showToast('Merci ! Vous êtes abonné à notre newsletter.');
       form.reset();
     });
   }
@@ -743,7 +743,7 @@ window.showToast = function (message, type) {
   init();
 })();
 
-// ===== EDITORIAL 2026 : rÃ©vÃ©lation douce des cartes au scroll =====
+// ===== EDITORIAL 2026 : révélation douce des cartes au scroll =====
 (function () {
   if (document.body.classList.contains('admin-body')) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

@@ -15,26 +15,26 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">ðŸ“Š Tableau de bord</a>
-      <a href="articles.html">ðŸ“ Gestion des articles</a>
-      <a href="pages.html">ðŸ“„ Gestion des pages</a>
-      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="campaigns.html">📢 Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
-      <a href="newsletter.html" class="active">ðŸ“§ Newsletter &amp; Notifications</a>
-      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
-      <a href="../index.html">ðŸ  Voir le site</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="newsletter.html" class="active">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+      <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
       <h2 style="color:var(--primary);margin-bottom:25px;">Newsletter &amp; Notifications</h2>
@@ -42,7 +42,7 @@
       <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;">
         <div class="stat-card" style="flex:1;min-width:150px;">
           <div class="number" id="stat-nl">0</div>
-          <div class="label">AbonnÃ©s newsletter</div>
+          <div class="label">Abonnés newsletter</div>
         </div>
         <div class="stat-card" style="flex:1;min-width:150px;">
           <div class="number" id="stat-ntf">0</div>
@@ -55,51 +55,51 @@
       </div>
 
       <div style="margin-bottom:30px;">
-        <h3 style="color:var(--primary);margin-bottom:15px;">ðŸ“§ AbonnÃ©s Ã  la newsletter</h3>
+        <h3 style="color:var(--primary);margin-bottom:15px;">📧 Abonnés à la newsletter</h3>
         <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow-x:auto;">
           <table class="admin-table" id="nl-table">
-            <thead><tr><th>Nom</th><th>Email</th><th>CatÃ©gories prÃ©fÃ©rÃ©es</th><th>Inscription</th><th></th></tr></thead>
+            <thead><tr><th>Nom</th><th>Email</th><th>Catégories préférées</th><th>Inscription</th><th></th></tr></thead>
             <tbody id="nl-rows"></tbody>
           </table>
-          <p id="nl-empty" style="color:var(--text-light);font-size:0.9rem;">Chargementâ€¦</p>
+          <p id="nl-empty" style="color:var(--text-light);font-size:0.9rem;">Chargement…</p>
         </div>
       </div>
 
       <div style="margin-bottom:30px;">
-        <h3 style="color:var(--primary);margin-bottom:15px;">ðŸ”” Inscrits aux notifications</h3>
+        <h3 style="color:var(--primary);margin-bottom:15px;">🔔 Inscrits aux notifications</h3>
         <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow-x:auto;">
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
             <span id="push-status" style="font-size:0.85rem;color:var(--text-light);"></span>
           </div>
           <table class="admin-table" id="ntf-table">
-            <thead><tr><th>Nom</th><th>Email</th><th>PrÃ©fÃ©rences</th><th>Push Web</th><th>Inscription</th><th></th></tr></thead>
+            <thead><tr><th>Nom</th><th>Email</th><th>Préférences</th><th>Push Web</th><th>Inscription</th><th></th></tr></thead>
             <tbody id="ntf-body"></tbody>
           </table>
-          <p id="ntf-empty" style="color:var(--text-light);font-size:0.9rem;">Chargementâ€¦</p>
+          <p id="ntf-empty" style="color:var(--text-light);font-size:0.9rem;">Chargement…</p>
         </div>
       </div>
 
       <div style="margin-bottom:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
-        <h3 style="color:var(--primary);margin-bottom:15px;">ðŸš€ Envoyer un test de notification push</h3>
+        <h3 style="color:var(--primary);margin-bottom:15px;">🚀 Envoyer un test de notification push</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
           <label style="flex:1;min-width:180px;font-size:0.85rem;font-weight:600;">
             Titre
-            <input type="text" id="push-title" class="form-input" placeholder="Ex : âš¡ Breaking News" style="margin-top:6px;">
+            <input type="text" id="push-title" class="form-input" placeholder="Ex : ⚡ Breaking News" style="margin-top:6px;">
           </label>
           <label style="flex:2;min-width:220px;font-size:0.85rem;font-weight:600;">
             Message
-            <input type="text" id="push-body" class="form-input" placeholder="Le message affichÃ©" style="margin-top:6px;">
+            <input type="text" id="push-body" class="form-input" placeholder="Le message affiché" style="margin-top:6px;">
           </label>
           <label style="font-size:0.85rem;font-weight:600;">
             Destinataires
             <select id="push-scope" class="form-input" style="margin-top:6px;cursor:pointer;">
               <option value="">Tous les inscrits (push)</option>
-              <option value="breaking">AbonnÃ©s Breaking News</option>
-              <option value="rdc">AbonnÃ©s RDC</option>
-              <option value="international">AbonnÃ©s International</option>
+              <option value="breaking">Abonnés Breaking News</option>
+              <option value="rdc">Abonnés RDC</option>
+              <option value="international">Abonnés International</option>
             </select>
           </label>
-          <button type="button" class="btn btn-primary" id="push-send">ðŸš€ Envoyer</button>
+          <button type="button" class="btn btn-primary" id="push-send">🚀 Envoyer</button>
         </div>
         <div id="push-result" style="font-size:0.8rem;color:#27ae60;margin-top:10px;"></div>
       </div>
@@ -107,8 +107,8 @@
       <div style="margin-top:30px;background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
         <h3 style="color:var(--primary);margin-bottom:15px;">Actions rapides</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <a href="articles.html" class="btn btn-primary">âž• Nouvel article</a>
-          <a href="comments.html" class="btn btn-outline">ðŸ’¬ ModÃ©rer les commentaires</a>
+          <a href="articles.html" class="btn btn-primary">➕ Nouvel article</a>
+          <a href="comments.html" class="btn btn-outline">💬 Modérer les commentaires</a>
         </div>
       </div>
     </main>
@@ -144,7 +144,7 @@
         var body = document.getElementById('nl-rows');
         var empty = document.getElementById('nl-empty');
         document.getElementById('stat-nl').textContent = list.length;
-        if (!list.length) { body.innerHTML = ''; empty.textContent = 'Aucun abonnÃ© pour le moment.'; return; }
+        if (!list.length) { body.innerHTML = ''; empty.textContent = 'Aucun abonné pour le moment.'; return; }
         empty.textContent = '';
         body.innerHTML = list.map(function (s) {
           var cats = (s.categories || []).length
@@ -155,7 +155,7 @@
         }).join('');
         body.querySelectorAll('[data-del]').forEach(function (b) {
           b.addEventListener('click', function () {
-            if (!confirm('Supprimer cet abonnÃ© newsletter ?')) return;
+            if (!confirm('Supprimer cet abonné newsletter ?')) return;
             api('/api/newsletter/' + encodeURIComponent(b.dataset.del), 'DELETE').then(function () { loadAll(); });
           });
         });
@@ -163,7 +163,7 @@
 
       // ---- NOTIFICATIONS ----
       function prefsBadge(s) {
-        var m = { news: 'ðŸ“° Actus', breaking: 'ðŸ”´ Breaking', rdc: 'ðŸ‡¨ðŸ‡© RDC', international: 'ðŸŒ International' };
+        var m = { news: '📰 Actus', breaking: '🔴 Breaking', rdc: '🇨🇩 RDC', international: '🌍 International' };
         return Object.keys(m).filter(function (k) { return s.prefs && s.prefs[k]; }).map(function (k) {
           return '<span style="background:#fff7e6;color:#8a5a00;border-radius:20px;padding:2px 10px;font-size:0.75rem;margin-right:5px;">' + m[k] + '</span>';
         }).join('') || '<span style="color:var(--text-light);font-size:0.8rem;">Aucune</span>';
@@ -179,7 +179,7 @@
         empty.textContent = '';
         body.innerHTML = list.map(function (s) {
           return '<tr><td>' + esc(s.name || '-') + '</td><td>' + esc(s.email || '-') + '</td><td>' + prefsBadge(s) + '</td>' +
-            '<td>' + (s.endpoint ? ('âœ… Push<br><span style="font-size:0.7rem;color:var(--text-light);">' + esc(s.endpoint) + '</span>') : '<span style="color:var(--text-light);">PrÃ©fÃ©rences seules</span>') + '</td>' +
+            '<td>' + (s.endpoint ? ('✅ Push<br><span style="font-size:0.7rem;color:var(--text-light);">' + esc(s.endpoint) + '</span>') : '<span style="color:var(--text-light);">Préférences seules</span>') + '</td>' +
             '<td>' + esc(s.created || '-') + '</td>' +
             '<td><button class="btn btn-sm btn-secondary" data-ntf="' + s.id + '" style="padding:4px 10px;font-size:0.8rem;">Supprimer</button></td></tr>';
         }).join('');
@@ -197,8 +197,8 @@
         api('/api/push/status').then(function (s) {
           var el = document.getElementById('push-status');
           if (el) el.innerHTML = s && s.available
-            ? (s.vapid_configured ? 'âœ… Push Web opÃ©rationnel (clÃ©s VAPID configurÃ©es).' : 'âš ï¸ Push Web disponible mais clÃ©s VAPID non gÃ©nÃ©rÃ©es (un visiteur les gÃ©nÃ©rera au premier abonnement).')
-            : 'âš ï¸ pywebpush non installÃ© : l\'envoi push envoie besoin de la dÃ©pendance.';
+            ? (s.vapid_configured ? '✅ Push Web opérationnel (clés VAPID configurées).' : '⚠️ Push Web disponible mais clés VAPID non générées (un visiteur les générera au premier abonnement).')
+            : '⚠️ pywebpush non installé : l\'envoi push envoie besoin de la dépendance.';
         }).catch(function () {});
       }
       loadAll();
@@ -208,10 +208,10 @@
         var body = document.getElementById('push-body').value.trim();
         var scope = document.getElementById('push-scope').value;
         var res = document.getElementById('push-result');
-        res.textContent = 'Envoi en coursâ€¦';
+        res.textContent = 'Envoi en cours…';
         api('/api/push/send', 'POST', { title: title, body: body, url: '/', scope: scope }).then(function (d) {
-          res.textContent = d.ok ? ('âœ… ' + (d.sent || 0) + ' notification(s) envoyÃ©e(s).') : ('âŒ ' + (d.error || 'erreur'));
-        }).catch(function () { res.textContent = 'âŒ Erreur rÃ©seau.'; });
+          res.textContent = d.ok ? ('✅ ' + (d.sent || 0) + ' notification(s) envoyée(s).') : ('❌ ' + (d.error || 'erreur'));
+        }).catch(function () { res.textContent = '❌ Erreur réseau.'; });
       });
     })();
   </script>

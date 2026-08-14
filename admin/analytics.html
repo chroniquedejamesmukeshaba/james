@@ -18,7 +18,7 @@
       <a href="../index.html" style="font-size:0.9rem;">&#11013; Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
     </div>
   </div>
   <div class="admin-layout">
@@ -29,11 +29,11 @@
       <a href="campaigns.html">&#128226; Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">&#128172; ModÃ©ration des commentaires</a>
-      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
-      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
-<a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
-      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
+      <a href="comments.html">&#128172; Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
       <a href="../index.html">&#127968; Voir le site</a>
     </nav>
     <main class="admin-main">
@@ -43,18 +43,18 @@
         <button class="btn btn-sm period-btn active" data-period="day" style="padding:8px 18px;">Aujourd'hui</button>
         <button class="btn btn-sm period-btn" data-period="week" style="padding:8px 18px;">Cette semaine</button>
         <button class="btn btn-sm period-btn" data-period="month" style="padding:8px 18px;">Ce mois</button>
-        <button class="btn btn-sm period-btn" data-period="year" style="padding:8px 18px;">Cette annÃ©e</button>
+        <button class="btn btn-sm period-btn" data-period="year" style="padding:8px 18px;">Cette année</button>
         <button class="btn btn-sm period-btn" data-period="all" style="padding:8px 18px;">Tout</button>
       </div>
 
       <div class="stats-grid" style="margin-bottom:25px;">
         <div class="stat-card">
           <div class="number" id="analytics-total">0</div>
-          <div class="label">Visites (pÃ©riode)</div>
+          <div class="label">Visites (période)</div>
         </div>
       </div>
 
-      <h3 style="color:var(--primary);margin-bottom:15px;">FrÃ©quence des visites</h3>
+      <h3 style="color:var(--primary);margin-bottom:15px;">Fréquence des visites</h3>
       <div id="analytics-chart" style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:30px;"></div>
 
       <h3 style="color:var(--primary);margin-bottom:15px;">Classement des articles</h3>
@@ -81,9 +81,9 @@
 
       <h3 style="color:var(--primary);margin:35px 0 15px;">Analyse par article</h3>
       <div class="art-picker-wrap">
-        <input type="search" id="art-search" class="form-input" placeholder="ðŸ” Filtrer les articlesâ€¦" style="max-width:260px;">
+        <input type="search" id="art-search" class="form-input" placeholder="🔍 Filtrer les articles…" style="max-width:260px;">
         <select id="art-picker" class="form-input" style="max-width:480px;">
-          <option value="">â€” SÃ©lectionner un article â€”</option>
+          <option value="">— Sélectionner un article —</option>
         </select>
       </div>
 
@@ -91,9 +91,9 @@
         <div class="stats-grid" style="margin-bottom:25px;">
           <div class="stat-card"><div class="number" id="art-visits">0</div><div class="label">Visites</div></div>
           <div class="stat-card"><div class="number" id="art-uniques">0</div><div class="label">Visiteurs uniques</div></div>
-          <div class="stat-card"><div class="number" id="art-readers">0</div><div class="label">Lecteurs</div><div class="sub">moy. <span id="art-avg">â€”</span></div></div>
+          <div class="stat-card"><div class="number" id="art-readers">0</div><div class="label">Lecteurs</div><div class="sub">moy. <span id="art-avg">—</span></div></div>
           <div class="stat-card"><div class="number" id="art-shares">0</div><div class="label">Partages</div></div>
-          <div class="stat-card"><div class="number" id="art-reactions">0</div><div class="label">RÃ©actions</div></div>
+          <div class="stat-card"><div class="number" id="art-reactions">0</div><div class="label">Réactions</div></div>
           <div class="stat-card"><div class="number" id="art-comments">0</div><div class="label">Commentaires</div></div>
           <div class="stat-card"><div class="number" id="art-exit">0 %</div><div class="label">Taux de sortie</div></div>
         </div>
@@ -108,7 +108,7 @@
             </div>
           </div>
           <div class="dash-card">
-            <h3>DurÃ©e de lecture</h3>
+            <h3>Durée de lecture</h3>
             <div id="art-read-hist"></div>
           </div>
         </div>
@@ -129,7 +129,7 @@
         </div>
 
         <div class="dash-card" style="margin-top:24px;">
-          <h3>DerniÃ¨res visites</h3>
+          <h3>Dernières visites</h3>
           <div class="admin-table">
             <table>
               <thead><tr><th>Date</th><th>Pays</th><th>Appareil</th><th>Navigateur</th><th>Provenance</th></tr></thead>
@@ -137,9 +137,9 @@
             </table>
           </div>
           <div class="pagination">
-            <button id="art-prev" type="button">â† PrÃ©cÃ©dent</button>
+            <button id="art-prev" type="button">← Précédent</button>
             <span id="art-page-info">1 / 1</span>
-            <button id="art-next" type="button">Suivant â†’</button>
+            <button id="art-next" type="button">Suivant →</button>
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@
               else if (label.length === 7) short = label.slice(5);
               else short = label.slice(5);
               bars += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">' +
-                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+label+' â€” '+data.chart.data[i]+' visites"></div>' +
+                '<div style="width:24px;height:'+h+'px;background:var(--primary);border-radius:4px 4px 0 0;" title="'+label+' — '+data.chart.data[i]+' visites"></div>' +
                 '<span style="font-size:0.65rem;color:var(--text-light);text-align:center;">'+short+'</span>' +
                 '<span style="font-size:0.7rem;font-weight:600;">'+data.chart.data[i]+'</span></div>';
             });
@@ -273,8 +273,8 @@
           return !q || (a.title || '').toLowerCase().indexOf(q) !== -1 || (a.category || '').toLowerCase().indexOf(q) !== -1;
         });
         var old = picker.value;
-        picker.innerHTML = '<option value="">â€” SÃ©lectionner un article â€”</option>' +
-          shown.map(function (a) { return '<option value="' + a.id + '">' + (a.title || 'Sans titre').substring(0, 80) + ' â€” ' + (a.category || '') + '</option>'; }).join('');
+        picker.innerHTML = '<option value="">— Sélectionner un article —</option>' +
+          shown.map(function (a) { return '<option value="' + a.id + '">' + (a.title || 'Sans titre').substring(0, 80) + ' — ' + (a.category || '') + '</option>'; }).join('');
         if (old) picker.value = old;
       }
       search && search.addEventListener('input', rebuildList);
@@ -306,13 +306,13 @@
         document.getElementById('art-shares').textContent = Dash.fmt(t.shares || 0);
         document.getElementById('art-reactions').textContent = Dash.fmt(t.reactions || 0);
         document.getElementById('art-comments').textContent = Dash.fmt(t.comments || 0);
-        document.getElementById('art-exit').textContent = (t.exitRate == null ? 'â€”' : t.exitRate + ' %');
+        document.getElementById('art-exit').textContent = (t.exitRate == null ? '—' : t.exitRate + ' %');
         var s = d.series || {};
         Dash.line(document.getElementById('art-line-chart'), [
           { labels: s.labels || [], data: s.visits || [], name: 'Visites', color: '#58a6ff' },
           { labels: s.labels || [], data: s.uniques || [], name: 'Uniques', color: '#3fb950' }
         ], ['#58a6ff', '#3fb950']);
-        var buckets = [['0â€“10 s'], ['10â€“30 s'], ['30 sâ€“1 min'], ['1â€“3 min'], ['3 min +']].map(function (b, i) {
+        var buckets = [['0–10 s'], ['10–30 s'], ['30 s–1 min'], ['1–3 min'], ['3 min +']].map(function (b, i) {
           return { lab: b[0], v: d.readHistogram[i] || 0 };
         });
         var bmax = Math.max.apply(Math, buckets.map(function (b) { return b.v; }).concat([1]));
