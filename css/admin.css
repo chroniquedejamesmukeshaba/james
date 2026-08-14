@@ -936,7 +936,7 @@ html[data-theme="dark"] .admin-body :focus-visible { outline-color: rgba(127, 17
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
-  .admin-burger { display: inline-flex; }
+  .adm-burger { display: inline-flex; }
   .adm-head-title { display: none; }
   .admin-sidebar {
     position: fixed;
@@ -965,6 +965,9 @@ html[data-theme="dark"] .admin-body :focus-visible { outline-color: rgba(127, 17
   .admin-main { padding: 18px 16px 40px; }
   .admin-header .container { padding: 8px 14px; }
   .dash-grid, .stats-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .admin-table { overflow-x: auto; }
+  .admin-table table { min-width: 0; }
+  .dash-row, .dash-row-3, .dash-grid, .dash-card, .admin-main, .admin-layout { min-width: 0; }
   .bell-drop { position: fixed; top: 60px; right: 12px; left: 12px; width: auto; }
 }
 @media (max-width: 520px) {

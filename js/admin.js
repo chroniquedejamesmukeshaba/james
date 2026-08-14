@@ -561,10 +561,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (status === 'programme' && schedEl && schedEl.value) {
           scheduledAt = new Date(schedEl.value).getTime();
         }
+        var prevImage = '';
+        if (id) {
+          var prev = allArticles.filter(function (a) { return String(a.id) === String(id); })[0];
+          if (prev && prev.image) prevImage = prev.image;
+        }
+        var finalImg = imgUrl || (imageData && imageData.indexOf('data:') === 0 ? prevImage : (imageData || prevImage));
         const article = {
           title: document.getElementById('art-title').value,
           category: document.getElementById('art-category').value,
-          image: imgUrl || imageData,
+          image: finalImg,
           excerpt: document.getElementById('art-excerpt').value,
           content: document.getElementById('art-content').value,
           author: document.getElementById('art-author').value,
@@ -609,9 +615,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (useServer && imageData.startsWith('data:')) {
         fetch('/api/upload', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:imageData})})
-          .then(function(r){return r.json()})
-          .then(function(res){ saveArticle(res.url || imageData); })
-          .catch(function(){ saveArticle(imageData); });
+          .then(function(r){return r.json().then(function(b){return {ok:r.ok, body:b};});})
+          .then(function(res){
+            if (res && res.ok && res.body && res.body.url) { saveArticle(res.body.url); }
+            else { showToast('L\'image n\'a pas pu être envoyée — article enregistré sans nouvelle photo.', 'error'); saveArticle(''); }
+          })
+          .catch(function(){ showToast('L\'image n\'a pas pu être envoyée — article enregistré sans nouvelle photo.', 'error'); saveArticle(''); });
       } else {
         saveArticle(imageData);
       }
