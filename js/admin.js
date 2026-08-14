@@ -42,35 +42,45 @@ function authHeaders(extra) {
   return h;
 }
 
+function _apiReject(r, body) {
+  var err = new Error((body && body.error) || ('Erreur serveur (' + r.status + ')'));
+  err.fromApi = true;
+  return Promise.reject(err);
+}
+
 function apiGet(path) {
-  if (!useServer) return null;
+  if (!useServer) return Promise.reject({ fromApi: true, message: 'Mode hors ligne.' });
   return fetch('/api' + path, {headers: authHeaders()}).then(function(r){
-    if (r.status === 401) { forceLogin(); return null; }
-    return r.ok ? r.json() : null;
-  }).catch(function(){return null});
+    if (r.status === 401) { forceLogin(); return Promise.reject({ fromApi: true, message: 'Session expirée.' }); }
+    if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ return _apiReject(r, b); });
+    return r.json();
+  });
 }
 function apiPost(path, data) {
-  if (!useServer) return null;
+  if (!useServer) return Promise.reject({ fromApi: true, message: 'Mode hors ligne.' });
   return fetch('/api' + path,{method:'POST',headers:authHeaders(),body:JSON.stringify(data)})
     .then(function(r){
-      if (r.status === 401) { forceLogin(); return null; }
-      return r.ok ? r.json() : null;
-    }).catch(function(){return null});
+      if (r.status === 401) { forceLogin(); return Promise.reject({ fromApi: true, message: 'Session expirée.' }); }
+      if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ return _apiReject(r, b); });
+      return r.json();
+    });
 }
 function apiDel(path) {
-  if (!useServer) return null;
+  if (!useServer) return Promise.reject({ fromApi: true, message: 'Mode hors ligne.' });
   return fetch('/api' + path,{method:'DELETE',headers:authHeaders()}).then(function(r){
-    if (r.status === 401) { forceLogin(); return null; }
-    return r.ok;
-  }).catch(function(){return false});
+    if (r.status === 401) { forceLogin(); return Promise.reject({ fromApi: true, message: 'Session expirée.' }); }
+    if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ return _apiReject(r, b); });
+    return { ok: true };
+  });
 }
 function apiPut(path, data) {
-  if (!useServer) return null;
+  if (!useServer) return Promise.reject({ fromApi: true, message: 'Mode hors ligne.' });
   return fetch('/api' + path,{method:'PUT',headers:authHeaders(),body:JSON.stringify(data)})
     .then(function(r){
-      if (r.status === 401) { forceLogin(); return null; }
-      return r.ok ? r.json() : null;
-    }).catch(function(){return null});
+      if (r.status === 401) { forceLogin(); return Promise.reject({ fromApi: true, message: 'Session expirée.' }); }
+      if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ return _apiReject(r, b); });
+      return r.json();
+    });
 }
 function forceLogin() {
   if (window.location.protocol === 'file:') return;
@@ -84,6 +94,17 @@ function forceLogin() {
   localStorage.removeItem('admin_token');
   window.location.href = 'login.html';
 }
+
+// Aucune erreur serveur silencieuse : tout echec d'API admin affiche un toast.
+window.addEventListener('unhandledrejection', function (e) {
+  var r = e && e.reason;
+  if (!r || !r.fromApi) return;
+  e.preventDefault && e.preventDefault();
+  try {
+    var msg = (r && r.message) || 'Erreur serveur, veuillez réessayer.';
+    window.showToast ? showToast(msg, 'error') : alert(msg);
+  } catch (err) {}
+});
 
 // ===== RBAC : roles et acces aux pages (exposés globalement pour admin-layout.js) =====
 const ROLE_LABELS = { super_admin:'Super administrateur', admin:'Administrateur', editeur:'Éditeur', moderateur:'Modérateur', journaliste:'Journaliste', analyste:'Analyste' };
@@ -597,7 +618,11 @@ document.addEventListener('DOMContentLoaded', function () {
           var c = document.getElementById('art-content'+sfx); if (c && c.value) article['content'+sfx] = c.value;
         });
         if (id) article.id = Number(id);
-        apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Enregistrer et publier'; loadArticles(); });
+        apiPost('/articles', article).then(function() { btn.disabled = false; btn.textContent = '💾 Enregistrer et publier'; loadArticles(); }).catch(function(err) {
+          btn.disabled = false; btn.textContent = '💾 Enregistrer et publier';
+          var m = (err && err.message) || 'Erreur serveur';
+          showToast('Échec de l\'enregistrement : ' + m, 'error');
+        });
         if (!useServer) {
           let articles = JSON.parse(localStorage.getItem('admin_articles') || '[]');
           if (id) {
@@ -703,9 +728,12 @@ document.addEventListener('DOMContentLoaded', function () {
       var sch = '';
       if (st === 'programme' && a.scheduledAt) {
         var d = new Date(a.scheduledAt);
-        sch = '<div style="font-size:0.72rem;color:#1565c0;margin-top:2px;">📅 ' + d.toLocaleString('fr-FR') + '</div>';
+        sch = '<div style="font-size:0.72rem;color:#1565c0;margin-top:2px;">�Y". ' + d.toLocaleString('fr-FR') + '</div>';
       }
-      return '<tr><td>' + a.id + '</td><td><strong>' + a.title + '</strong>' + sch + '</td><td>' + (a.category || '') + '</td><td>' + (a.date || '') + '</td><td>' + badge + '</td><td>' + btns + '</td></tr>';
+      var thumb = a.image
+        ? '<img src="' + esc(a.image) + '" alt="" style="width:64px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#eef2f7;" onerror="this.style.display=\'none\'">'
+        : '<span style="width:64px;height:42px;border-radius:6px;background:#eef2f7;display:inline-flex;align-items:center;justify-content:center;color:#bbb;font-size:0.75rem;flex-shrink:0;">—</span>';
+      return '<tr><td>' + a.id + '</td><td><div style="display:flex;gap:10px;align-items:center;max-width:520px;"><div style="min-width:64px;">' + thumb + '</div><div><strong>' + a.title + '</strong>' + sch + '</div></div></td><td>' + (a.category || '') + '</td><td>' + (a.date || '') + '</td><td>' + badge + '</td><td>' + btns + '</td></tr>';
     }).join('');
   }
 

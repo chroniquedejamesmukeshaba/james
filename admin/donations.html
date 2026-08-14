@@ -33,6 +33,7 @@
       <a href="security.html">🔐 Sécurité</a>
       <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
       <a href="media.html">🖼️ Médiathèque</a>
+      <a href="ads.html">📢 Publicités</a>
       <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
@@ -167,7 +168,12 @@
       var token = localStorage.getItem('admin_token');
       if (token) h['X-Admin-Token'] = token;
       return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
-        .then(function(r){return r.json()}).catch(function(){return null;});
+        .then(function(r){
+          return r.json().then(function(b){
+            if (!r.ok) { var e = new Error(b && b.error ? b.error : ('Erreur serveur (' + r.status + ')')); e.fromApi = true; throw e; }
+            return b;
+          });
+        }).catch(function(err){ if (err && err.fromApi) throw err; var e = new Error('Réseau indisponible.'); e.fromApi = true; throw e; });
     }
 
     var PROVIDER_LABELS = {

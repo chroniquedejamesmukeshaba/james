@@ -52,8 +52,48 @@
     <main class="admin-main">
       <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-radius:18px;padding:26px 30px;margin-bottom:26px;">
         <h2 style="margin:0 0 6px;color:#fff;font-size:1.5rem;">📢 Publicit&eacute;s</h2>
-        <p style="margin:0;color:rgba(255,255,255,0.85);max-width:640px;">Les demandes envoy&eacute;es via la page &laquo;&nbsp;Publicit&eacute;&nbsp;&raquo; arrivent ici. Approuvez pour afficher la publicit&eacute; sur la page d&rsquo;accueil, ou refusez : la personne recevra un email avec votre motif.</p>
+        <p style="margin:0 0 14px;color:rgba(255,255,255,0.85);max-width:640px;">Cr&eacute;ez une publicit&eacute; directement ici, ou approuvez les demandes envoy&eacute;es via la page &laquo;&nbsp;Publicit&eacute;&nbsp;&raquo;. Les publicit&eacute;s actives s&rsquo;affichent dans l&rsquo;espace publicitaire de la page d&rsquo;accueil.</p>
+        <button class="btn" id="new-ad-btn" style="background:#fff;color:var(--primary);font-weight:700;padding:12px 22px;border:none;border-radius:999px;cursor:pointer;">➕ Nouvelle publicit&eacute;</button>
       </div>
+
+      <div id="ad-form-container" style="display:none;background:var(--white,#fff);padding:25px;border-radius:14px;box-shadow:var(--shadow);margin-bottom:28px;">
+        <h3 id="ad-form-title" style="color:var(--primary);margin:0 0 18px;">Nouvelle publicit&eacute;</h3>
+        <form id="ad-form">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group">
+              <label>Titre de la publicit&eacute; *</label>
+              <input type="text" id="ad-title" class="form-input" placeholder="Ex : Joyeux anniversaire" required>
+            </div>
+            <div class="form-group">
+              <label>Annonceur (nom de la personne / entreprise)</label>
+              <input type="text" id="ad-name" class="form-input" placeholder="Nom de l'annonceur">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description courte</label>
+            <textarea id="ad-description" class="form-input" rows="3" placeholder="Texte affiché sous le titre de la publicité"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group">
+              <label>Image (recommand&eacute;e, 1200&times;800 ou 4:3)</label>
+              <input type="file" id="ad-image-input" accept="image/*" class="form-input">
+              <img id="ad-img-preview" alt="Aper&ccedil;u" style="display:none;max-width:220px;max-height:130px;border-radius:8px;margin-top:10px;object-fit:cover;">
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select id="ad-status" class="form-input" style="cursor:pointer;">
+                <option value="active">Active (visible sur l'accueil)</option>
+                <option value="pending">En attente (non visible)</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <button type="submit" class="btn btn-primary" id="ad-submit" style="padding:11px 22px;">🚀 Publier la publicit&eacute;</button>
+            <button type="button" class="btn btn-outline" id="cancel-ad">Annuler</button>
+          </div>
+        </form>
+      </div>
+
       <div id="ads-list">
         <p style="color:#999;">Chargement&hellip;</p>
       </div>
@@ -69,7 +109,12 @@
       var token = localStorage.getItem('admin_token');
       if (token) h['X-Admin-Token'] = token;
       return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
-        .then(function(r){return r.json()}).catch(function(){return null;});
+        .then(function(r){
+          return r.json().then(function(b){
+            if (!r.ok) { var e = new Error(b && b.error ? b.error : ('Erreur serveur (' + r.status + ')')); e.fromApi = true; throw e; }
+            return b;
+          });
+        }).catch(function(err){ if (err && err.fromApi) throw err; var e = new Error('R\u00e9seau indisponible.'); e.fromApi = true; throw e; });
     }
     function esc(s) {
       return String(s == null ? '' : s)
@@ -129,7 +174,70 @@
         if (d && d.ok) { showToast('Demande supprim\u00e9e.'); load(); }
       });
     };
-    document.addEventListener('DOMContentLoaded', load);
+    document.addEventListener('DOMContentLoaded', function () {
+      load();
+      document.getElementById('new-ad-btn').addEventListener('click', function () {
+        document.getElementById('ad-form-container').style.display = 'block';
+        document.getElementById('ad-form').reset();
+        document.getElementById('ad-img-preview').style.display = 'none';
+        document.getElementById('ad-submit').disabled = false;
+        document.getElementById('ad-submit').textContent = '\uD83D\uDE80 Publier la publicit\u00e9';
+        window.scrollTo({ top: document.getElementById('ad-form-container').offsetTop - 100, behavior: 'smooth' });
+      });
+      document.getElementById('cancel-ad').addEventListener('click', function () {
+        document.getElementById('ad-form-container').style.display = 'none';
+      });
+      document.getElementById('ad-image-input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          var pv = document.getElementById('ad-img-preview');
+          pv.src = ev.target.result;
+          pv.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      });
+      document.getElementById('ad-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('ad-submit');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement\u2026';
+        var imgData = document.getElementById('ad-img-preview').src || '';
+        var data = {
+          title: document.getElementById('ad-title').value.trim(),
+          name: document.getElementById('ad-name').value.trim(),
+          description: document.getElementById('ad-description').value.trim(),
+          status: document.getElementById('ad-status').value
+        };
+        function doSave() {
+          api('POST', '/api/ads', data).then(function (d) {
+            if (d && d.ok) {
+              showToast('Publicit\u00e9 cr\u00e9\u00e9e. Visible sur l\u2019accueil si active.');
+              document.getElementById('ad-form-container').style.display = 'none';
+              load();
+            } else {
+              btn.disabled = false; btn.textContent = '\uD83D\uDE80 Publier la publicit\u00e9';
+              showToast('Erreur : publicit\u00e9 non enregistr\u00e9e.', 'error');
+            }
+          }).catch(function (err) {
+            btn.disabled = false; btn.textContent = '\uD83D\uDE80 Publier la publicit\u00e9';
+            showToast((err && err.message) || 'Erreur serveur.', 'error');
+          });
+        }
+        if (imgData && imgData.indexOf('data:') === 0) {
+          api('POST', '/api/upload', { image: imgData }).then(function (res) {
+            if (res && res.url) { data.image = res.url; doSave(); }
+            else { btn.disabled = false; btn.textContent = '\uD83D\uDE80 Publier la publicit\u00e9'; showToast('Upload de l\u2019image \u00e9chou\u00e9.', 'error'); }
+          }).catch(function (err) {
+            btn.disabled = false; btn.textContent = '\uD83D\uDE80 Publier la publicit\u00e9';
+            showToast((err && err.message) || 'Upload de l\u2019image \u00e9chou\u00e9.', 'error');
+          });
+        } else {
+          doSave();
+        }
+      });
+    });
   </script>
 </body>
 </html>

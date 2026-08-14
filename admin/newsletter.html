@@ -32,6 +32,7 @@
       <a href="comments.html">💬 Modération des commentaires</a>
       <a href="newsletter.html" class="active">📧 Newsletter &amp; Notifications</a>
       <a href="media.html">🖼️ Médiathèque</a>
+      <a href="ads.html">📢 Publicités</a>
       <a href="analytics.html">📈 Analytiques</a>
       <a href="security.html">🔐 Sécurité</a>
       <a href="../index.html">🏠 Voir le site</a>
@@ -126,7 +127,12 @@
       function api(url, method, body) {
         var opts = { method: method || 'GET', headers: headers() };
         if (body !== undefined) opts.body = JSON.stringify(body);
-        return fetch(url, opts).then(function (r) { return r.json(); });
+        return fetch(url, opts).then(function (r) {
+          return r.json().then(function (b) {
+            if (!r.ok) { var e = new Error(b && b.error ? b.error : ('Erreur serveur (' + r.status + ')')); e.fromApi = true; throw e; }
+            return b;
+          });
+        }).catch(function (err) { if (err && err.fromApi) throw err; var e = new Error('Réseau indisponible.'); e.fromApi = true; throw e; });
       }
 
       var nameEl = document.getElementById('admin-name-display');

@@ -418,6 +418,33 @@ def list_public_ads():
                     ad[f] = ai_translate_one(ad[f], lang)
     return jsonify(out)
 
+@app.route('/api/ads', methods=['POST'])
+@role_required('admin', 'super_admin')
+def create_ad():
+    """Creation directe d'une publicite depuis l'admin (titre, annonceur,
+    description, image, statut). Visible sur la page d'accueil si active."""
+    d = request.json or {}
+    title = str(d.get('title') or '').strip()[:200]
+    if not title:
+        return jsonify({'ok': False, 'error': 'Le titre de la publicite est requis.'}), 400
+    status = str(d.get('status') or '').strip() or 'active'
+    if status not in ('active', 'pending', 'rejected'):
+        status = 'active'
+    ad = {
+        'id': int(time.time() * 1000),
+        'title': title,
+        'name': str(d.get('name') or '').strip()[:200],
+        'description': str(d.get('description') or '').strip()[:1000],
+        'image': str(d.get('image') or '').strip()[:5000],
+        'status': status,
+        'createdAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+    }
+    ads = read_json('ads')
+    ads.insert(0, ad)
+    write_json('ads', ads)
+    log_activity('publicite creee', 'id %s (%s)' % (ad['id'], ad['title'][:60]))
+    return jsonify({'ok': True, 'id': ad['id']})
+
 @app.route('/api/ads/<int:aid>/approve', methods=['POST'])
 @role_required('admin', 'super_admin')
 def approve_ad(aid):

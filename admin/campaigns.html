@@ -69,6 +69,7 @@
       <a href="security.html">🔐 Sécurité</a>
 <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
       <a href="media.html">🖼️ Médiathèque</a>
+      <a href="ads.html">📢 Publicités</a>
       <a href="../index.html">🏠 Voir le site</a>
     </nav>
     <main class="admin-main">
@@ -186,7 +187,12 @@
       var token = localStorage.getItem('admin_token');
       if (token) h['X-Admin-Token'] = token;
       return fetch(url, {method:method, headers:h, body:body ? JSON.stringify(body) : undefined})
-        .then(function(r){return r.json()}).catch(function(){return null;});
+        .then(function(r){
+          return r.json().then(function(b){
+            if (!r.ok) { var e = new Error(b && b.error ? b.error : ('Erreur serveur (' + r.status + ')')); e.fromApi = true; throw e; }
+            return b;
+          });
+        }).catch(function(err){ if (err && err.fromApi) throw err; var e = new Error('Réseau indisponible.'); e.fromApi = true; throw e; });
     }
 
     function fmtUSD(v) {
@@ -281,26 +287,30 @@
 
         function save(data) {
           var p = api('POST', '/api/campaigns', data);
-          if (p) p.then(function () {
+          if (p) p.then(function (res) {
+            if (!res || !res.ok) {
+              showToast('Erreur : l’appel à don n’a pas été enregistré par le serveur.', 'error');
+              return;
+            }
             if (speed !== 5000 && id) api('POST', '/api/campaigns/' + id + '/speed', {speed: speed});
+            var all = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
+            if (id) {
+              var idx = all.findIndex(function(x){return x.id === id;});
+              if (idx >= 0) { all[idx] = Object.assign({}, all[idx], data); }
+            } else {
+              data.id = res.id || Date.now();
+              data.status = 'active';
+              data.createdAt = new Date().toISOString();
+              all.unshift(data);
+            }
+            localStorage.setItem('cms_campaigns', JSON.stringify(all));
+            document.getElementById('campaign-form-container').style.display = 'none';
             loadCampaigns();
+            showToast(id ? 'Appel à don modifié.' : 'Appel à don publié sur Soutenir nos actions !');
+          }).catch(function (err) {
+            showToast((err && err.message) || 'Erreur serveur : appel à don non enregistré.', 'error');
           });
-          var all = JSON.parse(localStorage.getItem('cms_campaigns') || '[]');
-          if (id) {
-            var idx = all.findIndex(function(x){return x.id === id;});
-            if (idx >= 0) { all[idx] = Object.assign({}, all[idx], data); }
-          } else {
-            data.id = Date.now();
-            data.status = 'active';
-            data.createdAt = new Date().toISOString();
-            all.unshift(data);
-          }
-          localStorage.setItem('cms_campaigns', JSON.stringify(all));
-          document.getElementById('campaign-form-container').style.display = 'none';
-          loadCampaigns();
-          showToast(id ? 'Appel à don modifié.' : 'Appel à don publié sur Soutenir nos actions !');
         }
-
         var data = {
           title: document.getElementById('cmp-title').value,
           description: document.getElementById('cmp-description').value,
@@ -319,14 +329,18 @@
 
         if (videoData.startsWith('data:')) {
           api('POST', '/api/upload/video', {video: videoData}).then(function (res) {
-            if (!res || !res.url) { showToast('Upload de la vidéo échoué.'); return; }
+            if (!res || !res.url) { showToast('Upload de la vidéo échoué : l’appel n’a pas été publié.', 'error'); return; }
             data.video = res.url;
             save(data);
+          }).catch(function (err) {
+            showToast((err && err.message) || 'Upload de la vidéo échoué.', 'error');
           });
         } else if (imageData.startsWith('data:')) {
           api('POST', '/api/upload', {image: imageData}).then(function (res) {
-            if (res && res.url) data.image = res.url;
-            save(data);
+            if (res && res.url) { data.image = res.url; save(data); }
+            else { showToast('Upload de la photo échoué : l’appel n’a pas été publié.', 'error'); }
+          }).catch(function (err) {
+            showToast((err && err.message) || 'Upload de la photo échoué.', 'error');
           });
         } else {
           save(data);
