@@ -4,7 +4,7 @@
   <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestion des dons - Administration</title>
@@ -15,25 +15,25 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">📊 Tableau de bord</a>
-      <a href="articles.html">📝 Gestion des articles</a>
-      <a href="pages.html">📄 Gestion des pages</a>
-      <a href="campaigns.html">📢 Gestion des campagnes</a>
-      <a href="donations.html" class="active">💳 Gestion des dons</a>
-      <a href="comments.html">💬 Modération des commentaires</a>
-      <a href="analytics.html">📈 Analytiques</a>
-      <a href="security.html">🔐 Sécurité</a>
-      <a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
-      <a href="media.html">🖼️ Médiathèque</a>
-      <a href="../index.html">🏠 Voir le site</a>
+      <a href="index.html">ðŸ“Š Tableau de bord</a>
+      <a href="articles.html">ðŸ“ Gestion des articles</a>
+      <a href="pages.html">ðŸ“„ Gestion des pages</a>
+      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
+      <a href="donations.html" class="active">ðŸ’³ Gestion des dons</a>
+      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
+      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
+      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
+      <a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
+      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
+      <a href="../index.html">ðŸ  Voir le site</a>
     </nav>
     <main class="admin-main">
       <h2 style="color:var(--primary);margin-bottom:25px;">Gestion des dons</h2>
@@ -43,24 +43,24 @@
       <h3 style="color:var(--primary);margin-bottom:15px;">Vue d'ensemble</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:15px;">
         <div class="stat-card">
-          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Total collecté</p>
-          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-total">—</p>
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Total collectÃ©</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-total">â€”</p>
         </div>
         <div class="stat-card">
           <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Donateurs</p>
-          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-donors">—</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-donors">â€”</p>
         </div>
         <div class="stat-card">
           <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Dons aujourd'hui</p>
-          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-today">—</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-today">â€”</p>
         </div>
         <div class="stat-card">
           <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Cette semaine</p>
-          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-week">—</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-week">â€”</p>
         </div>
         <div class="stat-card">
           <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 6px;">Ce mois</p>
-          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-month">—</p>
+          <p style="font-size:1.5rem;font-weight:700;margin:0;color:var(--primary);" id="don-month">â€”</p>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:30px;">
@@ -69,7 +69,7 @@
           <div id="don-by-campaign" style="font-size:0.88rem;line-height:1.9;">Chargement&hellip;</div>
         </div>
         <div class="stat-card">
-          <p style="font-size:0.85rem;font-weight:600;margin:0 0 10px;color:var(--primary);">Par méthode de paiement</p>
+          <p style="font-size:0.85rem;font-weight:600;margin:0 0 10px;color:var(--primary);">Par mÃ©thode de paiement</p>
           <div id="don-by-method" style="font-size:0.88rem;line-height:1.9;">Chargement&hellip;</div>
         </div>
       </div>
@@ -77,14 +77,14 @@
       <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
         <button class="btn btn-outline active" id="pay-filter-all">Toutes</button>
         <button class="btn btn-outline" id="pay-filter-pending">En attente</button>
-        <button class="btn btn-outline" id="pay-filter-confirmed">Réussis</button>
-        <button class="btn btn-outline" id="pay-filter-failed">Échecs / Annulés</button>
-        <button class="btn btn-outline" id="pay-filter-refunded">Remboursés</button>
+        <button class="btn btn-outline" id="pay-filter-confirmed">RÃ©ussis</button>
+        <button class="btn btn-outline" id="pay-filter-failed">Ã‰checs / AnnulÃ©s</button>
+        <button class="btn btn-outline" id="pay-filter-refunded">RemboursÃ©s</button>
       </div>
 
       <div class="admin-table" style="margin-bottom:35px;">
         <table>
-          <thead><tr><th>Date</th><th>Donateur</th><th>Campagne</th><th>Montant</th><th>Méthode</th><th>Statut</th><th>Transaction</th></tr></thead>
+          <thead><tr><th>Date</th><th>Donateur</th><th>Campagne</th><th>Montant</th><th>MÃ©thode</th><th>Statut</th><th>Transaction</th></tr></thead>
           <tbody id="donations-body">
             <tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Chargement&hellip;</td></tr>
           </tbody>
@@ -94,7 +94,7 @@
       <h3 style="color:var(--primary);margin-bottom:15px;">Rapports de transparence</h3>
       <div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
-          Publiez ici vos rapports financiers, rapports d'activités et résultats. Ils sont affichés publiquement sur la page « Nos actions communautaires » dès qu'ils sont publiés.
+          Publiez ici vos rapports financiers, rapports d'activitÃ©s et rÃ©sultats. Ils sont affichÃ©s publiquement sur la page Â« Nos actions communautaires Â» dÃ¨s qu'ils sont publiÃ©s.
         </p>
         <div id="reports-list" style="margin-bottom:18px;font-size:0.9rem;">Chargement&hellip;</div>
         <div style="border-top:1px solid #e2e8f0;padding-top:18px;">
@@ -104,17 +104,17 @@
             <input type="date" id="rep-date" class="form-input">
             <select id="rep-category" class="form-input">
               <option value="Financier">Rapport financier</option>
-              <option value="Activites">Rapport d'activités</option>
-              <option value="Resultats">Résultats</option>
+              <option value="Activites">Rapport d'activitÃ©s</option>
+              <option value="Resultats">RÃ©sultats</option>
               <option value="Autre">Autre</option>
             </select>
             <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;white-space:nowrap;">
-              <input type="checkbox" id="rep-published" checked> Publié immédiatement
+              <input type="checkbox" id="rep-published" checked> PubliÃ© immÃ©diatement
             </label>
           </div>
-          <textarea id="rep-body" class="form-input" rows="4" placeholder="Contenu du rapport (utilisation des fonds, résultats, photos, etc.)"></textarea>
+          <textarea id="rep-body" class="form-input" rows="4" placeholder="Contenu du rapport (utilisation des fonds, rÃ©sultats, photos, etc.)"></textarea>
           <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
-            <button class="btn btn-primary" id="rep-add">➕ Ajouter le rapport</button>
+            <button class="btn btn-primary" id="rep-add">âž• Ajouter le rapport</button>
             <span id="rep-status" style="font-size:0.85rem;color:var(--text-light);"></span>
           </div>
         </div>
@@ -128,15 +128,15 @@
             <option value="sandbox">Sandbox (test)</option>
             <option value="live">Production (live)</option>
           </select>
-          <span style="font-size:0.82rem;color:var(--text-light);">Sandbox = environnement de test du prestataire. Activez « live » uniquement pour les paiements réels.</span>
+          <span style="font-size:0.82rem;color:var(--text-light);">Sandbox = environnement de test du prestataire. Activez Â« live Â» uniquement pour les paiements rÃ©els.</span>
         </div>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
-          Connectez ici les API officielles de vos prestataires (PayPal, Mobile Money RDC via opérateurs ou agrégateur agréé, passerelle carte bancaire).
-          Tant qu'un prestataire n'est pas activé ET configuré, les dons en ligne restent désactivés côté public — aucun paiement simulé n'est possible.
+          Connectez ici les API officielles de vos prestataires (PayPal, Mobile Money RDC via opÃ©rateurs ou agrÃ©gateur agrÃ©Ã©, passerelle carte bancaire).
+          Tant qu'un prestataire n'est pas activÃ© ET configurÃ©, les dons en ligne restent dÃ©sactivÃ©s cÃ´tÃ© public â€” aucun paiement simulÃ© n'est possible.
         </p>
         <div id="pay-providers"></div>
         <div style="margin-top:15px;display:flex;gap:10px;">
-          <button class="btn btn-primary" id="pay-save">💾 Enregistrer la configuration</button>
+          <button class="btn btn-primary" id="pay-save">ðŸ’¾ Enregistrer la configuration</button>
           <span id="pay-save-status" style="align-self:center;font-size:0.85rem;color:var(--text-light);"></span>
         </div>
       </div>
@@ -144,13 +144,13 @@
       <div style="background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);">
         <h3 style="color:var(--primary);margin-bottom:10px;">Journal des paiements</h3>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
-          La couche de paiement journalise automatiquement : création d'intention, initiation, webhooks reçus, confirmations et échecs
-          (anti-double-paiement, idempotence, signatures vérifiées). Ces journaux sont la trace d'audit de chaque transaction.
+          La couche de paiement journalise automatiquement : crÃ©ation d'intention, initiation, webhooks reÃ§us, confirmations et Ã©checs
+          (anti-double-paiement, idempotence, signatures vÃ©rifiÃ©es). Ces journaux sont la trace d'audit de chaque transaction.
         </p>
         <div class="admin-table">
           <table>
-            <thead><tr><th>Horodatage</th><th>Événement</th><th>Détails</th></tr></thead>
-            <tbody id="pay-log-body"><tr><td colspan="3" style="text-align:center;padding:20px;color:#999;">—</td></tr></tbody>
+            <thead><tr><th>Horodatage</th><th>Ã‰vÃ©nement</th><th>DÃ©tails</th></tr></thead>
+            <tbody id="pay-log-body"><tr><td colspan="3" style="text-align:center;padding:20px;color:#999;">â€”</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -175,10 +175,10 @@
       airtel_money: 'Airtel Money RDC (API officielle)',
       orange_money: 'Orange Money RDC (API officielle)',
       vodacom_mpesa: 'Vodacom M-Pesa RDC (API officielle)',
-      card: 'Carte Visa / Mastercard (passerelle agrégée)'
+      card: 'Carte Visa / Mastercard (passerelle agrÃ©gÃ©e)'
     };
     var METHOD_SHORT = { paypal: 'PayPal', card: 'Visa / Mastercard', airtel_money: 'Airtel Money', orange_money: 'Orange Money', vodacom_mpesa: 'Vodacom M-Pesa' };
-    var STATUS_LABELS = { pending: 'En attente', confirmed: 'Réussi', failed: 'Échoué', cancelled: 'Annulé', refunded: 'Remboursé' };
+    var STATUS_LABELS = { pending: 'En attente', confirmed: 'RÃ©ussi', failed: 'Ã‰chouÃ©', cancelled: 'AnnulÃ©', refunded: 'RemboursÃ©' };
     var STATUS_ALL = ['pending', 'confirmed', 'failed', 'cancelled', 'refunded'];
     var SECRET_FIELDS = ['client_secret', 'webhook_secret', 'api_key'];
 
@@ -204,7 +204,7 @@
     }
 
     function dateFmt(s) {
-      if (!s) return '—';
+      if (!s) return 'â€”';
       var clean = String(s).replace('T', ' ').slice(0, 19);
       return clean;
     }
@@ -224,7 +224,7 @@
     }
     function renderPairs(obj, labels) {
       var keys = Object.keys(obj || {});
-      if (!keys.length) return '<span style="color:#999;">Aucun don confirmé.</span>';
+      if (!keys.length) return '<span style="color:#999;">Aucun don confirmÃ©.</span>';
       return keys.sort(function (a, b) { return (obj[b] || 0) - (obj[a] || 0); }).map(function (k) {
         var label = labels && labels[k] ? labels[k] : k;
         return '<div style="display:flex;justify-content:space-between;gap:10px;"><span>'+esc(label)+'</span><strong>'+fmtUSD(obj[k])+'</strong></div>';
@@ -240,7 +240,7 @@
       }).catch(function () {});
     }
     function statusBadge(status) {
-      var st = STATUS_LABELS[status] || '—';
+      var st = STATUS_LABELS[status] || 'â€”';
       var color = status === 'confirmed' ? 'color:#166534;background:#e7f6ec;'
         : status === 'refunded' ? 'color:#1e40af;background:#dbeafe;'
         : status === 'pending' ? 'color:#92400e;background:#fef3c7;'
@@ -270,22 +270,22 @@
         }
         document.getElementById('donations-body').innerHTML = rows.map(function(d){
           var status = d.status || 'pending';
-          var camp = campaignTitles[d.campaignId] || '—';
+          var camp = campaignTitles[d.campaignId] || 'â€”';
           return '<tr>' +
             '<td style="white-space:nowrap;">'+dateFmt(d.confirmedAt || d.createdAt || d.date)+'</td>' +
-            '<td>'+esc(d.name || '—')+(d.email ? '<br><small style="color:#999;">'+esc(d.email)+'</small>' : '')+'</td>' +
+            '<td>'+esc(d.name || 'â€”')+(d.email ? '<br><small style="color:#999;">'+esc(d.email)+'</small>' : '')+'</td>' +
             '<td style="font-size:0.8rem;">'+esc(camp)+'</td>' +
             '<td><strong>'+fmtMoney(d)+'</strong></td>' +
-            '<td>'+esc((PROVIDER_LABELS[d.method] || METHOD_SHORT[d.method] || d.method || '—').split(' (')[0])+'</td>' +
+            '<td>'+esc((PROVIDER_LABELS[d.method] || METHOD_SHORT[d.method] || d.method || 'â€”').split(' (')[0])+'</td>' +
             '<td>'+statusSelect(d.txn_id, status)+'</td>' +
-            '<td>'+(d.txn_id ? '<code style="font-size:0.75rem;">'+esc(d.txn_id)+'</code>' : '—')+'</td>' +
+            '<td>'+(d.txn_id ? '<code style="font-size:0.75rem;">'+esc(d.txn_id)+'</code>' : 'â€”')+'</td>' +
             '</tr>';
         }).join('');
         document.querySelectorAll('.don-status').forEach(function (sel) {
           sel.addEventListener('change', function () {
             api('POST', '/api/donations/' + encodeURIComponent(this.dataset.txn) + '/status', {status: this.value}).then(function (res) {
-              if (res && res.ok) { showMsg(true, 'Statut mis à jour.'); loadStats(); }
-              else { showMsg(false, 'Erreur lors de la mise à jour du statut.'); loadDonations(); }
+              if (res && res.ok) { showMsg(true, 'Statut mis Ã  jour.'); loadStats(); }
+              else { showMsg(false, 'Erreur lors de la mise Ã  jour du statut.'); loadDonations(); }
             });
           });
         });
@@ -305,7 +305,7 @@
     /* ---------- Rapports de transparence ---------- */
     function renderReports(list) {
       if (!Array.isArray(list)) { document.getElementById('reports-list').innerHTML = '<span style="color:#999;">Chargement&hellip;</span>'; return; }
-      if (!list.length) { document.getElementById('reports-list').innerHTML = '<span style="color:#999;">Aucun rapport publié pour le moment.</span>'; return; }
+      if (!list.length) { document.getElementById('reports-list').innerHTML = '<span style="color:#999;">Aucun rapport publiÃ© pour le moment.</span>'; return; }
       document.getElementById('reports-list').innerHTML = list.map(function (r) {
         var badge = r.published ? 'color:#166534;background:#e7f6ec;padding:2px 10px;border-radius:12px;' : 'color:#92400e;background:#fef3c7;padding:2px 10px;border-radius:12px;';
         return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:10px;">' +
@@ -313,8 +313,8 @@
           '<div><strong>'+esc(r.title)+'</strong> <span style="color:#999;font-size:0.8rem;">('+esc(r.category||'')+', '+esc(r.date||'')+')</span><br>' +
           '<small style="color:var(--text-light);">'+esc((r.body||'').slice(0,120))+(r.body && r.body.length > 120 ? '&hellip;' : '')+'</small></div>' +
           '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
-          '<span style="'+badge+'">'+(r.published ? 'Publié' : 'Brouillon')+'</span>' +
-          '<button class="btn btn-outline" data-act="pub" data-id="'+r.id+'" style="padding:5px 12px;font-size:0.8rem;">'+(r.published ? 'Dépublier' : 'Publier')+'</button>' +
+          '<span style="'+badge+'">'+(r.published ? 'PubliÃ©' : 'Brouillon')+'</span>' +
+          '<button class="btn btn-outline" data-act="pub" data-id="'+r.id+'" style="padding:5px 12px;font-size:0.8rem;">'+(r.published ? 'DÃ©publier' : 'Publier')+'</button>' +
           '<button class="btn btn-outline" data-act="del" data-id="'+r.id+'" style="padding:5px 12px;font-size:0.8rem;color:#b91c1c;">Supprimer</button>' +
           '</div></div></div>';
       }).join('');
@@ -323,12 +323,12 @@
           var id = this.dataset.id;
           if (this.dataset.act === 'del') {
             if (!confirm('Supprimer ce rapport ?')) return;
-            api('DELETE', '/api/reports/' + id).then(function (res) { if (res && res.ok) { showMsg(true, 'Rapport supprimé.'); loadReports(); } });
+            api('DELETE', '/api/reports/' + id).then(function (res) { if (res && res.ok) { showMsg(true, 'Rapport supprimÃ©.'); loadReports(); } });
             return;
           }
           api('GET', '/api/reports').then(function (all) {
             var r = (all || []).find(function (x) { return String(x.id) === String(id); });
-            if (r) api('PUT', '/api/reports/' + id, {published: !r.published}).then(function (res) { if (res && res.ok) { showMsg(true, 'Publication mise à jour.'); loadReports(); } });
+            if (r) api('PUT', '/api/reports/' + id, {published: !r.published}).then(function (res) { if (res && res.ok) { showMsg(true, 'Publication mise Ã  jour.'); loadReports(); } });
           });
         });
       });
@@ -352,7 +352,7 @@
         btn.disabled = false;
         document.getElementById('rep-status').textContent = '';
         if (res && res.ok) {
-          showMsg(true, 'Rapport ajouté.');
+          showMsg(true, 'Rapport ajoutÃ©.');
           document.getElementById('rep-title').value = '';
           document.getElementById('rep-body').value = '';
           document.getElementById('rep-date').value = '';
@@ -373,12 +373,12 @@
       if (pid === 'card') {
         return [
           {k:'merchant_id', label:'Merchant / Site ID', type:'text', secret:false},
-          {k:'api_key', label:'Clé API', type:'password', secret:true},
+          {k:'api_key', label:'ClÃ© API', type:'password', secret:true},
           {k:'webhook_secret', label:'Secret Webhook (signature HMAC)', type:'password', secret:true}
         ];
       }
       if (pid !== 'paypal') {
-        var mm = common.concat([{k:'phone', label:'Numéro collecte (243...)', type:'text', secret:false}]);
+        var mm = common.concat([{k:'phone', label:'NumÃ©ro collecte (243...)', type:'text', secret:false}]);
         return mm;
       }
       return common;
@@ -397,7 +397,7 @@
           providerFields(pid).map(function(f){
             var val = f.secret && p[f.k] === '*****' ? '*****' : (p[f.k] || '');
             return '<div><label style="font-size:0.8rem;color:var(--text-light);">'+f.label+'</label>' +
-              '<input type="'+(f.type)+'" id="field-'+pid+'-'+f.k+'" class="form-input" value="'+esc(val)+'" style="width:100%;" '+(f.secret && val==='*****'?'placeholder="(inchangé)"':'')+'></div>';
+              '<input type="'+(f.type)+'" id="field-'+pid+'-'+f.k+'" class="form-input" value="'+esc(val)+'" style="width:100%;" '+(f.secret && val==='*****'?'placeholder="(inchangÃ©)"':'')+'></div>';
           }).join('') + '</div></div>';
       });
       box.innerHTML = html;
@@ -429,11 +429,11 @@
         providers[pid] = p;
       });
       var status = document.getElementById('pay-save-status');
-      status.textContent = 'Enregistrement…';
+      status.textContent = 'Enregistrementâ€¦';
       api('POST', '/api/payments/config', {mode: document.getElementById('pay-mode').value, providers: providers}).then(function(res){
         status.textContent = '';
         if (res && res.ok) {
-          showMsg(true, 'Configuration des paiements enregistrée. Les secrets restent stockés côté serveur.');
+          showMsg(true, 'Configuration des paiements enregistrÃ©e. Les secrets restent stockÃ©s cÃ´tÃ© serveur.');
           loadConfig();
         } else {
           showMsg(false, 'Erreur lors de l\'enregistrement.');

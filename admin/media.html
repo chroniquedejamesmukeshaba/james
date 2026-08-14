@@ -4,35 +4,35 @@
   <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Médiathèque - Administration</title>
+  <title>MÃ©diathÃ¨que - Administration</title>
   <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar" aria-label="Navigation administrateur">
-      <a href="index.html">📊 Tableau de bord</a>
-      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="index.html">ðŸ“Š Tableau de bord</a>
+      <a href="articles.html">ðŸ“ Gestion des articles</a>
     </nav>
     <main class="admin-main">
       <div class="admin-page-head">
         <div>
-          <h2>🖼️ Médiathèque</h2>
-          <div class="adm-breadcrumb"><a href="index.html">Tableau de bord</a> / Médiathèque</div>
+          <h2>ðŸ–¼ï¸ MÃ©diathÃ¨que</h2>
+          <div class="adm-breadcrumb"><a href="index.html">Tableau de bord</a> / MÃ©diathÃ¨que</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <input type="search" id="media-search" class="form-input" placeholder="🔍 Rechercher une image..." style="width:220px;" aria-label="Rechercher une image">
-          <label class="btn btn-primary" style="cursor:pointer;margin:0;">📤 Importer une image
+          <input type="search" id="media-search" class="form-input" placeholder="ðŸ” Rechercher une image..." style="width:220px;" aria-label="Rechercher une image">
+          <label class="btn btn-primary" style="cursor:pointer;margin:0;">ðŸ“¤ Importer une image
             <input type="file" id="media-upload-input" accept="image/*" style="display:none;">
           </label>
         </div>
@@ -41,23 +41,23 @@
       <div id="media-grid" class="media-grid"></div>
       <div class="ui-state" id="media-loading" style="display:none;">
         <div class="skeleton" style="height:140px;max-width:320px;margin:0 auto 14px;"></div>
-        <div class="ui-title">Chargement de la médiathèque…</div>
+        <div class="ui-title">Chargement de la mÃ©diathÃ¨queâ€¦</div>
       </div>
       <div class="ui-state" id="media-empty" style="display:none;">
-        <div class="ui-ico">🖼️</div>
-        <div class="ui-title">Aucune image dans la médiathèque</div>
-        <div class="ui-msg">Importez votre première image ci-dessus.</div>
+        <div class="ui-ico">ðŸ–¼ï¸</div>
+        <div class="ui-title">Aucune image dans la mÃ©diathÃ¨que</div>
+        <div class="ui-msg">Importez votre premiÃ¨re image ci-dessus.</div>
       </div>
       <div class="ui-state ui-error" id="media-error" style="display:none;">
-        <div class="ui-ico">⚠️</div>
-        <div class="ui-title">Une erreur est survenue. Veuillez réessayer.</div>
+        <div class="ui-ico">âš ï¸</div>
+        <div class="ui-title">Une erreur est survenue. Veuillez rÃ©essayer.</div>
       </div>
     </main>
   </div>
 
-  <div class="adm-lightbox" id="media-lightbox" role="dialog" aria-modal="true" aria-label="Aperçu de l'image">
-    <button type="button" class="lb-close" id="lb-close" aria-label="Fermer l'aperçu">✕</button>
-    <img id="lb-img" src="" alt="Aperçu agrandi">
+  <div class="adm-lightbox" id="media-lightbox" role="dialog" aria-modal="true" aria-label="AperÃ§u de l'image">
+    <button type="button" class="lb-close" id="lb-close" aria-label="Fermer l'aperÃ§u">âœ•</button>
+    <img id="lb-img" src="" alt="AperÃ§u agrandi">
   </div>
 
   <script src="../js/main.js"></script>
@@ -98,19 +98,19 @@
             return '<div class="media-card">' +
               '<div class="media-thumb" onclick="openLightbox(\'' + m.url + '\')" title="Agrandir">' +
                 '<img src="' + esc(m.url) + '" alt="' + esc(m.alt || m.name || '') + '" loading="lazy" decoding="async">' +
-                '<span class="zoom-hint" aria-hidden="true">🔍</span>' +
+                '<span class="zoom-hint" aria-hidden="true">ðŸ”</span>' +
               '</div>' +
-              '<input class="media-url" value="' + esc(m.url) + '" readonly title="Cliquer pour copier l’URL" onclick="this.select();document.execCommand(\'copy\');showToast(\'URL copiée.\');">' +
+              '<input class="media-url" value="' + esc(m.url) + '" readonly title="Cliquer pour copier lâ€™URL" onclick="this.select();document.execCommand(\'copy\');showToast(\'URL copiÃ©e.\');">' +
               '<div class="media-meta">' +
                 '<span class="media-name" title="' + esc(m.name || '') + '">' + esc(m.name || '') + '</span>' +
-                '<button onclick="mediaDelete(\'' + esc(m.url) + '\')" title="Supprimer définitivement" aria-label="Supprimer ' + esc(m.name || '') + '">🗑</button>' +
+                '<button onclick="mediaDelete(\'' + esc(m.url) + '\')" title="Supprimer dÃ©finitivement" aria-label="Supprimer ' + esc(m.name || '') + '">ðŸ—‘</button>' +
               '</div>' +
               '<div class="media-edit">' +
                 '<input type="text" class="m-alt" value="' + esc(m.alt || '') + '" placeholder="Texte alternatif (alt)" aria-label="Texte alternatif">' +
-                '<input type="text" class="m-cap" value="' + esc(m.caption || '') + '" placeholder="Légende" aria-label="Légende">' +
+                '<input type="text" class="m-cap" value="' + esc(m.caption || '') + '" placeholder="LÃ©gende" aria-label="LÃ©gende">' +
                 '<div style="display:flex;gap:6px;">' +
-                  '<button type="button" class="btn btn-sm btn-outline m-save" data-url="' + esc(m.url) + '" style="flex:1;">💾 Enregistrer</button>' +
-                  '<label class="btn btn-sm btn-secondary m-replace" style="cursor:pointer;margin:0;flex:1;">🔄 Remplacer<input type="file" accept="image/*" style="display:none;" data-url="' + esc(m.url) + '"></label>' +
+                  '<button type="button" class="btn btn-sm btn-outline m-save" data-url="' + esc(m.url) + '" style="flex:1;">ðŸ’¾ Enregistrer</button>' +
+                  '<label class="btn btn-sm btn-secondary m-replace" style="cursor:pointer;margin:0;flex:1;">ðŸ”„ Remplacer<input type="file" accept="image/*" style="display:none;" data-url="' + esc(m.url) + '"></label>' +
                 '</div>' +
               '</div></div>';
           }).join('');
@@ -128,7 +128,7 @@
               apiPut('/media/' + encodeURIComponent(name), payload).then(function (res) {
                 btn.classList.remove('is-loading');
                 btn.disabled = false;
-                if (res && res.ok) showToast('Métadonnées enregistrées.');
+                if (res && res.ok) showToast('MÃ©tadonnÃ©es enregistrÃ©es.');
                 else showToast('Enregistrement impossible.', 'error');
               });
             });
@@ -141,7 +141,7 @@
               var reader = new FileReader();
               reader.onload = function (ev) {
                 apiPut('/media/' + encodeURIComponent(name), { image: ev.target.result }).then(function (res) {
-                  if (res && res.ok) { showToast('Image remplacée.'); window.mediaPageLoad(); }
+                  if (res && res.ok) { showToast('Image remplacÃ©e.'); window.mediaPageLoad(); }
                   else showToast('Remplacement impossible.', 'error');
                 });
               };
@@ -152,19 +152,19 @@
       };
 
       window.mediaDelete = function (url) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier définitivement ?')) return;
+        if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce fichier dÃ©finitivement ?')) return;
         var name = url.split('/').pop();
         fetch('/api/media/' + encodeURIComponent(name), { method: 'DELETE', headers: authHeaders() })
           .then(function (r) {
             if (r.status === 401) { forceLogin(); return; }
-            if (r.ok) { showToast('Fichier supprimé.'); window.mediaPageLoad(); }
+            if (r.ok) { showToast('Fichier supprimÃ©.'); window.mediaPageLoad(); }
             else showToast('Suppression impossible.', 'error');
           });
       };
 
       window.openLightbox = function (url) {
         lbImg.src = url;
-        lbImg.alt = 'Aperçu agrandi';
+        lbImg.alt = 'AperÃ§u agrandi';
         lightbox.classList.add('open');
         document.body.style.overflow = 'hidden';
       };
@@ -183,7 +183,7 @@
         var reader = new FileReader();
         reader.onload = function (ev) {
           apiPost('/media', { image: ev.target.result }).then(function (res) {
-            if (res && res.url) { showToast('Image importée.'); window.mediaPageLoad(); }
+            if (res && res.url) { showToast('Image importÃ©e.'); window.mediaPageLoad(); }
             else showToast('Import impossible.', 'error');
           });
         };

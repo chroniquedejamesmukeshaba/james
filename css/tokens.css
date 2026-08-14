@@ -1,74 +1,77 @@
 /* =====================================================
-   DESIGN TOKENS (section 32) — source unique du design
-   Couleurs, typo, espacements, rayons, ombres,
-   breakpoints, transitions, dark mode.
+   DESIGN TOKENS 2026 — La Chronique de James Mukeshaba
+   Identité éditoriale « presse premium » :
+   - Encre marine profonde (confiance, crédibilité)
+   - Rouge éditorial vif (urgence, actualité)
+   - Or sobre (premium, patrimoine)
+   Typographie : Source Serif 4 (titres) + Inter (UI).
    Charge en premier, avant style.css / admin.css.
    ===================================================== */
 :root {
   --accent: var(--color-gold);
-  --adm-accent: #c0392b;
-  --adm-bg: #f1f4f9;
-  --adm-border: #dfe5ee;
-  --adm-danger: #c0392b;
-  --adm-muted: #6b7a93;
+  --adm-accent: #d7263d;
+  --adm-bg: #eef1f6;
+  --adm-border: #dde3ec;
+  --adm-danger: #d7263d;
+  --adm-muted: #64748b;
   --adm-ok: #1e8e5a;
-  --adm-primary: #1a3a5c;
+  --adm-primary: #10233f;
   --adm-radius: 14px;
-  --adm-shadow: 0 1px 2px rgba(20, 40, 70, 0.06), 0 8px 24px rgba(20, 40, 70, 0.06);
-  --adm-shadow-lg: 0 4px 12px rgba(20, 40, 70, 0.10), 0 18px 40px rgba(20, 40, 70, 0.12);
-  --adm-sidebar-bg: linear-gradient(180deg, #12233d 0%, #0d1b30 100%);
-  --adm-sidebar-text: #c3d0e2;
+  --adm-shadow: 0 1px 2px rgba(16, 35, 63, 0.06), 0 10px 28px rgba(16, 35, 63, 0.07);
+  --adm-shadow-lg: 0 4px 12px rgba(16, 35, 63, 0.10), 0 20px 44px rgba(16, 35, 63, 0.13);
+  --adm-sidebar-bg: linear-gradient(180deg, #0c1c33 0%, #081527 100%);
+  --adm-sidebar-text: #c7d4e6;
   --adm-surface: #ffffff;
-  --adm-text: #17233a;
+  --adm-text: #111a2b;
   --adm-warn: #b7791f;
-  --bg: #f5f7fa;
-  --border: #e2e8ef;
+  --bg: #f4f6f9;
+  --border: #dfe5ec;
   --bp-lg: 1024px;
   --bp-md: 768px;
   --bp-sm: 480px;
   --bp-xl: 1280px;
-  --color-accent: #c0392b;
-  --color-accent-hover: #a93226;
-  --color-accent-soft: rgba(192, 57, 43, 0.08);
-  --color-bg: #f7f8fa;
-  --color-border: #e7ebef;
-  --color-danger: #e74c3c;
-  --color-gold: #c05621;
-  --color-muted: #5d6b6e;
-  --color-primary: #1a3a5c;
-  --color-primary-hover: #16304e;
-  --color-success: #27ae60;
+  --color-accent: #d7263d;
+  --color-accent-hover: #b81e33;
+  --color-accent-soft: rgba(215, 38, 61, 0.09);
+  --color-bg: #f4f6f9;
+  --color-border: #e3e8ef;
+  --color-danger: #d7263d;
+  --color-gold: #c8a24a;
+  --color-muted: #5a6673;
+  --color-primary: #0d1f38;
+  --color-primary-hover: #081424;
+  --color-success: #1e8e5a;
   --color-surface: #ffffff;
-  --color-surface-2: #eef1f5;
-  --color-text: #2c3e50;
-  --color-warning: #f39c12;
+  --color-surface-2: #eef1f6;
+  --color-text: #101828;
+  --color-warning: #e8a005;
   --container-max: 1200px;
-  --danger: #d33b2d;
-  --focus-ring: 0 0 0 3px rgba(18, 58, 99, 0.35);
+  --danger: #d7263d;
+  --focus-ring: 0 0 0 3px rgba(215, 38, 61, 0.3);
   --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Montserrat", "Segoe UI", system-ui, sans-serif;
-  --gold: #c05621;
-  --header-h: 74px;
-  --muted: #5d6b6e;
-  --primary: #123a63;
-  --primary-hover: #0e2f50;
-  --primary-light: #2a5a8c;
-  --primary-soft: rgba(18, 58, 99, 0.08);
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --gold: #c8a24a;
+  --header-h: 76px;
+  --muted: #5a6673;
+  --primary: #0c1c33;
+  --primary-hover: #081424;
+  --primary-light: #17345c;
+  --primary-soft: rgba(12, 28, 51, 0.07);
   --radius: 10px;
-  --radius-card: 14px;
-  --radius-lg: 14px;
+  --radius-card: 16px;
+  --radius-lg: 16px;
   --radius-round: 999px;
   --radius-sm: 6px;
-  --secondary: #c0392b;
-  --secondary-hover: #a93226;
-  --secondary-light: #e74c3c;
-  --secondary-soft: rgba(192, 57, 43, 0.09);
+  --secondary: #d7263d;
+  --secondary-hover: #b81e33;
+  --secondary-light: #e55362;
+  --secondary-soft: rgba(215, 38, 61, 0.1);
   --shadow: 0 2px 15px rgba(0,0,0,0.1);
-  --shadow-card: 0 1px 2px rgba(16, 40, 68, 0.06), 0 8px 24px -8px rgba(16, 40, 68, 0.14);
-  --shadow-hover: 0 2px 4px rgba(16, 40, 68, 0.08), 0 16px 40px -12px rgba(16, 40, 68, 0.22);
-  --shadow-lg: 0 18px 48px rgba(16, 40, 68, 0.18);
-  --shadow-md: 0 6px 24px rgba(16, 40, 68, 0.12);
-  --shadow-sm: 0 1px 3px rgba(16, 40, 68, 0.08);
+  --shadow-card: 0 1px 2px rgba(16, 35, 63, 0.06), 0 10px 26px -10px rgba(16, 35, 63, 0.16);
+  --shadow-hover: 0 2px 4px rgba(16, 35, 63, 0.08), 0 20px 44px -14px rgba(16, 35, 63, 0.26);
+  --shadow-lg: 0 18px 48px rgba(16, 35, 63, 0.2);
+  --shadow-md: 0 8px 26px rgba(16, 35, 63, 0.13);
+  --shadow-sm: 0 1px 3px rgba(16, 35, 63, 0.09);
   --space-1: 4px;
   --space-10: 64px;
   --space-2: 8px;
@@ -77,11 +80,11 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-8: 48px;
-  --success: #1e9e58;
+  --success: #1e8e5a;
   --surface: #ffffff;
-  --surface-2: #eef1f5;
+  --surface-2: #eef1f6;
   --surface-3: #f8fafc;
-  --text: #1c2b3a;
+  --text: #0f1826;
   --text-2xl: 1.75rem;
   --text-3xl: 2.4rem;
   --text-base: 1rem;
@@ -93,52 +96,52 @@
   --transition: 0.3s ease;
   --transition-fast: 0.15s ease;
   --warning: #e8a005;
-  --white: var(--color-surface);}
+  --white: var(--color-surface)}
 
-/* ===== DARK MODE ===== */
+/* ===== DARK MODE 2026 ===== */
 html[data-theme="dark"] {
-  --accent: #e3b341;
-  --adm-bg: #0d1520;
-  --adm-border: #233248;
-  --adm-muted: #93a3ba;
-  --adm-primary: #7fb0e8;
-  --adm-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
-  --adm-surface: #141e2d;
-  --adm-text: #e6edf6;
-  --bg: #0d1117;
-  --border: #2a3441;
-  --color-accent: #f85149;
-  --color-accent-hover: #ff7b72;
-  --color-accent-soft: rgba(248, 81, 73, 0.12);
-  --color-bg: #0d1117;
-  --color-border: #30363d;
-  --color-danger: #f85149;
-  --color-gold: #e3b341;
-  --color-muted: #8b949e;
-  --color-primary: #58a6ff;
-  --color-primary-hover: #79c0ff;
+  --accent: #e6c06a;
+  --adm-bg: #0a0f16;
+  --adm-border: #223044;
+  --adm-muted: #94a3b8;
+  --adm-primary: #9cc7ff;
+  --adm-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --adm-surface: #121a26;
+  --adm-text: #e7edf4;
+  --bg: #0a0f16;
+  --border: #24314a;
+  --color-accent: #ff5c6b;
+  --color-accent-hover: #ff7b87;
+  --color-accent-soft: rgba(255, 92, 107, 0.14);
+  --color-bg: #0a0f16;
+  --color-border: #28354a;
+  --color-danger: #ff5c6b;
+  --color-gold: #e6c06a;
+  --color-muted: #94a3b8;
+  --color-primary: #8ab6f0;
+  --color-primary-hover: #a5c8f5;
   --color-success: #3fb950;
-  --color-surface: #161b22;
-  --color-surface-2: #1c2129;
-  --color-text: #c9d1d9;
+  --color-surface: #121826;
+  --color-surface-2: #1a2433;
+  --color-text: #e7edf4;
   --color-warning: #d29922;
-  --focus-ring: 0 0 0 3px rgba(122, 180, 255, 0.4);
-  --gold: #f0c15a;
-  --muted: #93a3b4;
-  --primary: #7ab4ff;
-  --primary-hover: #9cc7ff;
-  --primary-light: #79c0ff;
-  --primary-soft: rgba(122, 180, 255, 0.12);
-  --secondary: #ff6b61;
-  --secondary-hover: #ff8d85;
-  --secondary-light: #ff7b72;
-  --secondary-soft: rgba(255, 107, 97, 0.14);
+  --focus-ring: 0 0 0 3px rgba(255, 92, 107, 0.4);
+  --gold: #e6c06a;
+  --muted: #94a3b8;
+  --primary: #8ab6f0;
+  --primary-hover: #a5c8f5;
+  --primary-light: #9cc7ff;
+  --primary-soft: rgba(138, 182, 240, 0.14);
+  --secondary: #ff5c6b;
+  --secondary-hover: #ff7b87;
+  --secondary-light: #ff8f99;
+  --secondary-soft: rgba(255, 92, 107, 0.16);
   --shadow: 0 2px 15px rgba(0,0,0,0.45);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
-  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 40px -12px rgba(0, 0, 0, 0.8);
-  --surface: #151b23;
-  --surface-2: #1c242f;
-  --surface-3: #10161d;
-  --text: #dbe4ee;
-  --text-light: #8b949e;
-  --white: #161b22;}
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -10px rgba(0, 0, 0, 0.65);
+  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -12px rgba(0, 0, 0, 0.85);
+  --surface: #121826;
+  --surface-2: #1a2433;
+  --surface-3: #0e141d;
+  --text: #e7edf4;
+  --text-light: #94a3b8;
+  --white: #121826}

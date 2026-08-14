@@ -4,7 +4,7 @@
   <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" media="print" onload="this.media='all'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faire un Don - Administration</title>
@@ -51,34 +51,34 @@
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">📊 Tableau de bord</a>
-      <a href="articles.html">📝 Gestion des articles</a>
-      <a href="pages.html">📄 Gestion des pages</a>
-      <a href="campaigns.html" class="active">💝 Faire un Don</a>
-      <a href="donations.html">💳 Gestion des dons</a>
-      <a href="comments.html">💬 Modération des commentaires</a>
-      <a href="analytics.html">📈 Analytiques</a>
-      <a href="security.html">🔐 Sécurité</a>
-<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
-      <a href="media.html">🖼️ Médiathèque</a>
-      <a href="../index.html">🏠 Voir le site</a>
+      <a href="index.html">ðŸ“Š Tableau de bord</a>
+      <a href="articles.html">ðŸ“ Gestion des articles</a>
+      <a href="pages.html">ðŸ“„ Gestion des pages</a>
+      <a href="campaigns.html" class="active">ðŸ’ Faire un Don</a>
+      <a href="donations.html">ðŸ’³ Gestion des dons</a>
+      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
+      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
+      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
+<a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
+      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
+      <a href="../index.html">ðŸ  Voir le site</a>
     </nav>
     <main class="admin-main">
 
       <div class="appel-hero">
         <div>
-          <h2>💝 Faire un Don</h2>
-          <p>Définissez le motif de la collecte, ajoutez une photo ou une vidéo et décrivez votre appel à don. Dès validation, l&rsquo;appel est publi&eacute; automatiquement sur la page &laquo; Soutenir nos actions &raquo; avec les boutons de don rapides (1&nbsp;$, 5&nbsp;$, 10&nbsp;$, 25&nbsp;$, 50&nbsp;$, 100&nbsp;$ &mdash; ou Francs congolais).</p>
+          <h2>ðŸ’ Faire un Don</h2>
+          <p>DÃ©finissez le motif de la collecte, ajoutez une photo ou une vidÃ©o et dÃ©crivez votre appel Ã  don. DÃ¨s validation, l&rsquo;appel est publi&eacute; automatiquement sur la page &laquo; Soutenir nos actions &raquo; avec les boutons de don rapides (1&nbsp;$, 5&nbsp;$, 10&nbsp;$, 25&nbsp;$, 50&nbsp;$, 100&nbsp;$ &mdash; ou Francs congolais).</p>
         </div>
-        <button class="btn btn-primary" id="new-campaign-btn" style="padding:12px 22px;">➕ Nouvel appel &agrave; don</button>
+        <button class="btn btn-primary" id="new-campaign-btn" style="padding:12px 22px;">âž• Nouvel appel &agrave; don</button>
       </div>
 
       <div id="campaign-form-container" class="appel-form-card" style="display:none;">
@@ -97,28 +97,28 @@
           <div class="form-group">
             <label>Photo ou vid&eacute;o de l&rsquo;appel *</label>
             <div class="appel-media-tabs">
-              <button type="button" class="appel-media-tab on" id="tab-photo">🖼️ Photo</button>
-              <button type="button" class="appel-media-tab" id="tab-video">🎬 Vid&eacute;o</button>
+              <button type="button" class="appel-media-tab on" id="tab-photo">ðŸ–¼ï¸ Photo</button>
+              <button type="button" class="appel-media-tab" id="tab-video">ðŸŽ¬ Vid&eacute;o</button>
             </div>
             <div class="appel-media-pane on" id="pane-photo">
               <div class="appel-upload-area" id="cmp-img-area" onclick="document.getElementById('cmp-image-input').click()">
                 <input type="file" id="cmp-image-input" accept="image/*">
-                <div class="up-ico">🖼️</div>
+                <div class="up-ico">ðŸ–¼ï¸</div>
                 <div class="up-txt">Cliquez pour choisir une photo</div>
                 <div class="up-hint">JPG, PNG, WebP (recevra une image compress&eacute;e)</div>
                 <img class="appel-preview" id="cmp-img-preview" alt="Aper&ccedil;u" style="display:none;">
               </div>
-              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-img-remove" style="display:none;">✕ Retirer la photo</button>
+              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-img-remove" style="display:none;">âœ• Retirer la photo</button>
             </div>
             <div class="appel-media-pane" id="pane-video">
               <div class="appel-upload-area" id="cmp-video-area" onclick="document.getElementById('cmp-video-input').click()">
                 <input type="file" id="cmp-video-input" accept="video/mp4,video/webm,video/quicktime">
-                <div class="up-ico">🎬</div>
+                <div class="up-ico">ðŸŽ¬</div>
                 <div class="up-txt">Cliquez pour choisir une vid&eacute;o</div>
                 <div class="up-hint">MP4 ou WebM, 30 Mo maximum</div>
                 <video class="appel-preview" id="cmp-video-preview" controls style="display:none;"></video>
               </div>
-              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-video-remove" style="display:none;">✕ Retirer la vid&eacute;o</button>
+              <button type="button" class="btn btn-sm btn-outline appel-preview-actions" id="cmp-video-remove" style="display:none;">âœ• Retirer la vid&eacute;o</button>
             </div>
           </div>
           <div class="form-group" style="max-width: 340px;">
@@ -153,7 +153,7 @@
             </div>
           </details>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary" id="cmp-submit" style="padding:12px 26px;">🚀 Publier l&rsquo;appel &agrave; don</button>
+            <button type="submit" class="btn btn-primary" id="cmp-submit" style="padding:12px 26px;">ðŸš€ Publier l&rsquo;appel &agrave; don</button>
             <button type="button" class="btn btn-outline" id="cancel-campaign">Annuler</button>
           </div>
         </form>
@@ -204,7 +204,7 @@
         document.getElementById('campaign-form-container').style.display = 'none';
       });
 
-      /* Onglets Photo / Vidéo */
+      /* Onglets Photo / VidÃ©o */
       function setMediaPane(which) {
         document.getElementById('tab-photo').classList.toggle('on', which === 'photo');
         document.getElementById('tab-video').classList.toggle('on', which === 'video');
@@ -214,7 +214,7 @@
       document.getElementById('tab-photo').addEventListener('click', function () { setMediaPane('photo'); });
       document.getElementById('tab-video').addEventListener('click', function () { setMediaPane('video'); });
 
-      /* Prévisualisations */
+      /* PrÃ©visualisations */
       document.getElementById('cmp-image-input').addEventListener('change', function (e) {
         var file = e.target.files[0];
         if (!file) return;
@@ -244,7 +244,7 @@
         var file = e.target.files[0];
         if (!file) return;
         if (file.size > 30 * 1024 * 1024) {
-          showToast('Vidéo trop volumineuse (30 Mo maximum).');
+          showToast('VidÃ©o trop volumineuse (30 Mo maximum).');
           this.value = '';
           return;
         }
@@ -274,7 +274,7 @@
         var imageData = imgPreview && imgPreview.src ? imgPreview.src : '';
         var videoData = vidPreview && vidPreview.src ? vidPreview.src : '';
         if (!imageData && !videoData) {
-          showToast('Ajoutez une photo ou une vidéo pour votre appel à don.');
+          showToast('Ajoutez une photo ou une vidÃ©o pour votre appel Ã  don.');
           return;
         }
         var speed = parseInt(document.getElementById('cmp-speed').value) * 1000 || 5000;
@@ -298,7 +298,7 @@
           localStorage.setItem('cms_campaigns', JSON.stringify(all));
           document.getElementById('campaign-form-container').style.display = 'none';
           loadCampaigns();
-          showToast(id ? 'Appel à don modifié.' : 'Appel à don publié sur Soutenir nos actions !');
+          showToast(id ? 'Appel Ã  don modifiÃ©.' : 'Appel Ã  don publiÃ© sur Soutenir nos actions !');
         }
 
         var data = {
@@ -319,7 +319,7 @@
 
         if (videoData.startsWith('data:')) {
           api('POST', '/api/upload/video', {video: videoData}).then(function (res) {
-            if (!res || !res.url) { showToast('Upload de la vidéo échoué.'); return; }
+            if (!res || !res.url) { showToast('Upload de la vidÃ©o Ã©chouÃ©.'); return; }
             data.video = res.url;
             save(data);
           });
@@ -336,8 +336,8 @@
       function showForm(campaign) {
         document.getElementById('campaign-form-container').style.display = 'block';
         if (campaign) {
-          document.getElementById('campaign-form-title').textContent = 'Modifier l\'appel à don';
-          document.getElementById('cmp-submit').textContent = '💾 Enregistrer les modifications';
+          document.getElementById('campaign-form-title').textContent = 'Modifier l\'appel Ã  don';
+          document.getElementById('cmp-submit').textContent = 'ðŸ’¾ Enregistrer les modifications';
           document.getElementById('campaign-id').value = campaign.id;
           document.getElementById('cmp-title').value = campaign.title;
           document.getElementById('cmp-description').value = campaign.description;
@@ -369,8 +369,8 @@
           document.getElementById('cmp-video-preview').style.display = 'none';
           document.getElementById('cmp-video-remove').style.display = 'none';
           setMediaPane('photo');
-          document.getElementById('campaign-form-title').textContent = 'Nouvel appel à don';
-          document.getElementById('cmp-submit').textContent = '🚀 Publier l\'appel à don';
+          document.getElementById('campaign-form-title').textContent = 'Nouvel appel Ã  don';
+          document.getElementById('cmp-submit').textContent = 'ðŸš€ Publier l\'appel Ã  don';
           document.getElementById('campaign-id').value = '';
           document.getElementById('cmp-speed').value = 5;
           document.getElementById('cmp-status').value = 'active';
@@ -403,7 +403,7 @@
           if (c.image && (c.image.startsWith('/') || c.image.startsWith('data:') || c.image.startsWith('http'))) {
             return '<img src="'+c.image+'" style="width:90px;height:50px;object-fit:cover;border-radius:4px;">';
           }
-          return '<span style="color:#999;">—</span>';
+          return '<span style="color:#999;">â€”</span>';
         }
 
         if (active.length === 0) {
@@ -413,18 +413,18 @@
             var goal = Number(c.goal || 0);
             var col = Number(c.collected || 0);
             var colCDF = Number(c.collected_cdf || 0);
-            var pct = goal > 0 ? Math.min(col / goal * 100, 100).toFixed(0) : (col > 0 ? '—' : '0');
+            var pct = goal > 0 ? Math.min(col / goal * 100, 100).toFixed(0) : (col > 0 ? 'â€”' : '0');
             var prog = goal > 0
               ? '<div class="progress-row" style="margin-bottom:0;min-width:140px;"><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--primary),var(--accent));"></div></div><div class="progress-val">'+pct+'%</div></div>'
-              : '<span style="color:#999;font-size:0.8rem;">—</span>';
+              : '<span style="color:#999;font-size:0.8rem;">â€”</span>';
             var collecte = fmtUSD(col) + (colCDF > 0 ? ' <small style="color:#999;">+ ' + fmtCDF(colCDF) + '</small>' : '');
             var ended = c.status === 'ended' || c.status === 'archived';
             var actions = (ended
               ? '<button class="btn btn-sm btn-primary" onclick="resumeCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">Reprendre</button> '
-              : '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">⏹ Cl&ocirc;turer</button> ') +
-              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button>';
-            return '<tr><td>'+mediaCell(c)+'</td><td><strong>'+c.title+'</strong>' + (c.closedReason ? '<div style="font-size:0.78rem;color:#b91c1c;margin-top:3px;">Motif : '+c.closedReason+'</div>' : '') + '</td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+fmtUSD(goal)+'</td><td>'+collecte+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' + actions + '</td></tr>';
+              : '<button class="btn btn-sm btn-secondary" onclick="stopCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">â¹ Cl&ocirc;turer</button> ') +
+              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">âœ</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">ðŸ—‘</button>';
+            return '<tr><td>'+mediaCell(c)+'</td><td><strong>'+c.title+'</strong>' + (c.closedReason ? '<div style="font-size:0.78rem;color:#b91c1c;margin-top:3px;">Motif : '+c.closedReason+'</div>' : '') + '</td><td>'+(c.createdAt||'â€”').slice(0,10)+'</td><td>'+fmtUSD(goal)+'</td><td>'+collecte+'</td><td>'+prog+'</td><td>'+(c.status||'active')+'</td><td>' + actions + '</td></tr>';
           }).join('');
         }
 
@@ -432,9 +432,9 @@
           archivedBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Aucun appel archiv&eacute;.</td></tr>';
         } else {
           archivedBody.innerHTML = archived.map(function(c) {
-            return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'—').slice(0,10)+'</td><td>'+(c.archivedAt||'—').slice(0,10)+'</td><td>' +
-              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">✏</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">🗑</button></td></tr>';
+            return '<tr><td><strong>'+c.title+'</strong></td><td>'+(c.createdAt||'â€”').slice(0,10)+'</td><td>'+(c.archivedAt||'â€”').slice(0,10)+'</td><td>' +
+              '<button class="btn btn-sm btn-outline" onclick="editCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">âœ</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deleteCampaign('+c.id+')" style="padding:4px 10px;font-size:0.8rem;">ðŸ—‘</button></td></tr>';
           }).join('');
         }
       }
@@ -454,7 +454,7 @@
         list.forEach(function(c){ if(c.id===id && c.status!=='archived') { c.status='ended'; c.archivedAt=new Date().toISOString(); c.closedReason=reason.trim(); } });
         localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Collecte cl\u00f4turée. Le motif est affiché sur la page Soutenir nos actions.');
+        showToast('Collecte cl\u00f4turÃ©e. Le motif est affichÃ© sur la page Soutenir nos actions.');
       };
 
       window.resumeCampaign = function (id) {
@@ -464,7 +464,7 @@
         list.forEach(function(c){ if(c.id===id) { c.status='active'; c.closedReason=''; } });
         localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Collecte relancée.');
+        showToast('Collecte relancÃ©e.');
       };
 
       window.deleteCampaign = function (id) {
@@ -476,7 +476,7 @@
         list = list.filter(function(c){return c.id !== id;});
         localStorage.setItem('cms_campaigns', JSON.stringify(list));
         loadCampaigns();
-        showToast('Appel supprimé (motif consigné).');
+        showToast('Appel supprimÃ© (motif consignÃ©).');
       };
     });
   </script>

@@ -8,36 +8,36 @@
   <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
   <div class="admin-header">
     <div class="container">
-      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <a href="../index.html" style="font-size:0.9rem;">â¬… Retour au site</a>
       <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
       <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
-      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">DÃ©connexion</a>
     </div>
   </div>
   <div class="admin-layout">
     <nav class="admin-sidebar">
-      <a href="index.html">📊 Tableau de bord</a>
-      <a href="articles.html">📝 Gestion des articles</a>
-      <a href="pages.html" class="active">📄 Gestion des pages</a>
-      <a href="campaigns.html">📢 Gestion des campagnes</a>
+      <a href="index.html">ðŸ“Š Tableau de bord</a>
+      <a href="articles.html">ðŸ“ Gestion des articles</a>
+      <a href="pages.html" class="active">ðŸ“„ Gestion des pages</a>
+      <a href="campaigns.html">ðŸ“¢ Gestion des campagnes</a>
 
       <a href="donations.html">&#128179; Donations &amp; Paiements</a>
-      <a href="comments.html">💬 Modération des commentaires</a>
-      <a href="analytics.html">📈 Analytiques</a>
-      <a href="security.html">🔐 Sécurité</a>
-<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
-      <a href="media.html">🖼️ Médiathèque</a>
-      <a href="../index.html">🏠 Voir le site</a>
+      <a href="comments.html">ðŸ’¬ ModÃ©ration des commentaires</a>
+      <a href="analytics.html">ðŸ“ˆ Analytiques</a>
+      <a href="security.html">ðŸ” SÃ©curitÃ©</a>
+<a href="newsletter.html">ðŸ“§ Newsletter &amp; Notifications</a>
+      <a href="media.html">ðŸ–¼ï¸ MÃ©diathÃ¨que</a>
+      <a href="../index.html">ðŸ  Voir le site</a>
     </nav>
     <main class="admin-main">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px;">
         <h2 style="color:var(--primary);">Gestion des pages</h2>
-        <button class="btn btn-primary" id="new-page-btn">➕ Nouvelle page</button>
+        <button class="btn btn-primary" id="new-page-btn">âž• Nouvelle page</button>
       </div>
 
       <div id="page-form-container" style="display:none;background:var(--white);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;">
@@ -60,24 +60,24 @@
             <div class="img-upload-wrapper">
               <div class="img-upload-area" id="page-img-area" onclick="document.getElementById('page-image-input').click()">
                 <input type="file" id="page-image-input" accept="image/*">
-                <div class="upload-icon">🖼️</div>
+                <div class="upload-icon">ðŸ–¼ï¸</div>
                 <div class="upload-text">Cliquez pour choisir une image</div>
                 <div class="upload-hint">Optionnelle</div>
-                <img class="img-preview" id="page-img-preview" alt="Aperçu">
+                <img class="img-preview" id="page-img-preview" alt="AperÃ§u">
               </div>
-              <button type="button" class="img-remove-btn" id="page-img-remove" onclick="removePageImage()" style="display:none;">✕ Supprimer l'image</button>
+              <button type="button" class="img-remove-btn" id="page-img-remove" onclick="removePageImage()" style="display:none;">âœ• Supprimer l'image</button>
             </div>
           </div>
           <div class="form-group">
             <label>Meta description (SEO)</label>
-            <input type="text" id="page-meta" class="form-input" placeholder="Brève description pour les moteurs de recherche">
+            <input type="text" id="page-meta" class="form-input" placeholder="BrÃ¨ve description pour les moteurs de recherche">
           </div>
           <div class="form-group">
             <label>Contenu (HTML)</label>
-            <textarea id="page-content" class="form-input" placeholder="Contenu complet de la page (HTML autorisé)..." rows="12" required></textarea>
+            <textarea id="page-content" class="form-input" placeholder="Contenu complet de la page (HTML autorisÃ©)..." rows="12" required></textarea>
           </div>
           <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 Enregistrer la page</button>
+            <button type="submit" class="btn btn-primary">ðŸ’¾ Enregistrer la page</button>
             <button type="button" class="btn btn-outline" id="cancel-page">Annuler</button>
           </div>
         </form>
@@ -165,7 +165,7 @@
         saveLocal(data, id);
         document.getElementById('page-form-container').style.display = 'none';
         loadPages();
-        showToast(id ? 'Page modifiée avec succès.' : 'Page créée avec succès !');
+        showToast(id ? 'Page modifiÃ©e avec succÃ¨s.' : 'Page crÃ©Ã©e avec succÃ¨s !');
       });
 
       function saveLocal(data, id) {
@@ -226,14 +226,14 @@
         }
         function renderTable(pages) {
           if (!pages || pages.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">Aucune page personnalisée. Créez-en une !</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">Aucune page personnalisÃ©e. CrÃ©ez-en une !</td></tr>';
             return;
           }
           tbody.innerHTML = pages.map(function(p) {
-            return '<tr><td><strong>' + p.title + '</strong></td><td><code>' + p.slug + '</code></td><td><span style="color:#27ae60;">Publiée</span></td><td>' +
-              '<button class="btn btn-sm btn-outline" onclick="editPage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">✏ Modifier</button> ' +
-              '<button class="btn btn-sm btn-secondary" onclick="deletePage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">🗑 Supprimer</button>' +
-              '<a href="../page.html?slug=' + p.slug + '" class="btn btn-sm btn-primary" style="padding:4px 10px;font-size:0.8rem;margin-left:5px;">👁 Voir</a></td></tr>';
+            return '<tr><td><strong>' + p.title + '</strong></td><td><code>' + p.slug + '</code></td><td><span style="color:#27ae60;">PubliÃ©e</span></td><td>' +
+              '<button class="btn btn-sm btn-outline" onclick="editPage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">âœ Modifier</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="deletePage(' + p.id + ')" style="padding:4px 10px;font-size:0.8rem;">ðŸ—‘ Supprimer</button>' +
+              '<a href="../page.html?slug=' + p.slug + '" class="btn btn-sm btn-primary" style="padding:4px 10px;font-size:0.8rem;margin-left:5px;">ðŸ‘ Voir</a></td></tr>';
           }).join('');
         }
       }
@@ -246,7 +246,7 @@
       };
 
       window.deletePage = function (id) {
-        if (!confirm('Supprimer cette page définitivement ?')) return;
+        if (!confirm('Supprimer cette page dÃ©finitivement ?')) return;
         if (window.location.protocol !== 'file:') {
           api('DELETE', '/api/pages/' + id);
         }
@@ -254,7 +254,7 @@
         pages = pages.filter(function(p){return p.id !== id;});
         localStorage.setItem('cms_pages', JSON.stringify(pages));
         loadPages();
-        showToast('Page supprimée.');
+        showToast('Page supprimÃ©e.');
       };
     });
   </script>
