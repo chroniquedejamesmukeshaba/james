@@ -30,16 +30,6 @@
     "read": false
   },
   {
-    "id": 1786464556744,
-    "ts": 1786464556.7449152,
-    "date": "2026-08-11T18:09:16",
-    "kind": "probleme",
-    "title": "Problème système",
-    "message": "Une erreur interne est survenue sur le serveur (InternalServerError).",
-    "link": "/admin/journal.html",
-    "read": false
-  },
-  {
     "id": 1786542326439,
     "ts": 1786542326.4394522,
     "date": "2026-08-12T15:45:26",
@@ -47,6 +37,16 @@
     "title": "Nouveau don (25.0 $)",
     "message": "YAGIRWA GEDEON GUIDE — RESPECTONS LES MESURES DE SECURITE via AIRTEL_MONEY.",
     "link": "/admin/donations.html",
+    "read": false
+  },
+  {
+    "id": 1786672997154,
+    "ts": 1786672997.1544383,
+    "date": "2026-08-14T04:03:17",
+    "kind": "probleme",
+    "title": "Problème système",
+    "message": "Une erreur interne est survenue sur le serveur (InternalServerError).",
+    "link": "/admin/journal.html",
     "read": false
   }
 ]

@@ -1,6 +1,6 @@
 /* =====================================================
-   ADMIN CSS — Interface « Media Management Dashboard »
-   Chargé après style.css sur toutes les pages admin.
+   ADMIN CSS â€” Interface Â« Media Management Dashboard Â»
+   ChargÃ© aprÃ¨s style.css sur toutes les pages admin.
    ===================================================== */
 
 /* ---------- TOKENS ---------- */
@@ -374,7 +374,7 @@ select.form-input { cursor: pointer; }
 .art-filter-tab:hover { border-color: var(--adm-primary); color: var(--adm-primary); }
 .art-filter-tab.active { background: var(--adm-primary); color: #fff; border-color: var(--adm-primary); box-shadow: 0 3px 10px rgba(26, 58, 92, 0.25); }
 
-/* ---------- ÉDITEUR ---------- */
+/* ---------- Ã‰DITEUR ---------- */
 .editor-toolbar { display: flex; gap: 4px; flex-wrap: wrap; background: var(--adm-bg); border: 1px solid var(--adm-border); border-bottom: none; padding: 6px 8px; border-radius: 10px 10px 0 0; }
 .editor-btn {
   min-width: 32px;
@@ -416,7 +416,7 @@ select.form-input { cursor: pointer; }
 .img-remove-btn { margin-top: 8px; background: rgba(192, 57, 43, 0.08); color: var(--adm-danger); border: 1px solid rgba(192, 57, 43, 0.25); border-radius: 8px; padding: 6px 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
 .img-remove-btn:hover { background: var(--adm-danger); color: #fff; }
 
-/* ---------- MÉDIATHÈQUE ---------- */
+/* ---------- MÃ‰DIATHÃˆQUE ---------- */
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-top: 15px; }
 .media-card {
   border: 1px solid var(--adm-border);
@@ -579,7 +579,7 @@ select.form-input { cursor: pointer; }
 .toast.error { border-left-color: var(--adm-danger); }
 @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 
-/* ---------- ÉTATS UI ---------- */
+/* ---------- Ã‰TATS UI ---------- */
 .ui-state { text-align: center; padding: 40px 16px; color: var(--adm-muted); }
 .ui-state .ui-ico { font-size: 2rem; margin-bottom: 8px; opacity: 0.6; }
 .ui-state .ui-title { font-weight: 700; color: var(--adm-text); font-size: 0.92rem; }
@@ -916,7 +916,7 @@ select.form-input { cursor: pointer; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .hint { font-size: 0.72rem; color: var(--adm-muted); }
 
-/* ---------- ACCESSIBILITÉ ---------- */
+/* ---------- ACCESSIBILITÃ‰ ---------- */
 .admin-body :focus-visible {
   outline: 3px solid rgba(26, 58, 92, 0.55);
   outline-offset: 2px;
@@ -976,9 +976,9 @@ html[data-theme="dark"] .admin-body :focus-visible { outline-color: rgba(127, 17
   .adm-user-chip .adm-avatar { display: none; }
 }
 
-/* ====================== REFRESH 2026 — La Chronique ====================== */
-/* Rafraîchissement visuel de l'interface d'administration : même structure,
-   mêmes classes, mêmes hooks JS — uniquement un nouveau look. */
+/* ====================== REFRESH 2026 â€” La Chronique ====================== */
+/* RafraÃ®chissement visuel de l'interface d'administration : mÃªme structure,
+   mÃªmes classes, mÃªmes hooks JS â€” uniquement un nouveau look. */
 .admin-body { background: var(--adm-bg); }
 .admin-body h1, .admin-body h2, .admin-body h3, .admin-body h4 { font-family: var(--font-display); }
 .admin-body .admin-sidebar { background: var(--adm-sidebar-bg); }
@@ -1022,3 +1022,7 @@ html[data-theme="dark"] .admin-body :focus-visible { outline-color: rgba(127, 17
 html[data-theme="dark"] .stat-card, html[data-theme="dark"] .dash-card, html[data-theme="dark"] .admin-table { border-color: var(--adm-border); }
 html[data-theme="dark"] .admin-sidebar a.active { background: linear-gradient(135deg, #d7263d, #a91d2f); }
 html[data-theme="dark"] .stat-card .sc-ico { background: rgba(215, 38, 61, 0.18); color: #ff5c6b; }
+
+/* --- Login (h2 apres refacto SEO) --- */
+.admin-body #login-title { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.01em; color: var(--text); margin: 0 0 8px; }
+.admin-body #login-title + .login-sub { margin-top: 0; }
