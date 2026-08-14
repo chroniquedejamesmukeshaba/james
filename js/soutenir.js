@@ -150,7 +150,8 @@
   }
 
   function loadCampaigns() {
-    fetch('/api/campaigns?_=' + Date.now())
+    var sl = (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
+    fetch('/api/campaigns?lang=' + sl + '&_=' + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (list) {
         campaigns = (list || []).filter(function (c) { return c.status === 'active' || c.status === 'ended'; });
@@ -460,5 +461,6 @@
     bindAmounts();
     $('donation-form').addEventListener('submit', submitDonation);
     checkReturn();
+    document.addEventListener('langchange', loadCampaigns);
   });
 })();

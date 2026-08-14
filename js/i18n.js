@@ -150,6 +150,8 @@ var TRANSLATIONS = {
   admin_login:        { fr:'Connexion', en:'Login', sw:'Ingia', es:'Iniciar sesi\u00f3n', zh:'\u767b\u5f55', ln:'Kokota'},
   home_ads_empty:     { fr:'Votre publicit\u00e9 pourrait s\u2019afficher ici.', en:'Your advert could be displayed here.', sw:'Tangazo lako linaweza kuonyeshwa hapa.', es:'Su publicidad podr\u00eda mostrarse aqu\u00ed.', zh:'您的广告可以显示在这里。', ln:'Panzela na yo ekoki komonana awa.'},
   home_latest:        { fr:'Derni\u00e8res actualit\u00e9s', en:'Latest News', sw:'Habari za hivi punde', es:'\u00daltimas noticias', zh:'最新新闻', ln:'Makambo ya sika'},
+  home_cats:          { fr:'Toutes les actualit\u00e9s', en:'All news', sw:'Habari zote', es:'Todas las noticias', zh:'全部新闻', ln:'Bikambo nyonso'},
+  home_cats_all:      { fr:'Tout', en:'All', sw:'Zote', es:'Todo', zh:'全部', ln:'Nyonso'},
   home_view_more:     { fr:'Voir plus', en:'View more', sw:'Tazama zaidi', es:'Ver m\u00e1s', zh:'查看更多', ln:'Tala mosusu'},
   home_support:       { fr:'Soutenir nos actions', en:'Support our actions', sw:'Tunga mkono shughuli zetu', es:'Apoyar nuestras acciones', zh:'支持我们的行动', ln:'Sunga misala na biso'},
   wa_channel:         { fr:'Rejoindre notre cha\u00eene WhatsApp', en:'Join our WhatsApp channel', sw:'Jiunge na kituo chetu cha WhatsApp', es:'\u00danete a nuestro canal de WhatsApp', zh:'加入我们的WhatsApp频道', ln:'Kota na kanal na biso ya WhatsApp'},

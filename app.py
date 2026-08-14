@@ -569,8 +569,31 @@ def _ai_call(prompt, timeout=60):
     body = {'contents': [{'parts': [{'text': prompt}]}]}
     req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'),
                                  headers={'Content-Type': 'application/json'})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        resp = json.loads(r.read().decode('utf-8'))
+    resp = None
+    last_err = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                resp = json.loads(r.read().decode('utf-8'))
+            break
+        except Exception as e:
+            last_err = e
+            if isinstance(e, urllib.error.HTTPError) and e.code == 429 and attempt < 2:
+                time.sleep(4)
+                continue
+            break
+    if resp is None:
+        try:
+            detail = ''
+            if isinstance(last_err, urllib.error.HTTPError):
+                detail = ('HTTP %s: %s' % (last_err.code, (last_err.read().decode('utf-8', 'ignore') or '')[:300]))
+            with open(os.path.join(DATA_DIR, 'ai_diag.log'), 'a', encoding='utf-8') as f:
+                f.write('%s key=%s len=%d err=%r %s\n' % (
+                    time.strftime('%Y-%m-%d %H:%M:%S'),
+                    key[:6] + '...', len(prompt), last_err, detail))
+        except Exception:
+            pass
+        return ''
     try:
         return (resp['candidates'][0]['content']['parts'][0]['text'] or '').strip()
     except Exception:
@@ -2004,12 +2027,17 @@ def get_campaigns():
     out = [_campaign_progress(c, donations) for c in campaigns]
     if lang and lang != 'fr':
         raw = {c.get('id'): c for c in campaigns}
+        todo = []
         for c in out:
             orig = raw.get(c.get('id')) or {}
             apply_lang(c, lang)
             for f in ('title', 'description'):
                 if (c.get(f) or '') and not orig.get(f + '_' + lang):
-                    c[f] = ai_translate_one(c[f], lang)
+                    todo.append((c, f))
+        if todo:
+            res = ai_translate_batch([c[f] for c, f in todo], lang)
+            for (c, f), v in zip(todo, res):
+                c[f] = v
     return jsonify(out)
 
 @app.route('/api/campaigns', methods=['POST'])

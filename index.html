@@ -156,7 +156,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </div>
         <div class="nl-card-text">
-          <h2 class="ntf-title">Recevez les dernières actualités</h2>
+          <h2 class="ntf-title" data-i18n="ntf_title">Recevez les dernières actualités</h2>
           <p class="ntf-desc">Activez les notifications pour être alerté dès la publication d'un article ou d'une Breaking News.</p>
           <div class="ntf-prefs">
             <label><input type="checkbox" data-pref="news" checked> <span data-pref-label="label_news">Dernières actualités</span></label>
@@ -322,11 +322,15 @@
       }
 
       try { var loc = JSON.parse(localStorage.getItem('cms_campaigns')||'[]'); var a = loc.filter(function(c){return c.status==='active'||!c.status;}); if(a.length) render(a); } catch(e){}
-      if (window.location.protocol!=='file:') {
-        fetch('/api/campaigns?_='+Date.now()).then(function(r){if(!r.ok)throw Error(r.status);return r.json();}).then(function(d){
+      function loadCampaigns() {
+        if (window.location.protocol==='file:') return;
+        var sl = (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
+        fetch('/api/campaigns?lang='+sl+'&_='+Date.now()).then(function(r){if(!r.ok)throw Error(r.status);return r.json();}).then(function(d){
           if(d&&d.length){ var act=d.filter(function(c){return c.status==='active'||!c.status;}); if(act.length){ render(act); try{localStorage.setItem('cms_campaigns',JSON.stringify(d));}catch(e){} } }
         }).catch(function(){});
       }
+      loadCampaigns();
+      document.addEventListener('langchange', loadCampaigns);
 
       document.addEventListener('click', function(e){
         var t = e.target;

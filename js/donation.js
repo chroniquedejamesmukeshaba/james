@@ -63,7 +63,8 @@
 
   function loadCampaigns() {
     if (window.location.protocol === 'file:') return;
-    fetch('/api/campaigns?_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
+    var sl = (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
+    fetch('/api/campaigns?lang=' + sl + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
       var actives = (list || []).filter(function (c) { return c.status === 'active'; });
       if (actives.length) {
         currentCampaign = actives[0];
@@ -200,5 +201,6 @@
     var printBtn = $('don-print');
     if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
     checkReturn();
+    document.addEventListener('langchange', loadCampaigns);
   });
 })();

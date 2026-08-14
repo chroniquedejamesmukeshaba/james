@@ -42,7 +42,8 @@
 
   function loadCampaigns() {
     if (window.location.protocol === 'file:') return;
-    fetch('/api/campaigns?_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
+    var sl = (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
+    fetch('/api/campaigns?lang=' + sl + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (list) {
       var box = $('actions-campaigns');
       var items = (list || []).filter(function (c) { return c.status !== 'archived'; });
       if (!items.length) {
@@ -80,5 +81,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     if ($('actions-campaigns')) loadCampaigns();
     if ($('reports-list')) loadReports();
+    document.addEventListener('langchange', function () {
+      if ($('actions-campaigns')) loadCampaigns();
+      if ($('reports-list')) loadReports();
+    });
   });
 })();
