@@ -62,7 +62,7 @@
 
         <div style="background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);">
           <h3 style="color:var(--primary);margin-bottom:15px;">🔐 Authentification à deux facteurs</h3>
-          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;" id="twofa-state">État : —</p>
+          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;" id="twofa-status">État : —</p>
           <button type="button" class="btn btn-primary" id="twofa-start">Activer le 2FA</button>
           <button type="button" class="btn btn-outline" id="twofa-off" style="display:none;">Désactiver le 2FA</button>
           <div id="twofa-secret-box" style="display:none;margin-top:15px;border:1px dashed #ddd;border-radius:8px;padding:14px;">
@@ -160,7 +160,7 @@
       });
 
       var ts = document.getElementById('twofa-status2');
-      api('/api/auth/status').then(function (r) {
+      api('/api/auth/status', null, 'GET').then(function (r) {
         var on = !!(r.body && r.body.twofa);
         document.getElementById('twofa-status').textContent = 'État : ' + (on ? '✅ Actif' : '— inactif');
         document.getElementById('twofa-off').style.display = on ? 'inline-block' : 'none';

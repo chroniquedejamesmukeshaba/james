@@ -141,7 +141,7 @@
 
       // ---- NEWSLETTER ----
       function renderNl(list) {
-        var body = document.getElementById('nl-body');
+        var body = document.getElementById('nl-rows');
         var empty = document.getElementById('nl-empty');
         document.getElementById('stat-nl').textContent = list.length;
         if (!list.length) { body.innerHTML = ''; empty.textContent = 'Aucun abonné pour le moment.'; return; }

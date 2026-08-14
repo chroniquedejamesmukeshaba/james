@@ -1,4 +1,4 @@
-import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar, html, threading
+import os, json, time, uuid, base64, urllib.request, hmac, hashlib, re, unicodedata, secrets, calendar, html, threading, tempfile
 from io import BytesIO
 from functools import wraps
 from urllib.parse import quote
@@ -32,9 +32,23 @@ def read_json(name):
     except Exception:
         return []
 
+_WRITE_LOCK = threading.Lock()
+
 def write_json(name, data):
     path = os.path.join(DATA_DIR, name + '.json')
-    with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=2)
+    with _WRITE_LOCK:
+        fd, tmp = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, path)
+        finally:
+            try:
+                if os.path.exists(tmp): os.remove(tmp)
+            except OSError:
+                pass
 
 def read_obj(name, default):
     path = os.path.join(DATA_DIR, name + '.json')

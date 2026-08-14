@@ -35,7 +35,8 @@
   }
 
   function loadArticlesStats() {
-    return fetch('/api/admin/articles', { headers: { 'Cache-Control': 'no-cache' } })
+    var h = (window.authHeaders || function (x) { return x || {}; })({ 'Cache-Control': 'no-cache' });
+    return fetch('/api/admin/articles', { headers: h })
       .then(function (r) { return r.ok ? r.json() : null; });
   }
 
@@ -103,7 +104,8 @@
   }
 
   function loadUsers() {
-    return fetch('/api/admin/accounts')
+    var h = (window.authHeaders || function (x) { return x || {}; })();
+    return fetch('/api/admin/accounts', { headers: h })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
