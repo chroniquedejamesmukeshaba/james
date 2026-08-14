@@ -1015,6 +1015,35 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .heritage-hero-art, .lf-hero-art, .projects-hero-art, .sens-hero-art { display: none; }
 }
 
+/* ==========================================================================
+   24. QUALITE - CLS, ACCESSIBILITE, PERFORMANCE
+   ========================================================================== */
+.hero-sub { min-height: 220px; }
+@media (max-width: 767px) { .hero-sub { min-height: 360px; } }
+.related-section { min-height: 300px; }
+.related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.article-detail { min-height: 760px; }
+.article-detail h1 { min-height: 3.4rem; }
+.article-detail .article-byline { min-height: 48px; }
+.comments-section { min-height: 240px; }
+.campaign-dot {
+  width: 26px;
+  height: 26px;
+  margin: 0 3px;
+  padding: 6px;
+  background-clip: content-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.site-footer #pwa-install-btn,
+#pwa-install-btn {
+  background: var(--secondary) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px -8px rgba(215, 38, 61, 0.7);
+}
+html[data-theme="dark"] #pwa-install-btn { background: #e0435a !important; }
+
 /* --- Logo (h1 de marque -> span, SEO : un seul h1 par page) --- */
 .logo-block .logo-text .logo-title {
   font-family: var(--font-display);

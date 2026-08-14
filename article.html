@@ -59,7 +59,7 @@
         </a>
         <div class="header-actions">
           <button class="icon-btn" id="search-open" aria-label="Rechercher" aria-haspopup="dialog">&#128269;</button>
-          <a href="soutenir.html" class="btn-support"><span aria-hidden="true">&#10084;&#65039;</span><span class="txt" data-i18n="home_support">Soutenir nos actions</span></a>
+          <a href="soutenir.html" class="btn-support" aria-label="Soutenir nos actions"><span aria-hidden="true">&#10084;&#65039;</span><span class="txt" data-i18n="home_support">Soutenir nos actions</span></a>
           <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">&#9776;</button>
         </div>
       </div>
@@ -96,7 +96,7 @@
       <div class="side-main">
       <article class="article-detail">
         <div class="article-kicker">
-          <span class="chip" id="article-category" style="background:rgba(192,57,43,0.08);color:var(--secondary);border-color:transparent;">ActualitÃƒÂ©</span>
+          <span class="chip" id="article-category" style="background:var(--secondary);color:#fff;border-color:transparent;">ActualitÃƒÂ©</span>
           <span class="priority-badge" id="article-priority" style="display:none;"></span>
         </div>
 
@@ -303,7 +303,7 @@
           <a href="mentions-legales.html">Mentions l&eacute;gales</a> |
           <a href="privacy.html">Politique de confidentialit&eacute;</a> |
           <a href="cookies.html">Politique de cookies</a> |
-          <button type="button" class="cookie-btn" onclick="window.manageCookies && window.manageCookies()" aria-label="G&eacute;rer mon consentement aux cookies">G&eacute;rer les cookies</button>
+          <button type="button" class="cookie-btn" onclick="window.manageCookies && window.manageCookies()" aria-label="Gérer les cookies">G&eacute;rer les cookies</button>
         </div>
       </div>
     </div>
@@ -422,8 +422,8 @@ function renderShare(article) {
         box.innerHTML = REACTIONS.map(function (r) {
           var n = counts[r.id] || 0;
           var active = voted.indexOf(r.id) !== -1 ? ' active' : '';
-          return '<button class="reaction-btn' + active + '" data-type="' + r.id + '" aria-label="' + r.label + '">' +
-            r.emoji + ' <span class="count">' + n + '</span></button>';
+          return '<button class="reaction-btn' + active + '" data-type="' + r.id + '" aria-label="' + r.label + ' (' + n + ')">' +
+            '<span aria-hidden="true">' + r.emoji + '</span><span class="count">' + n + '</span></button>';
         }).join('');
         box.querySelectorAll('.reaction-btn').forEach(function (btn) {
           btn.onclick = function () {
@@ -595,6 +595,17 @@ function renderShare(article) {
       }
 
       function loadArticle() {
+        var ssrEl = document.getElementById('ssr-article');
+        if (ssrEl) {
+          try {
+            var ssr = JSON.parse(ssrEl.textContent || 'null');
+            if (ssr && ssr.content && (!ssr.lang || ssr.lang === siteLang)) {
+              displayArticle(ssr);
+              loadNavAndRelated();
+              return;
+            }
+          } catch (e) {}
+        }
         if (window.location.protocol !== 'file:') {
           fetch('/api/articles/' + articleId + '?lang=' + siteLang).then(function (r) { return r.ok ? r.json() : null; }).then(function (a) {
             if (a && a.content) displayArticle(a);

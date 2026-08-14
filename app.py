@@ -3712,6 +3712,13 @@ def serve_article_og():
 '''
         html = html.replace('<title>Article - Chronique de James Mukeshaba</title>',
                             '<title>' + stitle + ' - Chronique de James Mukeshaba</title>' + og)
+        ssr_article = dict(article)
+        ssr_article['lang'] = lang
+        if not ssr_article.get('category'):
+            ssr_article['category'] = ssr_article.get('cat') or ''
+        ssr_json = json.dumps(ssr_article, ensure_ascii=False).replace('</', '<\\/')
+        ssr_tag = '<script id="ssr-article" type="application/json">' + ssr_json + '</script>'
+        html = html.replace('</head>', ssr_tag + '\n</head>')
     else:
         html = html.replace('<title>Article - Chronique de James Mukeshaba</title>',
                             '<title>Article - Chronique de James Mukeshaba</title>')
