@@ -483,6 +483,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('form-title').textContent = 'Nouvel article';
       document.getElementById('article-id').value = '';
       var st = document.getElementById('art-status'); if (st) st.value = currentAdminRole() === 'journaliste' ? 'brouillon' : 'publie';
+      var dEl = document.getElementById('art-date'); if (dEl) dEl.value = new Date().toISOString().split('T')[0];
       window.toggleArticleStatusFields ? toggleArticleStatusFields() : null;
       if (authorField && adminName) authorField.value = adminName;
       window.scrollTo({ top: document.getElementById('article-form-container').offsetTop - 100, behavior: 'smooth' });
@@ -562,10 +563,15 @@ document.addEventListener('DOMContentLoaded', function () {
           scheduledAt = new Date(schedEl.value).getTime();
         }
         var prevImage = '';
+        var prevDate = '';
         if (id) {
           var prev = allArticles.filter(function (a) { return String(a.id) === String(id); })[0];
           if (prev && prev.image) prevImage = prev.image;
+          if (prev && prev.date) prevDate = prev.date;
         }
+        var dEl = document.getElementById('art-date');
+        var dateVal = dEl && dEl.value ? dEl.value : (prevDate || '');
+        if (!dateVal) dateVal = new Date().toISOString().split('T')[0];
         var finalImg = imgUrl || (imageData && imageData.indexOf('data:') === 0 ? prevImage : (imageData || prevImage));
         const article = {
           title: document.getElementById('art-title').value,
@@ -582,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function () {
           seoDescription: (document.getElementById('art-seo-desc') || {}).value || '',
           videoUrl: (document.getElementById('art-video') || {}).value || '',
           gallery: (document.getElementById('art-gallery') || {}).value ? document.getElementById('art-gallery').value.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean) : [],
-          date: new Date().toISOString().split('T')[0]
+          date: dateVal
         };
         // Include translations
         ['_en','_sw','_es'].forEach(function(sfx){
@@ -618,9 +624,9 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(function(r){return r.json().then(function(b){return {ok:r.ok, body:b};});})
           .then(function(res){
             if (res && res.ok && res.body && res.body.url) { saveArticle(res.body.url); }
-            else { showToast('L\'image n\'a pas pu être envoyée — article enregistré sans nouvelle photo.', 'error'); saveArticle(''); }
+            else { showToast('Photo enregistrée sans compression serveur (reste visible sur le site).', 'error'); saveArticle(imageData); }
           })
-          .catch(function(){ showToast('L\'image n\'a pas pu être envoyée — article enregistré sans nouvelle photo.', 'error'); saveArticle(''); });
+          .catch(function(){ showToast('Photo enregistrée sans compression serveur (reste visible sur le site).', 'error'); saveArticle(imageData); });
       } else {
         saveArticle(imageData);
       }
@@ -725,6 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
       schEl.value = article.scheduledAt ? new Date(Number(article.scheduledAt)).toISOString().slice(0,16) : '';
     }
     window.toggleArticleStatusFields ? toggleArticleStatusFields() : null;
+    var dEl2 = document.getElementById('art-date'); if (dEl2) dEl2.value = article.date || '';
     var tagsEl = document.getElementById('art-tags'); if (tagsEl) tagsEl.value = (article.tags || []).join(', ');
     var seoT = document.getElementById('art-seo-title'); if (seoT) seoT.value = article.seoTitle || '';
     var seoD = document.getElementById('art-seo-desc'); if (seoD) seoD.value = article.seoDescription || '';

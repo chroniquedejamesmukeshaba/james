@@ -514,7 +514,7 @@ window.showToast = function (message, type) {
   function langP() {
     return (typeof localStorage !== 'undefined' ? localStorage.getItem('cms_lang') : null) || 'fr';
   }
-  function hasImg(a) { return a && a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0); }
+  function hasImg(a) { return a && a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0); }
   function compactRow(a) {
     var img = hasImg(a) ? '<img src="' + esc(a.image) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '';
     return '<a class="compact-card" href="/article?id=' + esc(a.id) + '">' +

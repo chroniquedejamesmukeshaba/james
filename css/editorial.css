@@ -293,6 +293,8 @@ html[data-theme="dark"] .sg-footer:hover { background: #1a3c68; color: #ffffff; 
 .tags a, .tags span { background: var(--surface-2); color: var(--text); font-size: 0.78rem; font-weight: 600; padding: 6px 13px; border-radius: 999px; text-decoration: none; transition: all 0.2s ease; }
 .tags a:hover { background: var(--secondary); color: #fff; }
 .share-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; align-items: center; }
+.art-comment-cta { text-align: center; margin: 28px 0 2px; }
+.art-comment-btn { padding: 13px 28px; font-size: 0.95rem; border-radius: 999px; font-weight: 700; }
 .share-row > span { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 .share-btn { border: 1px solid var(--color-border); background: var(--color-surface); color: var(--text); font-weight: 600; font-size: 0.82rem; padding: 8px 16px; border-radius: 999px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; }
 .share-btn svg { width: 15px; height: 15px; }

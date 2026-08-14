@@ -124,10 +124,15 @@
             <textarea id="art-content_sw" class="form-input lang-field" data-lang="_sw" placeholder="Contenu complet en swahili" rows="8" style="display:none;"></textarea>
             <textarea id="art-content_es" class="form-input lang-field" data-lang="_es" placeholder="Contenu complet en espagnol" rows="8" style="display:none;"></textarea>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;">
             <div class="form-group">
               <label>Auteur</label>
               <input type="text" id="art-author" class="form-input" placeholder="Nom de l'auteur" required>
+            </div>
+            <div class="form-group">
+              <label>Date de publication</label>
+              <input type="date" id="art-date" class="form-input">
+              <div style="font-size:0.78rem;color:#999;margin-top:4px;">Conservée à l'édition ; date du jour pour un nouvel article.</div>
             </div>
             <div class="form-group">
               <label>Priorité</label>

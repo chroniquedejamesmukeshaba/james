@@ -48,7 +48,7 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function hasImg(a) {
-    return a && a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0);
+    return a && a.image && (a.image[0] === '/' || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0);
   }
   function thumbOf(a) {
     var src = hasImg(a) ? a.image : '';

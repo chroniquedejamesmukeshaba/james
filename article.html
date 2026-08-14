@@ -134,6 +134,10 @@
         <div class="reactions" id="reactions" aria-label="Réactions"></div>
       </article>
 
+      <div class="art-comment-cta">
+        <button type="button" class="btn btn-accent art-comment-btn" onclick="var f=document.getElementById('comment-text'); if(f){ f.focus(); f.scrollIntoView({behavior:'smooth', block:'center'}); }">&#128172; Commenter cet article</button>
+      </div>
+
       <nav class="article-pager" aria-label="Navigation entre articles">
         <a id="prev-article" class="pager-card" href="#" aria-label="Article précédent">
           <span class="pager-dir">&larr; <span data-i18n="prev_article">Article précédent</span></span>
@@ -583,7 +587,7 @@ function renderShare(article) {
             wrap.innerHTML = '';
             wrap.innerHTML = picks.map(function (a) {
               var rd = parseInt(a.readMins || 0, 10) > 0 ? parseInt(a.readMins, 10) : 2;
-              var had = a.image && (a.image.indexOf('/') === 0 || a.image.indexOf('http') === 0);
+              var had = a.image && (a.image.indexOf('/') === 0 || a.image.indexOf('http') === 0 || a.image.indexOf('data:') === 0);
               return '<article class="rel-card home-card"><a class="thumb" href="/article?id=' + esc(a.id) + '" tabindex="-1" aria-hidden="true">' +
                 (had ? '<img src="' + esc(a.image) + '" alt="' + esc(a.title) + '" loading="lazy" decoding="async">' : '<span class="no-thumb">📰</span>') +
                 '</a><div class="body"><div class="cat">' + esc(a.cat || a.category || '') + '</div>' +
