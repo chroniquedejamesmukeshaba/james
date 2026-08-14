@@ -1,4 +1,4 @@
-const CACHE = 'chronique-v21';
+const CACHE = 'chronique-v22';
 const STATIC = [
   '/', '/index.html', '/actualites.html', '/recherche', '/categorie/societe',
   '/qui-sommes-nous.html', '/projets.html', '/sensibilisation.html',
@@ -6,7 +6,7 @@ const STATIC = [
   '/transparence.html', '/donation.html', '/page.html', '/article.html',
   '/categorie.html', '/recherche.html', '/cookies.html', '/privacy.html',
   '/mentions-legales.html', '/publicite.html',
-  '/css/tokens.css', '/css/style.css', '/css/home.css', '/css/redesign.css',
+  '/css/tokens.css', '/css/style.css', '/css/home.css', '/css/redesign.css', '/css/editorial.css',
   '/js/main.js', '/js/admin.js', '/js/data.js', '/js/i18n.js', '/js/search.js', '/js/notify.js', '/js/home.js', '/js/donation.js', '/js/actions.js', '/js/consent.js', '/js/ads.js',
   '/manifest.json', '/assets/images/logo.png',
   '/assets/images/icon-192.png', '/assets/images/icon-512.png'
