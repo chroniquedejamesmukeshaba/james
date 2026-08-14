@@ -1957,16 +1957,52 @@ def push_send():
 # --- LOST & FOUND ---
 @app.route('/api/lost-found', methods=['GET'])
 def get_lost_found():
-    return jsonify(read_json('lost_found'))
+    lang = str(request.args.get('lang') or 'fr').strip()
+    ads = read_json('lost_found')
+    if lang and lang != 'fr':
+        todo = []
+        for a in ads:
+            for f in ('item', 'desc'):
+                if (a.get(f) or '') and not a.get(f + '_' + lang):
+                    todo.append((a, f))
+        if todo:
+            res = ai_translate_batch([a[f] for a, f in todo], lang)
+            for (a, f), v in zip(todo, res):
+                if v:
+                    a[f] = v
+    return jsonify(ads)
 
 @app.route('/api/lost-found', methods=['POST'])
 @rate_limit('lost_found_post', 10, 24 * 3600)
 def add_lost_found():
     ads = read_json('lost_found')
     data = request.json or {}
+    for k in ('item', 'desc', 'contact'):
+        if k in data and data[k] is not None:
+            data[k] = str(data[k])[:2000]
     data['id'] = int(time.time() * 1000)
+    data['date'] = str(data.get('date') or '')[:20]
+    if data.get('type') not in ('perdu', 'trouve'):
+        data['type'] = 'perdu'
     ads.insert(0, data)
     write_json('lost_found', ads)
+    return jsonify({'ok': True, 'id': data['id']})
+
+@app.route('/api/lost-found/<int:lid>', methods=['PUT'])
+@role_required('editeur', 'admin', 'super_admin')
+def update_lost_found(lid):
+    ads = read_json('lost_found')
+    data = {k: str(request.json.get(k) or '')[:2000] for k in ('item', 'desc', 'contact')}
+    data['date'] = str(request.json.get('date') or '')[:20]
+    data['type'] = request.json.get('type') if request.json.get('type') in ('perdu', 'trouve') else 'perdu'
+    for i, a in enumerate(ads):
+        if a['id'] == lid:
+            ads[i] = {**a, **data}
+            break
+    else:
+        return jsonify({'ok': False, 'error': 'Annonce introuvable.'}), 404
+    write_json('lost_found', ads)
+    log_activity('annonce objet perdu modifiee', 'id %s' % lid)
     return jsonify({'ok': True})
 
 @app.route('/api/lost-found/<int:lid>', methods=['DELETE'])
@@ -2142,6 +2178,106 @@ def set_campaign_speed(cid):
             c['speed'] = speed
             break
     write_json('campaigns', campaigns)
+    return jsonify({'ok': True})
+
+# --- CONTENUS DES PAGES (Heritage, Projets, ...) ---
+PAGE_ITEM_SLUGS = ('heritage', 'projets', 'faq')
+
+def _sanitize_page_item(data):
+    """Normalise un element de contenu de page (carte Heritage / Projet)."""
+    clean = {}
+    for k in ('id', 'page', 'cat', 'title', 'text', 'link', 'icon', 'color', 'sort', 'createdAt'):
+        if k in data and data[k] is not None:
+            if k in ('cat', 'title', 'text'):
+                clean[k] = str(data[k])[:5000]
+            elif k == 'link':
+                clean[k] = str(data[k])[:1000]
+            elif k == 'icon':
+                clean[k] = str(data[k])[:20]
+            elif k == 'color':
+                clean[k] = str(data[k])[:60]
+            else:
+                clean[k] = data[k]
+    if clean.get('page') not in PAGE_ITEM_SLUGS:
+        clean['page'] = 'heritage'
+    try:
+        clean['sort'] = int(data.get('sort') or 0)
+    except (TypeError, ValueError):
+        clean['sort'] = 0
+    return clean
+
+@app.route('/api/page-items', methods=['GET'])
+def get_page_items():
+    page = str(request.args.get('page') or '').strip()
+    lang = str(request.args.get('lang') or 'fr').strip()
+    items = [i for i in read_json('page_items') if i.get('page') == page]
+    items.sort(key=lambda i: (i.get('sort') or 0, -(i.get('id') or 0)))
+    if lang and lang != 'fr':
+        todo = []
+        for it in items:
+            for f in ('title', 'text'):
+                if (it.get(f) or '') and not it.get(f + '_' + lang):
+                    todo.append((it, f))
+        if todo:
+            res = ai_translate_batch([it[f] for it, f in todo], lang)
+            for (it, f), v in zip(todo, res):
+                if v:
+                    it[f] = v
+    return jsonify(items)
+
+@app.route('/api/page-items', methods=['POST'])
+@role_required('editeur', 'admin', 'super_admin')
+def create_page_item():
+    items = read_json('page_items')
+    data = _sanitize_page_item(request.json or {})
+    if not (request.json or {}).get('sort'):
+        data['sort'] = (max([i.get('sort') or 0 for i in items if i.get('page') == data['page']], default=-1) + 1)
+    data['id'] = int(time.time() * 1000)
+    data['createdAt'] = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+    items.append(data)
+    write_json('page_items', items)
+    log_activity('contenu de page cree', 'page %s, id %s' % (data['page'], data['id']))
+    return jsonify({'ok': True, 'id': data['id']})
+
+@app.route('/api/page-items/<int:pid>', methods=['PUT'])
+@role_required('editeur', 'admin', 'super_admin')
+def update_page_item(pid):
+    items = read_json('page_items')
+    data = _sanitize_page_item(request.json or {})
+    data['id'] = pid
+    for i, it in enumerate(items):
+        if it['id'] == pid:
+            if 'sort' not in (request.json or {}):
+                data['sort'] = it.get('sort') or 0
+            items[i] = {**it, **data}
+            break
+    else:
+        return jsonify({'ok': False, 'error': 'Element introuvable.'}), 404
+    write_json('page_items', items)
+    log_activity('contenu de page modifie', 'id %s' % pid)
+    return jsonify({'ok': True, 'id': pid})
+
+@app.route('/api/page-items/<int:pid>', methods=['DELETE'])
+@role_required('editeur', 'admin', 'super_admin')
+def delete_page_item(pid):
+    items = [i for i in read_json('page_items') if i['id'] != pid]
+    write_json('page_items', items)
+    log_activity('contenu de page supprime', 'id %s' % pid)
+    return jsonify({'ok': True})
+
+@app.route('/api/page-items/<int:pid>/sort', methods=['POST'])
+@role_required('editeur', 'admin', 'super_admin')
+def sort_page_item(pid):
+    """Deplace un element d'une position (dir : -1 = monter, 1 = descendre)."""
+    dir_ = 1 if (request.json or {}).get('dir', 1) > 0 else -1
+    items = read_json('page_items')
+    idx = next((i for i, it in enumerate(items) if it['id'] == pid), None)
+    if idx is None:
+        return jsonify({'ok': False, 'error': 'Element introuvable.'}), 404
+    j = idx + dir_
+    if 0 <= j < len(items):
+        items[idx]['sort'], items[j]['sort'] = items[j]['sort'], items[idx]['sort']
+        write_json('page_items', items)
     return jsonify({'ok': True})
 
 # --- DONATIONS (intentions de don securisees) ---

@@ -96,14 +96,12 @@
           <p class="faq-hero-sub" data-i18n="faq_subtitle">Tout ce que vous devez savoir sur la Chronique de James Mukeshaba</p>
           <p class="faq-hero-lead">Abonnement, commentaires, soutien, objets perdus, contacts : retrouvez ici les réponses aux questions que l'on nous pose le plus souvent.</p>
           <ul class="faq-hero-meta">
-            <li><strong>8</strong>Questions répondues</li>
+            <li><strong id="faq-count-hero">8</strong>Questions répondues</li>
             <li><strong>RDC &amp; Canada</strong>Une équipe à votre écoute</li>
           </ul>
         </div>
         <div class="faq-hero-art" aria-hidden="true">
-          <div class="faq-hero-ico big">
-            <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
+          <img src="assets/images/faq.png" alt="Illustration de la page FAQ" class="faq-hero-img" loading="eager">
           <div class="faq-hero-chip">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             On vous répond vite&nbsp;!
@@ -114,8 +112,17 @@
   </section>
 
   <section class="faq-section">
-    <div class="container" style="max-width:820px;">
-      <div class="faq-list">
+    <div class="container" style="max-width:880px;">
+      <div class="faq-toolbar">
+        <div class="faq-search">
+          <span aria-hidden="true">&#128269;</span>
+          <input type="search" id="faq-search" placeholder="Rechercher une question&hellip;" autocomplete="off" aria-label="Rechercher une question">
+          <span class="faq-search-count" id="faq-count"></span>
+        </div>
+        <div class="faq-chips" id="faq-chips" aria-label="Filtrer par catégorie"></div>
+      </div>
+
+      <div class="faq-list" id="faq-list">
         <div class="faq-item">
           <div class="faq-question">Qu'est-ce que la Chronique de James Mukeshaba&nbsp;?</div>
           <div class="faq-answer"><p>La Chronique de James Mukeshaba est un média d'information en ligne basé à Bukavu, en RDC. Nous couvrons l'actualité, les projets communautaires et les campagnes de sensibilisation en RDC et au Canada.</p></div>
@@ -147,6 +154,27 @@
         <div class="faq-item">
           <div class="faq-question">Puis-je proposer un article ou un sujet&nbsp;?</div>
           <div class="faq-answer"><p>Oui, nous sommes ouverts aux contributions. Contactez-nous via nos réseaux sociaux ou par téléphone pour soumettre vos idées d'articles ou de reportages.</p></div>
+        </div>
+      </div>
+
+      <div class="faq-quick">
+        <div class="faq-quick-card">
+          <div class="fq-ico" aria-hidden="true">&#128222;</div>
+          <h3>Appelez-nous</h3>
+          <p>La rédaction répond à vos questions par téléphone en RDC et au Canada.</p>
+          <a href="tel:+243971460415">Composer le numéro&nbsp;&rarr;</a>
+        </div>
+        <div class="faq-quick-card">
+          <div class="fq-ico" aria-hidden="true">&#128172;</div>
+          <h3>Chaîne WhatsApp</h3>
+          <p>Suivez nos annonces et posez vos questions directement sur notre chaîne.</p>
+          <a href="https://whatsapp.com/channel/0029Vb5cx1mElah28wiCWw10" target="_blank" rel="noopener noreferrer">Rejoindre la chaîne&nbsp;&rarr;</a>
+        </div>
+        <div class="faq-quick-card">
+          <div class="fq-ico" aria-hidden="true">&#10084;&#65039;</div>
+          <h3>Soutenez le média</h3>
+          <p>Votre don finance nos reportages, nos projets communautaires et nos campagnes.</p>
+          <a href="soutenir.html">Faire un don&nbsp;&rarr;</a>
         </div>
       </div>
 
@@ -297,6 +325,115 @@
   <script src="js/notify.js"></script>
 
   <script>window.NotifUI && window.NotifUI.init(document.getElementById('notif-block'));</script>
+  <script>
+    (function () {
+      var list = document.getElementById('faq-list');
+      if (!list) return;
+      var chipsEl = document.getElementById('faq-chips');
+      var searchEl = document.getElementById('faq-search');
+      var countEl = document.getElementById('faq-count');
+      var heroCount = document.getElementById('faq-count-hero');
+      var items = [];
+      var cats = [];
+      var filterCat = '';
+      var filterText = '';
+
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+      function itemHtml(it) {
+        return '<div class="faq-item">' +
+          '<div class="faq-question" role="button" tabindex="0" aria-expanded="false">' +
+          '<span class="faq-q-text">' + esc(it.title || '') + '</span>' +
+          (it.cat ? '<span class="faq-cat">' + esc(it.cat) + '</span>' : '') +
+          '</div>' +
+          '<div class="faq-answer"><p>' + esc(it.text || '') + '</p></div>' +
+          '</div>';
+      }
+
+      function render() {
+        var q = filterText.toLowerCase();
+        var visible = items.filter(function (it) {
+          if (filterCat && it.cat !== filterCat) return false;
+          if (q && (String(it.title || '') + ' ' + String(it.text || '')).toLowerCase().indexOf(q) === -1) return false;
+          return true;
+        });
+        if (countEl) countEl.textContent = visible.length + (visible.length > 1 ? ' questions' : ' question');
+        if (!visible.length) {
+          list.innerHTML = '<div class="faq-empty">Aucune question ne correspond à votre recherche.</div>';
+          return;
+        }
+        list.innerHTML = visible.map(itemHtml).join('');
+      }
+
+      function buildChips() {
+        if (!chipsEl) return;
+        if (filterCat && cats.indexOf(filterCat) === -1) filterCat = '';
+        var all = ['Tous'].concat(cats);
+        chipsEl.innerHTML = all.map(function (c) {
+          return '<button type="button" class="faq-chip' + (c === filterCat ? ' on' : '') + '" data-cat="' + esc(c) + '">' + esc(c) + '</button>';
+        }).join('');
+        chipsEl.querySelectorAll('.faq-chip').forEach(function (b) {
+          b.addEventListener('click', function () {
+            filterCat = b.getAttribute('data-cat') === 'Tous' ? '' : b.getAttribute('data-cat');
+            chipsEl.querySelectorAll('.faq-chip').forEach(function (x) { x.classList.toggle('on', x === b); });
+            render();
+          });
+        });
+      }
+
+      function toggle(q) {
+        var open = !q.classList.contains('active');
+        list.querySelectorAll('.faq-question').forEach(function (x) {
+          x.classList.remove('active');
+          x.setAttribute('aria-expanded', 'false');
+          var a = x.nextElementSibling;
+          if (a) a.classList.remove('open');
+        });
+        if (open) {
+          q.classList.add('active');
+          q.setAttribute('aria-expanded', 'true');
+          var ans = q.nextElementSibling;
+          if (ans) ans.classList.add('open');
+        }
+      }
+
+      list.addEventListener('click', function (e) {
+        var q = e.target.closest('.faq-question');
+        if (q) toggle(q);
+      });
+      list.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var q = e.target.closest('.faq-question');
+        if (q) { e.preventDefault(); toggle(q); }
+      });
+      if (searchEl) searchEl.addEventListener('input', function () {
+        filterText = this.value.trim();
+        render();
+      });
+
+      function load() {
+        var lang = (localStorage.getItem('cms_lang') || 'fr').toLowerCase();
+        fetch('/api/page-items?page=faq&lang=' + encodeURIComponent(lang))
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (data) {
+            if (!data || !data.length) return;
+            items = data;
+            var seen = {};
+            cats = [];
+            items.forEach(function (it) {
+              if (it.cat && !seen[it.cat]) { seen[it.cat] = 1; cats.push(it.cat); }
+            });
+            if (heroCount) heroCount.textContent = items.length;
+            buildChips();
+            render();
+          }).catch(function () {});
+      }
+      if (window.location.protocol !== 'file:') {
+        load();
+        document.addEventListener('langchange', load);
+      }
+    })();
+  </script>
   <script>
     (function () {
       var overlay = document.getElementById('search-overlay');

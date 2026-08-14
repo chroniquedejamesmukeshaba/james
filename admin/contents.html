@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="icon" type="image/png" href="../assets/images/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&display=swap" media="print" onload="this.media='all'">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contenus des pages - Administration</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .c-hero {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff; border-radius: 18px; padding: 26px 30px; margin-bottom: 26px;
+    }
+    .c-hero h2 { margin: 0 0 6px; color: #fff; font-size: 1.5rem; }
+    .c-hero p { margin: 0; color: rgba(255,255,255,0.85); font-size: 0.95rem; max-width: 640px; }
+    .c-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .c-tab {
+      border: 1.5px solid #cbd5e1; background: #fff; color: var(--text, #2c3e50);
+      padding: 9px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+      transition: all .15s;
+    }
+    .c-tab.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .c-pane { display: none; }
+    .c-pane.on { display: block; }
+    .c-card {
+      background: var(--white, #fff); padding: 26px; border-radius: var(--radius, 12px);
+      box-shadow: var(--shadow, 0 2px 15px rgba(0,0,0,0.1)); margin-bottom: 28px;
+    }
+    .c-card h3 { color: var(--primary); margin: 0 0 18px; }
+    .c-card-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .c-card-head h3 { margin: 0; }
+    .c-table { width: 100%; border-collapse: collapse; }
+    .c-table th, .c-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eef2f7; font-size: 0.9rem; vertical-align: middle; }
+    .c-table th { color: #64748b; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .c-table tr:hover td { background: #f8fafc; }
+    .c-chip { display: inline-block; width: 44px; height: 32px; border-radius: 8px; line-height: 32px; text-align: center; font-size: 1.05rem; }
+    .c-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .c-badge.perdu { background: #fee2e2; color: #991b1b; }
+    .c-badge.trouve { background: #dcfce7; color: #166534; }
+    .c-badge.active { background: #dcfce7; color: #166534; }
+    .c-badge.ended, .c-badge.archived { background: #f1f5f9; color: #475569; }
+    .c-badge.paused { background: #fef9c3; color: #854d0e; }
+    .c-btn { border: none; background: none; cursor: pointer; font-size: 0.95rem; padding: 4px 6px; border-radius: 6px; color: var(--primary); }
+    .c-btn:hover { background: #eef2f7; }
+    .c-btn.danger { color: #dc2626; }
+    .c-btn:disabled { opacity: 0.35; cursor: default; }
+    .c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 700px) { .c-grid { grid-template-columns: 1fr; } }
+    .c-field label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: var(--text, #2c3e50); }
+    .c-field .form-input { width: 100%; }
+    .c-emoji-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .c-emoji { width: 40px; height: 40px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #fff; cursor: pointer; font-size: 1.15rem; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .c-emoji.on { border-color: var(--primary); background: rgba(215, 38, 61, 0.08); box-shadow: 0 0 0 2px rgba(215, 38, 61, 0.25); }
+    .c-color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .c-color { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #cbd5e1; transition: all .15s; }
+    .c-color.on { box-shadow: 0 0 0 3px var(--primary); transform: scale(1.08); }
+    .c-note { color: var(--text-light, #5d6b6e); font-size: 0.85rem; margin-top: 8px; }
+    .c-link-out { display: inline-block; margin-top: 10px; font-weight: 600; color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body class="admin-body">
+  <div class="admin-header">
+    <div class="container">
+      <a href="../index.html" style="font-size:0.9rem;">⬅ Retour au site</a>
+      <span style="font-weight:600;">Administration - Chronique de James Mukeshaba</span>
+      <span id="admin-name-display" style="font-size:0.85rem;background:rgba(255,255,255,0.15);padding:3px 12px;border-radius:20px;display:none;"></span>
+      <a href="#" id="logout-btn" style="font-size:0.9rem;">Déconnexion</a>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="index.html">📊 Tableau de bord</a>
+      <a href="articles.html">📝 Gestion des articles</a>
+      <a href="pages.html">📄 Gestion des pages</a>
+      <a href="contents.html" class="active">🗂️ Contenus des pages</a>
+      <a href="campaigns.html">💝 Faire un Don</a>
+      <a href="donations.html">💳 Gestion des dons</a>
+      <a href="comments.html">💬 Modération des commentaires</a>
+      <a href="analytics.html">📈 Analytiques</a>
+      <a href="security.html">🔐 Sécurité</a>
+<a href="newsletter.html">📧 Newsletter &amp; Notifications</a>
+      <a href="media.html">🖼️ Médiathèque</a>
+      <a href="ads.html">📢 Publicités</a>
+      <a href="../index.html">🏠 Voir le site</a>
+    </nav>
+    <main class="admin-main">
+
+      <div class="c-hero">
+        <h2>🗂️ Contenus des pages</h2>
+        <p>Créez, modifiez, réordonnez ou supprimez les contenus publiés sur les pages du site (Héritage, Projets, FAQ, Objets perdus, Sensibilisation). Le formulaire s'adapte à la structure de chaque page.</p>
+      </div>
+
+      <div class="c-tabs" id="c-tabs" role="tablist" aria-label="Pages">
+        <button type="button" class="c-tab on" data-pane="pane-heritage">🎭 Héritage</button>
+        <button type="button" class="c-tab" data-pane="pane-projets">🚀 Projets</button>
+        <button type="button" class="c-tab" data-pane="pane-faq">❓ FAQ</button>
+        <button type="button" class="c-tab" data-pane="pane-lost">📦 Objets perdus</button>
+        <button type="button" class="c-tab" data-pane="pane-camp">📢 Sensibilisation</button>
+      </div>
+
+      <div class="c-pane on" id="pane-heritage"></div>
+      <div class="c-pane" id="pane-projets"></div>
+      <div class="c-pane" id="pane-faq"></div>
+      <div class="c-pane" id="pane-lost"></div>
+      <div class="c-pane" id="pane-camp"></div>
+
+    </main>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/admin-layout.js"></script>
+  <script src="../js/admin.js"></script>
+<script>
+(function () {
+  var ITEM_PAGES = {
+    'pane-heritage': { page: 'heritage', title: 'Héritage', fields: ['cat', 'title', 'text', 'link', 'icon', 'color'],
+      labels: { cat: 'Catégorie', title: 'Titre', text: 'Description', link: 'Lien (page ou article)' },
+      linkPh: 'ex. actualites.html ou /article?id=...', useIcon: true, useColor: true, addBtn: '＋ Nouvel élément patrimonial' },
+    'pane-projets': { page: 'projets', title: 'Projets', fields: ['cat', 'title', 'text', 'link', 'icon', 'color'],
+      labels: { cat: 'Catégorie', title: 'Titre', text: 'Description', link: 'Lien (page ou article)' },
+      linkPh: 'ex. actualites.html ou /article?id=...', useIcon: true, useColor: true, addBtn: '＋ Nouveau projet' },
+    'pane-faq': { page: 'faq', title: 'FAQ', fields: ['cat', 'title', 'text'],
+      labels: { cat: 'Rubrique', title: 'Question', text: 'Réponse' },
+      useIcon: false, useColor: false, addBtn: '＋ Nouvelle question' }
+  };
+  var EMOJIS = ['💃', '📜', '🎵', '📖', '♻️', '📚', '💻', '🌍', '🎤', '🏛️', '🖼️', '📰', '💡', '📢', '🤝', '📌'];
+  var COLORS = ['#8e44ad,#9b59b6', '#c0392b,#e74c3c', '#2980b9,#3498db', '#e67e22,#f39c12',
+                '#27ae60,#2ecc71', '#16a085,#1abc9c', '#34495e,#2c3e50', '#d35400,#e67e22',
+                '#7f8c8d,#95a5a6', '#2c3e50,#4ca1af'];
+
+  function pane(el) { return document.getElementById(el); }
+
+  function buildItemsPane(id) {
+    var cfg = ITEM_PAGES[id];
+    var el = pane(id);
+    if (!el || !cfg) return;
+    el.innerHTML =
+      '<div class="c-card"><div class="c-card-head">' +
+      '  <h3>Contenus — ' + esc(cfg.title) + '</h3>' +
+      '  <button type="button" class="btn btn-primary" id="btn-new-' + id + '">' + esc(cfg.addBtn) + '</button>' +
+      '</div>' +
+      '<div id="form-' + id + '" style="display:none;border:1.5px dashed #cbd5e1;border-radius:12px;padding:18px;margin-bottom:20px;background:#f8fafc;">' +
+      '  <div class="c-grid">' +
+      '    <div class="c-field"><label>' + esc(cfg.labels.cat) + '</label><input type="text" class="form-input" data-f="cat" placeholder="ex. Culture"></div>' +
+      '    <div class="c-field"><label>' + esc(cfg.labels.title) + '</label><input type="text" class="form-input" data-f="title" placeholder="Titre"></div>' +
+      '  </div>' +
+      '  <div class="c-field" style="margin-top:14px;"><label>' + esc(cfg.labels.text) + '</label><textarea class="form-input" data-f="text" rows="3" placeholder="Description..."></textarea></div>' +
+      (cfg.useIcon || cfg.useColor ? '<div class="c-grid" style="margin-top:14px;">' : '') +
+      (cfg.useIcon ? '  <div class="c-field"><label>Icône</label><div class="c-emoji-row" id="emoji-' + id + '">' + EMOJIS.map(function (e, i) {
+          return '<button type="button" class="c-emoji' + (i === 0 ? ' on' : '') + '" data-emoji="' + e + '">' + e + '</button>';
+        }).join('') + '</div></div>' : '') +
+      (cfg.useColor ? '  <div class="c-field"><label>Couleur</label><div class="c-color-row" id="color-' + id + '">' + COLORS.map(function (c, i) {
+          var parts = c.split(',');
+          return '<button type="button" class="c-color' + (i === 0 ? ' on' : '') + '" data-color="' + c + '" style="background:linear-gradient(135deg,' + parts[0] + ',' + parts[1] + ');" title="' + c + '"></button>';
+        }).join('') + '</div></div>' : '') +
+      (cfg.useIcon || cfg.useColor ? '</div>' : '') +
+      (cfg.fields.indexOf('link') !== -1 ? '<div class="c-field" style="margin-top:14px;"><label>' + esc(cfg.labels.link) + '</label><input type="text" class="form-input" data-f="link" placeholder="' + esc(cfg.linkPh) + '"></div>' : '') +
+      '  <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">' +
+      '    <button type="button" class="btn btn-primary" id="save-' + id + '">💾 Enregistrer</button>' +
+      '    <button type="button" class="btn btn-outline" id="cancel-' + id + '">Annuler</button>' +
+      '  </div>' +
+      '</div>' +
+      '<table class="c-table"><thead><tr><th></th><th>Catégorie</th><th>Titre</th><th>Lien</th><th style="width:120px;">Actions</th></tr></thead>' +
+      '<tbody id="tbody-' + id + '"></tbody></table>' +
+      '<p class="c-note" id="empty-' + id + '" style="display:none;">Aucun contenu pour cette page. Cliquez sur « ' + esc(cfg.addBtn) + ' » pour publier.</p>';
+
+    var editingId = null;
+    function current() {
+      var o = {};
+      el.querySelectorAll('[data-f]').forEach(function (i) { o[i.getAttribute('data-f')] = i.value; });
+      var ei = el.querySelector('#emoji-' + id + ' .c-emoji.on');
+      var ci = el.querySelector('#color-' + id + ' .c-color.on');
+      if (ei) o.icon = ei.getAttribute('data-emoji');
+      if (ci) o.color = ci.getAttribute('data-color');
+      return o;
+    }
+    function fill(o) {
+      el.querySelectorAll('[data-f]').forEach(function (i) { i.value = o[i.getAttribute('data-f')] || ''; });
+      el.querySelectorAll('#emoji-' + id + ' .c-emoji').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-emoji') === o.icon); });
+      el.querySelectorAll('#color-' + id + ' .c-color').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-color') === o.color); });
+      if (o.icon && !el.querySelector('#emoji-' + id + ' .c-emoji.on')) {
+        var opts = EMOJIS.indexOf(o.icon);
+        if (opts !== -1) el.querySelectorAll('#emoji-' + id + ' .c-emoji')[opts].classList.add('on');
+      }
+      if (o.color && !el.querySelector('#color-' + id + ' .c-color.on')) {
+        var cidx = COLORS.indexOf(o.color);
+        if (cidx !== -1) el.querySelectorAll('#color-' + id + ' .c-color')[cidx].classList.add('on');
+      }
+    }
+    function showForm(show, o) {
+      el.querySelector('#form-' + id).style.display = show ? 'block' : 'none';
+      if (show) { editingId = o ? o.id : null; fill(o || {}); }
+    }
+    function render(items) {
+      var tb = el.querySelector('#tbody-' + id);
+      el.querySelector('#empty-' + id).style.display = items.length ? 'none' : 'block';
+      tb.innerHTML = items.map(function (it) {
+        var colors = String(it.color || '').split(',');
+        var chip = it.icon || it.color
+          ? '<span class="c-chip"' + (it.color ? ' style="background:linear-gradient(135deg,' + colors[0] + ',' + (colors[1] || colors[0]) + ');"' : '') + '>' + esc(it.icon || '') + '</span>'
+          : '';
+        return '<tr>' +
+          '<td>' + chip + '</td>' +
+          '<td>' + esc(it.cat || '') + '</td>' +
+          '<td><strong>' + esc(it.title || '') + '</strong></td>' +
+          '<td>' + esc(it.link || '') + '</td>' +
+          '<td><button type="button" class="c-btn" data-act="up" data-id="' + it.id + '" title="Monter">↑</button>' +
+          '<button type="button" class="c-btn" data-act="down" data-id="' + it.id + '" title="Descendre">↓</button>' +
+          '<button type="button" class="c-btn" data-act="edit" data-id="' + it.id + '" title="Modifier">✏️</button>' +
+          '<button type="button" class="c-btn danger" data-act="del" data-id="' + it.id + '" title="Supprimer">🗑️</button></td>' +
+          '</tr>';
+      }).join('');
+    }
+    function load() {
+      apiGet('/page-items?page=' + cfg.page).then(function (items) {
+        render(items || []);
+      }).catch(function (e) {
+        showToast((e && e.message) || 'Erreur de chargement.', 'error');
+      });
+    }
+    function save() {
+      var o = current();
+      if (!o.title.trim()) { showToast('Le titre est obligatoire.', 'error'); return; }
+      o.page = cfg.page;
+      var req = editingId ? apiPut('/page-items/' + editingId, o) : apiPost('/page-items', o);
+      req.then(function () {
+        showToast('Contenu enregistré avec succès !');
+        showForm(false);
+        load();
+      }).catch(function (e) {
+        showToast((e && e.message) || 'Erreur lors de l\'enregistrement.', 'error');
+      });
+    }
+    el.querySelector('#btn-new-' + id).addEventListener('click', function () { showForm(true); });
+    el.querySelector('#cancel-' + id).addEventListener('click', function () { showForm(false); });
+    el.querySelector('#save-' + id).addEventListener('click', save);
+    var emojiRow = el.querySelector('#emoji-' + id);
+    if (emojiRow) emojiRow.addEventListener('click', function (e) {
+      var b = e.target.closest('.c-emoji');
+      if (!b) return;
+      el.querySelectorAll('#emoji-' + id + ' .c-emoji').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+    var colorRow = el.querySelector('#color-' + id);
+    if (colorRow) colorRow.addEventListener('click', function (e) {
+      var b = e.target.closest('.c-color');
+      if (!b) return;
+      el.querySelectorAll('#color-' + id + ' .c-color').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+    el.querySelector('#tbody-' + id).addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      var idn = Number(btn.getAttribute('data-id'));
+      var act = btn.getAttribute('data-act');
+      if (act === 'edit') {
+        apiGet('/page-items?page=' + cfg.page).then(function (items) {
+          var it = (items || []).find(function (x) { return x.id === idn; });
+          if (it) showForm(true, it);
+        });
+      } else if (act === 'del') {
+        if (!confirm('Supprimer définitivement ce contenu ?')) return;
+        apiDel('/page-items/' + idn).then(function () { showToast('Contenu supprimé.'); load(); })
+          .catch(function (e) { showToast((e && e.message) || 'Erreur de suppression.', 'error'); });
+      } else if (act === 'up' || act === 'down') {
+        apiPost('/page-items/' + idn + '/sort', { dir: act === 'up' ? -1 : 1 }).then(load)
+          .catch(function (e) { showToast((e && e.message) || 'Erreur de réorganisation.', 'error'); });
+      }
+    });
+    load();
+  }
+
+  function buildLostPane() {
+    var el = pane('pane-lost');
+    if (!el) return;
+    el.innerHTML =
+      '<div class="c-card"><div class="c-card-head">' +
+      '  <h3>Annonces — Objets perdus &amp; trouvés</h3>' +
+      '  <button type="button" class="btn btn-primary" id="btn-new-lost">＋ Nouvelle annonce</button>' +
+      '</div>' +
+      '<div id="form-lost" style="display:none;border:1.5px dashed #cbd5e1;border-radius:12px;padding:18px;margin-bottom:20px;background:#f8fafc;">' +
+      '  <div class="c-grid">' +
+      '    <div class="c-field"><label>Type</label><select class="form-input" id="lf-type">' +
+      '      <option value="perdu">🔴 Objet perdu</option><option value="trouve">🟢 Objet trouvé</option></select></div>' +
+      '    <div class="c-field"><label>Objet</label><input type="text" class="form-input" id="lf-item" placeholder="Nom de l\'objet"></div>' +
+      '  </div>' +
+      '  <div class="c-field" style="margin-top:14px;"><label>Description</label><textarea class="form-input" id="lf-desc" rows="3" placeholder="Description détaillée, lieu, date..."></textarea></div>' +
+      '  <div class="c-field" style="margin-top:14px;"><label>Contact</label><input type="text" class="form-input" id="lf-contact" placeholder="Téléphone ou email"></div>' +
+      '  <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">' +
+      '    <button type="button" class="btn btn-primary" id="save-lost">💾 Enregistrer</button>' +
+      '    <button type="button" class="btn btn-outline" id="cancel-lost">Annuler</button>' +
+      '  </div>' +
+      '</div>' +
+      '<table class="c-table"><thead><tr><th>Type</th><th>Objet</th><th>Description</th><th>Contact</th><th style="width:90px;">Actions</th></tr></thead>' +
+      '<tbody id="tbody-lost"></tbody></table>' +
+      '<p class="c-note" id="empty-lost" style="display:none;">Aucune annonce publiée.</p>' +
+      '<p class="c-note">Les annonces postées ici apparaissent aussi sur la page « Objets perdus &amp; trouvés » du site (les visiteurs peuvent également publier via le formulaire public).</p>';
+
+    var editingId = null;
+    function current() {
+      return {
+        type: document.getElementById('lf-type').value,
+        item: document.getElementById('lf-item').value,
+        desc: document.getElementById('lf-desc').value,
+        contact: document.getElementById('lf-contact').value
+      };
+    }
+    function fill(o) {
+      document.getElementById('lf-type').value = o.type || 'perdu';
+      document.getElementById('lf-item').value = o.item || '';
+      document.getElementById('lf-desc').value = o.desc || '';
+      document.getElementById('lf-contact').value = o.contact || '';
+    }
+    function showForm(show, o) {
+      document.getElementById('form-lost').style.display = show ? 'block' : 'none';
+      if (show) { editingId = o ? o.id : null; fill(o || {}); }
+    }
+    function render(ads) {
+      var tb = document.getElementById('tbody-lost');
+      document.getElementById('empty-lost').style.display = ads.length ? 'none' : 'block';
+      tb.innerHTML = ads.map(function (a) {
+        return '<tr>' +
+          '<td><span class="c-badge ' + esc(a.type === 'trouve' ? 'trouve' : 'perdu') + '">' + (a.type === 'trouve' ? '🟢 Trouvé' : '🔴 Perdu') + '</span></td>' +
+          '<td><strong>' + esc(a.item || '') + '</strong></td>' +
+          '<td>' + esc((a.desc || '').slice(0, 90)) + (a.desc && a.desc.length > 90 ? '…' : '') + '</td>' +
+          '<td>' + esc(a.contact || '') + '<br><small style="color:#94a3b8;">' + esc(a.date || '') + '</small></td>' +
+          '<td><button type="button" class="c-btn" data-act="edit" data-id="' + a.id + '" title="Modifier">✏️</button>' +
+          '<button type="button" class="c-btn danger" data-act="del" data-id="' + a.id + '" title="Supprimer">🗑️</button></td>' +
+          '</tr>';
+      }).join('');
+    }
+    function load() {
+      apiGet('/lost-found').then(function (ads) { render(ads || []); })
+        .catch(function (e) { showToast((e && e.message) || 'Erreur de chargement.', 'error'); });
+    }
+    function save() {
+      var o = current();
+      if (!o.item.trim()) { showToast('Le nom de l\'objet est obligatoire.', 'error'); return; }
+      var req = editingId ? apiPut('/lost-found/' + editingId, o) : apiPost('/lost-found', o);
+      req.then(function () {
+        showToast('Annonce enregistrée avec succès !');
+        showForm(false);
+        load();
+      }).catch(function (e) {
+        showToast((e && e.message) || 'Erreur lors de l\'enregistrement.', 'error');
+      });
+    }
+    document.getElementById('btn-new-lost').addEventListener('click', function () { showForm(true); });
+    document.getElementById('cancel-lost').addEventListener('click', function () { showForm(false); });
+    document.getElementById('save-lost').addEventListener('click', save);
+    document.getElementById('tbody-lost').addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      var idn = Number(btn.getAttribute('data-id'));
+      if (btn.getAttribute('data-act') === 'edit') {
+        apiGet('/lost-found').then(function (ads) {
+          var it = (ads || []).find(function (x) { return x.id === idn; });
+          if (it) showForm(true, it);
+        });
+      } else {
+        if (!confirm('Supprimer définitivement cette annonce ?')) return;
+        apiDel('/lost-found/' + idn).then(function () { showToast('Annonce supprimée.'); load(); })
+          .catch(function (e) { showToast((e && e.message) || 'Erreur de suppression.', 'error'); });
+      }
+    });
+    load();
+  }
+
+  function buildCampPane() {
+    var el = pane('pane-camp');
+    if (!el) return;
+    el.innerHTML =
+      '<div class="c-card"><div class="c-card-head">' +
+      '  <h3>Campagnes — Sensibilisation &amp; appels à don</h3>' +
+      '  <a href="campaigns.html" class="btn btn-primary">💝 Gérer les campagnes</a>' +
+      '</div>' +
+      '<p class="c-note">La page « Sensibilisation » du site affiche vos campagnes (actives et archivées). Créez, modifiez, archivez et suivez les collectes depuis la page <a href="campaigns.html" class="c-link-out">Faire un Don</a> — tout y est déjà géré (objectif, image, vidéo, statut).</p>' +
+      '<table class="c-table"><thead><tr><th>Campagne</th><th>Statut</th><th>Progression</th><th style="width:90px;">Actions</th></tr></thead>' +
+      '<tbody id="tbody-camp"></tbody></table>' +
+      '<p class="c-note" id="empty-camp" style="display:none;">Aucune campagne publiée.</p>';
+    function load() {
+      apiGet('/campaigns').then(function (cs) {
+        var tb = document.getElementById('tbody-camp');
+        document.getElementById('empty-camp').style.display = (cs || []).length ? 'none' : 'block';
+        tb.innerHTML = (cs || []).map(function (c) {
+          var st = c.status === 'active' ? '<span class="c-badge active">● Active</span>'
+            : c.status === 'paused' ? '<span class="c-badge paused">⏸ Pause</span>'
+            : '<span class="c-badge ended">⏹ ' + esc(c.status || '') + '</span>';
+          return '<tr><td><strong>' + esc(c.title || '') + '</strong></td><td>' + st + '</td>' +
+            '<td>' + esc((c.progress != null ? c.progress : 0)) + ' %</td>' +
+            '<td><a class="c-btn" href="campaigns.html" title="Gérer">⚙️</a></td></tr>';
+        }).join('');
+      }).catch(function (e) { showToast((e && e.message) || 'Erreur de chargement.', 'error'); });
+    }
+    load();
+  }
+
+  document.getElementById('c-tabs').addEventListener('click', function (e) {
+    var tab = e.target.closest('.c-tab');
+    if (!tab) return;
+    document.querySelectorAll('.c-tab').forEach(function (t) { t.classList.toggle('on', t === tab); });
+    document.querySelectorAll('.c-pane').forEach(function (p) { p.classList.toggle('on', p.id === tab.getAttribute('data-pane')); });
+  });
+
+  buildItemsPane('pane-heritage');
+  buildItemsPane('pane-projets');
+  buildItemsPane('pane-faq');
+  buildLostPane();
+  buildCampPane();
+})();
+</script>
+</body>
+</html>

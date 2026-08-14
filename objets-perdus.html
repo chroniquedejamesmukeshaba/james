@@ -310,7 +310,8 @@
 
       function loadAds() {
         if (window.location.protocol !== 'file:') {
-          fetch('/api/lost-found').then(function(r){return r.json()}).then(function(ads){
+          var lang = (localStorage.getItem('cms_lang') || 'fr').toLowerCase();
+          fetch('/api/lost-found?lang=' + encodeURIComponent(lang)).then(function(r){return r.json()}).then(function(ads){
             if (ads && ads.length > 0) { renderAds(ads); localStorage.setItem('lost_found_ads', JSON.stringify(ads)); return; }
             renderLocalAds();
           }).catch(function(){renderLocalAds();});
@@ -356,7 +357,8 @@
         data.id = Date.now();
         ads.unshift(data);
         localStorage.setItem('lost_found_ads', JSON.stringify(ads));
-        loadAds();
+loadAds();
+      document.addEventListener('langchange', loadAds);
         this.reset();
         document.getElementById('lf-form').style.display = 'none';
         showToast('Annonce publiée avec succès !');

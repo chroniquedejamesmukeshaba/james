@@ -117,7 +117,7 @@
   <section class="heritage-section" id="page-content-wrapper">
     <div class="container" id="dynamic-content">
       <h2 class="section-title">Explorer le patrimoine</h2>
-      <div class="heritage-grid">
+      <div class="heritage-grid" id="heritage-items-grid">
         <article class="heritage-card">
           <div class="heritage-card-banner" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">
             <div class="heritage-card-ico" aria-hidden="true"><span role="img" aria-label="Danse">💃</span></div>
@@ -310,7 +310,39 @@
   <script src="js/notify.js"></script>
 
 <script>
-    (function(){if(window.location.protocol!='file:'){fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){var p=pages.find(function(x){return x.slug==='heritage'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}}).catch(function(){})};var pages=JSON.parse(localStorage.getItem('cms_pages')||'[]');var p=pages.find(function(x){return x.slug==='heritage'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}})();
+    (function(){if(window.location.protocol!='file:'){fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){var p=pages.find(function(x){return x.slug==='heritage'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}}).catch(function(){})}})();
+  </script>
+<script>
+    (function () {
+      var grid = document.getElementById('heritage-items-grid');
+      if (!grid) return;
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function load() {
+        var lang = (localStorage.getItem('cms_lang') || 'fr').toLowerCase();
+        fetch('/api/page-items?page=heritage&lang=' + encodeURIComponent(lang))
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (items) {
+            if (!items || !items.length) return;
+            var more = (lang === 'fr') ? 'Lire l\'article' : (window.t && t('read_more', 'Read more'));
+            grid.innerHTML = items.map(function (it) {
+              var colors = String(it.color || '#8e44ad,#9b59b6').split(',');
+              return '<article class="heritage-card">' +
+                '<div class="heritage-card-banner" style="background:linear-gradient(135deg,' + colors[0] + ',' + (colors[1] || colors[0]) + ');">' +
+                '<div class="heritage-card-ico" aria-hidden="true"><span role="img" aria-label="' + esc(it.title || '') + '">' + esc(it.icon || '📄') + '</span></div></div>' +
+                '<div class="heritage-card-body">' +
+                '<span class="heritage-card-cat">' + esc(it.cat || '') + '</span>' +
+                '<h2 class="heritage-card-title">' + esc(it.title || '') + '</h2>' +
+                '<p class="heritage-card-text">' + esc(it.text || '') + '</p>' +
+                '<a href="' + esc(it.link || 'actualites.html') + '" class="heritage-card-more">' + more + ' <span aria-hidden="true">&rarr;</span></a>' +
+                '</div></article>';
+            }).join('');
+          }).catch(function () {});
+      }
+      if (window.location.protocol !== 'file:') {
+        load();
+        document.addEventListener('langchange', load);
+      }
+    })();
   </script>
   <script>window.NotifUI && window.NotifUI.init(document.getElementById('notif-block'));</script>
   <script>

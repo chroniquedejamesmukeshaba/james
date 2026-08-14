@@ -112,7 +112,7 @@
   <section class="projects-section">
     <div class="container">
       <h2 class="section-title">Projets en cours</h2>
-      <div class="projects-grid">
+      <div class="projects-grid" id="projects-grid">
         <article class="project-card">
           <div class="project-card-banner" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">
             <div class="project-card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
@@ -303,7 +303,39 @@
   <script src="js/notify.js"></script>
 
 <script>
-    (function(){if(window.location.protocol!='file:'){fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){var p=pages.find(function(x){return x.slug==='projets'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}}).catch(function(){})};var pages=JSON.parse(localStorage.getItem('cms_pages')||'[]');var p=pages.find(function(x){return x.slug==='projets'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}})();
+    (function(){if(window.location.protocol!='file:'){fetch('/api/pages').then(function(r){return r.json()}).then(function(pages){var p=pages.find(function(x){return x.slug==='projets'});if(p&&p.content){var c=document.getElementById('dynamic-content');if(c)c.innerHTML=p.content;if(p.meta){var m=document.querySelector('.page-header p');if(m)m.textContent=p.meta;}}}).catch(function(){})}})();
+  </script>
+<script>
+    (function () {
+      var grid = document.getElementById('projects-grid');
+      if (!grid) return;
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function load() {
+        var lang = (localStorage.getItem('cms_lang') || 'fr').toLowerCase();
+        fetch('/api/page-items?page=projets&lang=' + encodeURIComponent(lang))
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (items) {
+            if (!items || !items.length) return;
+            var more = (lang === 'fr') ? 'En savoir plus' : (window.t && t('read_more', 'Read more'));
+            grid.innerHTML = items.map(function (it) {
+              var colors = String(it.color || '#27ae60,#2ecc71').split(',');
+              return '<article class="project-card">' +
+                '<div class="project-card-banner" style="background:linear-gradient(135deg,' + colors[0] + ',' + (colors[1] || colors[0]) + ');">' +
+                '<div class="project-card-ico" aria-hidden="true"><span role="img" style="font-size:1.6rem;" aria-label="' + esc(it.title || '') + '">' + esc(it.icon || '🚀') + '</span></div></div>' +
+                '<div class="project-card-body">' +
+                '<span class="project-card-cat">' + esc(it.cat || '') + '</span>' +
+                '<h2>' + esc(it.title || '') + '</h2>' +
+                '<p>' + esc(it.text || '') + '</p>' +
+                '<a class="project-card-more" href="' + esc(it.link || 'actualites.html') + '">' + more + ' <span aria-hidden="true">&rarr;</span></a>' +
+                '</div></article>';
+            }).join('');
+          }).catch(function () {});
+      }
+      if (window.location.protocol !== 'file:') {
+        load();
+        document.addEventListener('langchange', load);
+      }
+    })();
   </script>
   <script>window.NotifUI && window.NotifUI.init(document.getElementById('notif-block'));</script>
   <script>
