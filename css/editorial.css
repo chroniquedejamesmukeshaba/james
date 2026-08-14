@@ -253,7 +253,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; }
 .article-byline .who span { color: var(--muted); font-size: 0.8rem; }
 .article-byline .sep { width: 1px; height: 30px; background: var(--color-border); }
 .article-byline .article-modified { color: var(--muted); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
-#article-image { border-radius: var(--radius-card); box-shadow: var(--shadow-md); border: 1px solid var(--color-border); }
+#article-image { border-radius: var(--radius-card); box-shadow: var(--shadow-md); border: 1px solid var(--color-border); aspect-ratio: 1200 / 691; height: auto; }
 .article-content { font-size: 1.06rem; line-height: 1.85; color: var(--text); }
 .article-content p { margin: 0 0 1.35em; }
 .article-content p:first-of-type::first-letter { font-family: var(--font-display); font-weight: 700; font-size: 3.1em; float: left; line-height: 0.82; padding: 6px 12px 0 0; color: var(--secondary); }
@@ -357,7 +357,10 @@ footer { background: linear-gradient(180deg, #0a1626 0%, #060e1b 100%); color: #
 .footer-social a:hover { background: var(--e-gold); border-color: var(--e-gold); color: var(--e-navy); transform: translateY(-2px); }
 .footer-contact li { display: flex; align-items: center; gap: 9px; color: #b9c6d8; }
 .footer-contact svg { width: 16px; height: 16px; color: var(--e-gold); flex-shrink: 0; }
-.btn-wa { border-radius: 999px; box-shadow: 0 12px 26px -10px rgba(37, 211, 102, 0.55); }
+.btn-wa { border-radius: 999px; box-shadow: 0 12px 26px -10px rgba(37, 211, 102, 0.55); background: #10756b; }
+.btn-wa:hover { background: #0d645b; }
+html[data-theme="dark"] .btn-wa { background: #10756b; }
+html[data-theme="dark"] .btn-wa:hover { background: #0d645b; }
 .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.08); color: #7f8fa3; font-size: 0.8rem; }
 .footer-legal a { color: #9fb0c5; }
 .footer-legal a:hover { color: var(--e-gold); }
@@ -410,6 +413,7 @@ html[data-theme="dark"] .nl-card, html[data-theme="dark"] .cat-hero, html[data-t
 }
 @media (max-width: 767px) {
   .header-row { min-height: 64px; }
+  .home-card.nc-featured { grid-column: auto; grid-row: auto; }
   .logo-block .logo-text h1 { font-size: 1.28rem; }
   .logo-block img.logo-img { width: 42px; height: 42px; }
   .logo-block .logo-text span { font-size: 0.58rem; }
