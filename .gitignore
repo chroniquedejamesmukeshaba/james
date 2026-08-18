@@ -25,6 +25,8 @@ server_data/admins.json
 server_data/admin_tokens.json
 server_data/payments_config.json
 server_data/ai_config.json
+server_data/smtp_config.json
+server_data/push.json
 
 # Donnees volatiles (regenerees par le serveur)
 server_data/visits.json

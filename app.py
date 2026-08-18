@@ -6,6 +6,10 @@ from flask import Flask, request, jsonify, send_from_directory, redirect, Respon
 import payments as pay
 
 app = Flask(__name__)
+# Limite globale de taille de corps de requete (JSON/upload) : 50 Mo.
+# Couvre les cas legitimes : video 30 Mo decodes (~40 Mo en base64), image
+# article 40 Mo en base64. Au-dela : 413 + notification admin.
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'server_data')
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'assets', 'uploads')
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -1974,23 +1978,30 @@ def push_send():
 
 # --- LOST & FOUND ---
 def _lost_found_image(img):
+    """Image d'une annonce : data URL -> fichier uploads compresse ; chemin
+    /assets/uploads/ conserve (admin) ; toute autre valeur (HTML, javascript:,
+    data non image) est videe pour eviter tout XSS."""
     img = str(img or '').strip()[:8000000]
-    if img.startswith('data:image/'):
-        raw = img.split(',', 1)[1] if ',' in img else ''
+    if img.startswith('/assets/uploads/') and len(img) < 300:
+        return img
+    if not img.startswith('data:image/'):
+        return ''
+    raw = img.split(',', 1)[1] if ',' in img else ''
+    try:
+        img_bytes = base64.b64decode(raw)
+    except Exception:
+        img_bytes = b''
+    if not img_bytes:
+        return ''
+    out, ok = try_compress_image(img_bytes, 70000)
+    if ok:
+        filename = str(uuid.uuid4()) + '.jpg'
         try:
-            img_bytes = base64.b64decode(raw)
+            with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
+                f.write(out)
+            return '/assets/uploads/' + filename
         except Exception:
-            img_bytes = b''
-        if img_bytes:
-            out, ok = try_compress_image(img_bytes, 70000)
-            if ok:
-                filename = str(uuid.uuid4()) + '.jpg'
-                try:
-                    with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
-                        f.write(out)
-                    return '/assets/uploads/' + filename
-                except Exception:
-                    pass
+            return ''
     return img
 
 @app.route('/api/lost-found', methods=['GET'])
@@ -3797,16 +3808,23 @@ def upload_image():
         return jsonify({'error': 'no image'}), 400
     raw = data['image']
     if ',' in raw: raw = raw.split(',', 1)[1]
-    ext = 'jpg'
     try:
         img_bytes = base64.b64decode(raw)
     except Exception:
         return jsonify({'error': 'invalid base64'}), 400
-    img_bytes = compress_image(img_bytes, 70000)
-    filename = str(uuid.uuid4()) + '.' + ext
+    if not img_bytes:
+        return jsonify({'error': 'image vide'}), 400
+    if len(img_bytes) > 30 * 1024 * 1024:
+        return jsonify({'error': 'image trop volumineuse (max 30 Mo)'}), 413
+    # Rejette tout fichier que PIL ne peut pas decoder comme une image reelle
+    # (HTML, scripts, archives, etc.) au lieu de le stocker sur le domaine.
+    out, ok = try_compress_image(img_bytes, 70000)
+    if not ok:
+        return jsonify({'error': 'format image non supporte'}), 400
+    filename = str(uuid.uuid4()) + '.jpg'
     path = os.path.join(UPLOAD_DIR, filename)
     with open(path, 'wb') as f:
-        f.write(img_bytes)
+        f.write(out)
     return jsonify({'url': '/assets/uploads/' + filename})
 
 @app.route('/api/upload/video', methods=['POST'])
@@ -3832,6 +3850,12 @@ def upload_video():
         return jsonify({'error': 'video vide'}), 400
     if len(vid_bytes) > MAX_VIDEO_BYTES:
         return jsonify({'error': 'video trop volumineuse (max 30 Mo)'}), 413
+    # Verification des octets magiques (ftyp pour mp4, EBML pour webm) :
+    # refuse tout contenu non-video (HTML, scripts, etc.).
+    if ext == 'mp4' and vid_bytes[4:8] != b'ftyp':
+        return jsonify({'error': 'fichier mp4 invalide'}), 400
+    if ext == 'webm' and vid_bytes[:4] != b'\x1aE\xdf\xa3':
+        return jsonify({'error': 'fichier webm invalide'}), 400
     filename = str(uuid.uuid4()) + '.' + ext
     path = os.path.join(UPLOAD_DIR, filename)
     with open(path, 'wb') as f:
@@ -4006,6 +4030,16 @@ def serve_static(path):
     if '.' in base_name:
         return jsonify({'error': 'not found'}), 404
     return send_from_directory(BASE, 'index.html')
+
+@app.errorhandler(413)
+def _too_large(e):
+    """Corps de requete trop volumineux (limite MAX_CONTENT_LENGTH)."""
+    try:
+        _admin_notify('probleme', 'Requete trop volumineuse',
+                      'Une requete depassant 50 Mo a ete rejetee (413).', '/admin/journal.html')
+    except Exception:
+        pass
+    return jsonify({'error': 'requete trop volumineuse (50 Mo max)'}), 413
 
 @app.errorhandler(500)
 def _internal_error(e):

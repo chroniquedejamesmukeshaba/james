@@ -333,18 +333,26 @@
           }
           renderAds(ads);
         }
-        function renderAds(ads) {
-          grid.innerHTML = ads.map(function(a) {
-            var photo = a.image ? '<img src="' + a.image + '" alt="' + (a.item || '') + '" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-top:12px;">' : '';
-            return '<div class="lf-card ' + a.type + '">' +
-              '<span class="lf-status ' + (a.type === 'perdu' ? 'perdu' : 'trouve') + '">' + (a.type === 'perdu' ? '🔴 Perdu' : '🟢 Trouvé') + '</span>' +
-              '<h2 style="margin:10px 0;color:var(--primary);">' + a.item + '</h2>' +
-              '<p style="color:var(--text-light);font-size:0.9rem;">' + a.desc + '</p>' +
-              photo +
-              '<div style="margin-top:12px;font-size:0.85rem;color:var(--text);border-top:1px solid #eee;padding-top:10px;">' +
-              '📞 ' + a.contact + '<br><small style="color:var(--text-light);">' + a.date + '</small></div></div>';
-          }).join('');
-        }
+        function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+      function renderAds(ads) {
+        grid.innerHTML = ads.map(function(a) {
+          var img = a.image || '';
+          var photo = img && (img.indexOf('/assets/') === 0 || img.indexOf('data:image/') === 0)
+            ? '<img src="' + esc(img) + '" alt="' + esc(a.item || '') + '" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-top:12px;">'
+            : '';
+          return '<div class="lf-card ' + esc(a.type) + '">' +
+            '<span class="lf-status ' + esc(a.type === 'perdu' ? 'perdu' : 'trouve') + '">' + (a.type === 'perdu' ? '🔴 Perdu' : '🟢 Trouvé') + '</span>' +
+            '<h2 style="margin:10px 0;color:var(--primary);">' + esc(a.item) + '</h2>' +
+            '<p style="color:var(--text-light);font-size:0.9rem;">' + esc(a.desc) + '</p>' +
+            photo +
+            '<div style="margin-top:12px;font-size:0.85rem;color:var(--text);border-top:1px solid #eee;padding-top:10px;">' +
+            '📞 ' + esc(a.contact) + '<br><small style="color:var(--text-light);">' + esc(a.date) + '</small></div></div>';
+        }).join('');
+      }
       }
       loadAds();
 
