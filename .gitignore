@@ -34,3 +34,5 @@ server_data/reports.json
 server_data/reads.json
 server_data/shares.json
 server_data/translations_cache.json
+server_data/activity_log.json
+server_data/lost_found.json

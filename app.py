@@ -772,7 +772,7 @@ def article_lite(a, lang='fr'):
         if k.startswith('content_'):
             cp.pop(k, None)
     img = cp.get('image') or ''
-    if img.startswith('data:'):
+    if img.startswith('data:') and len(img) > 200000:
         cp['image'] = ''
     cp['cat'] = cat_slug(cp.get('category'))
     cp['views'] = _article_views(str(a.get('id')))
@@ -1020,6 +1020,24 @@ def _sanitize_article(data):
         gal = [g.strip() for g in gal.splitlines() if g.strip()]
     data['gallery'] = [str(g)[:300] for g in gal[:20]]
     data['videoUrl'] = str(data.get('videoUrl') or '')[:300]
+    img = str(data.get('image') or '').strip()[:40000000]
+    if img.startswith('data:image/'):
+        raw = img.split(',', 1)[1] if ',' in img else ''
+        try:
+            img_bytes = base64.b64decode(raw)
+        except Exception:
+            img_bytes = b''
+        if img_bytes:
+            out, ok = try_compress_image(img_bytes, 70000)
+            if ok:
+                filename = str(uuid.uuid4()) + '.jpg'
+                try:
+                    with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
+                        f.write(out)
+                    img = '/assets/uploads/' + filename
+                except Exception:
+                    pass
+    data['image'] = img
     return data
 
 # --- ARTICLES ---
