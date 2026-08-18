@@ -108,6 +108,7 @@ var TRANSLATIONS = {
   lf_desc_ph:         { fr:'Description d\u00e9taill\u00e9e, lieu, date...', en:'Detailed description, location, date...', sw:'Maelezo ya kina, mahali, tarehe...', es:'Descripci\u00f3n detallada, lugar, fecha...', zh:'描述物品特征…', ln:'Loba ndenge eloko ezali…'},
   lf_contact_label:   { fr:'Contact', en:'Contact', sw:'Mawasiliano', es:'Contacto', zh:'联系方式', ln:'Etelembo ya boyokani'},
   lf_contact_ph:      { fr:'T\u00e9l\u00e9phone ou email', en:'Phone or email', sw:'Simu au barua pepe', es:'Tel\u00e9fono o correo', zh:'电话或邮箱', ln:'Nimero to email'},
+  lf_photo_label:     { fr:'Photo (optionnel)', en:'Photo (optional)', sw:'Picha (hiari)', es:'Foto (opcional)', zh:'照片（可选）', ln:'Foto (losambo)'},
   lf_submit_btn:      { fr:'Publier l\'annonce', en:'Publish ad', sw:'Chapisha tangazo', es:'Publicar anuncio', zh:'发布', ln:'Kobimisa'},
   lf_cancel_btn:      { fr:'Annuler', en:'Cancel', sw:'Ghairi', es:'Cancelar', zh:'取消', ln:'Kolongola'},
   lf_status_lost:     { fr:'\ud83d\udd34 Perdu', en:'\ud83d\udd34 Lost', sw:'\ud83d\udd34 Imepotea', es:'\ud83d\udd34 Perdido', zh:'丢失', ln:'Ebungaki'},

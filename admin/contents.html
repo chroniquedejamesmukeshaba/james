@@ -290,23 +290,47 @@
       '  </div>' +
       '  <div class="c-field" style="margin-top:14px;"><label>Description</label><textarea class="form-input" id="lf-desc" rows="3" placeholder="Description détaillée, lieu, date..."></textarea></div>' +
       '  <div class="c-field" style="margin-top:14px;"><label>Contact</label><input type="text" class="form-input" id="lf-contact" placeholder="Téléphone ou email"></div>' +
+      '  <div class="c-field" style="margin-top:14px;"><label>Photo</label>' +
+      '    <input type="file" id="lf-image-input" accept="image/*" class="form-input" style="max-width:340px;">' +
+      '    <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">' +
+      '      <img id="lf-img-preview" alt="Aperçu" style="display:none;max-width:140px;max-height:110px;border-radius:10px;object-fit:cover;border:1px solid #cbd5e1;">' +
+      '      <button type="button" class="c-btn" id="lf-img-remove" style="display:none;">🗑️ Retirer la photo</button>' +
+      '    </div></div>' +
       '  <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">' +
       '    <button type="button" class="btn btn-primary" id="save-lost">💾 Enregistrer</button>' +
       '    <button type="button" class="btn btn-outline" id="cancel-lost">Annuler</button>' +
       '  </div>' +
       '</div>' +
-      '<table class="c-table"><thead><tr><th>Type</th><th>Objet</th><th>Description</th><th>Contact</th><th style="width:90px;">Actions</th></tr></thead>' +
+      '<table class="c-table"><thead><tr><th style="width:64px;">Photo</th><th>Type</th><th>Objet</th><th>Description</th><th>Contact</th><th style="width:90px;">Actions</th></tr></thead>' +
       '<tbody id="tbody-lost"></tbody></table>' +
       '<p class="c-note" id="empty-lost" style="display:none;">Aucune annonce publiée.</p>' +
       '<p class="c-note">Les annonces postées ici apparaissent aussi sur la page « Objets perdus &amp; trouvés » du site (les visiteurs peuvent également publier via le formulaire public).</p>';
 
     var editingId = null;
+    function setPreview(src, has) {
+      var pv = document.getElementById('lf-img-preview');
+      var rm = document.getElementById('lf-img-remove');
+      if (has && src) {
+        pv.src = src;
+        pv.setAttribute('data-url', src);
+        pv.style.display = 'block';
+        rm.style.display = 'inline-block';
+      } else {
+        pv.removeAttribute('src');
+        pv.removeAttribute('data-url');
+        pv.style.display = 'none';
+        rm.style.display = 'none';
+      }
+    }
     function current() {
+      var pv = document.getElementById('lf-img-preview');
+      var img = pv.getAttribute('data-url') || '';
       return {
         type: document.getElementById('lf-type').value,
         item: document.getElementById('lf-item').value,
         desc: document.getElementById('lf-desc').value,
-        contact: document.getElementById('lf-contact').value
+        contact: document.getElementById('lf-contact').value,
+        image: img
       };
     }
     function fill(o) {
@@ -314,6 +338,7 @@
       document.getElementById('lf-item').value = o.item || '';
       document.getElementById('lf-desc').value = o.desc || '';
       document.getElementById('lf-contact').value = o.contact || '';
+      setPreview(o.image, !!o.image);
     }
     function showForm(show, o) {
       document.getElementById('form-lost').style.display = show ? 'block' : 'none';
@@ -324,6 +349,7 @@
       document.getElementById('empty-lost').style.display = ads.length ? 'none' : 'block';
       tb.innerHTML = ads.map(function (a) {
         return '<tr>' +
+          '<td>' + (a.image ? '<img src="' + esc(a.image) + '" alt="" style="width:48px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;">' : '<span style="color:#cbd5e1;">—</span>') + '</td>' +
           '<td><span class="c-badge ' + esc(a.type === 'trouve' ? 'trouve' : 'perdu') + '">' + (a.type === 'trouve' ? '🟢 Trouvé' : '🔴 Perdu') + '</span></td>' +
           '<td><strong>' + esc(a.item || '') + '</strong></td>' +
           '<td>' + esc((a.desc || '').slice(0, 90)) + (a.desc && a.desc.length > 90 ? '…' : '') + '</td>' +
@@ -351,6 +377,17 @@
     }
     document.getElementById('btn-new-lost').addEventListener('click', function () { showForm(true); });
     document.getElementById('cancel-lost').addEventListener('click', function () { showForm(false); });
+    document.getElementById('lf-image-input').addEventListener('change', function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) { setPreview(ev.target.result, true); };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('lf-img-remove').addEventListener('click', function () {
+      document.getElementById('lf-image-input').value = '';
+      setPreview('', false);
+    });
     document.getElementById('save-lost').addEventListener('click', save);
     document.getElementById('tbody-lost').addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-act]');

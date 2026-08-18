@@ -149,6 +149,11 @@
               <label data-i18n="lf_contact_label">Contact</label>
               <input type="text" id="lf-contact" class="form-input" placeholder="Téléphone ou email" data-i18n="lf_contact_ph" required>
             </div>
+            <div class="form-group">
+              <label data-i18n="lf_photo_label">Photo (optionnel)</label>
+              <input type="file" id="lf-photo-input" accept="image/*" class="form-input">
+              <img id="lf-photo-preview" alt="Aperçu" style="display:none;max-width:200px;max-height:150px;border-radius:10px;margin-top:10px;object-fit:cover;">
+            </div>
             <div class="lf-form-actions">
               <button type="submit" class="btn btn-primary" data-i18n="lf_submit_btn">Publier l'annonce</button>
               <button type="button" class="btn btn-outline" onclick="document.getElementById('lf-form').style.display='none'" data-i18n="lf_cancel_btn">Annuler</button>
@@ -330,10 +335,12 @@
         }
         function renderAds(ads) {
           grid.innerHTML = ads.map(function(a) {
+            var photo = a.image ? '<img src="' + a.image + '" alt="' + (a.item || '') + '" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-top:12px;">' : '';
             return '<div class="lf-card ' + a.type + '">' +
               '<span class="lf-status ' + (a.type === 'perdu' ? 'perdu' : 'trouve') + '">' + (a.type === 'perdu' ? '🔴 Perdu' : '🟢 Trouvé') + '</span>' +
               '<h2 style="margin:10px 0;color:var(--primary);">' + a.item + '</h2>' +
               '<p style="color:var(--text-light);font-size:0.9rem;">' + a.desc + '</p>' +
+              photo +
               '<div style="margin-top:12px;font-size:0.85rem;color:var(--text);border-top:1px solid #eee;padding-top:10px;">' +
               '📞 ' + a.contact + '<br><small style="color:var(--text-light);">' + a.date + '</small></div></div>';
           }).join('');
@@ -341,13 +348,27 @@
       }
       loadAds();
 
+      document.getElementById('lf-photo-input').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var pv = document.getElementById('lf-photo-preview');
+          pv.src = ev.target.result;
+          pv.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      });
+
       document.getElementById('lost-found-form').addEventListener('submit', function(e) {
         e.preventDefault();
+        var pv = document.getElementById('lf-photo-preview');
         var data = {
           type: document.getElementById('lf-type').value,
           item: document.getElementById('lf-item').value,
           desc: document.getElementById('lf-desc').value,
           contact: document.getElementById('lf-contact').value,
+          image: (pv && pv.src && pv.src.indexOf('data:') === 0) ? pv.src : '',
           date: new Date().toISOString().split('T')[0]
         };
         if (window.location.protocol !== 'file:') {
@@ -360,6 +381,7 @@
 loadAds();
       document.addEventListener('langchange', loadAds);
         this.reset();
+        document.getElementById('lf-photo-preview').style.display = 'none';
         document.getElementById('lf-form').style.display = 'none';
         showToast('Annonce publiée avec succès !');
       });

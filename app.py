@@ -1973,6 +1973,26 @@ def push_send():
     return jsonify({'ok': True, 'sent': sent})
 
 # --- LOST & FOUND ---
+def _lost_found_image(img):
+    img = str(img or '').strip()[:8000000]
+    if img.startswith('data:image/'):
+        raw = img.split(',', 1)[1] if ',' in img else ''
+        try:
+            img_bytes = base64.b64decode(raw)
+        except Exception:
+            img_bytes = b''
+        if img_bytes:
+            out, ok = try_compress_image(img_bytes, 70000)
+            if ok:
+                filename = str(uuid.uuid4()) + '.jpg'
+                try:
+                    with open(os.path.join(UPLOAD_DIR, filename), 'wb') as f:
+                        f.write(out)
+                    return '/assets/uploads/' + filename
+                except Exception:
+                    pass
+    return img
+
 @app.route('/api/lost-found', methods=['GET'])
 def get_lost_found():
     lang = str(request.args.get('lang') or 'fr').strip()
@@ -1998,6 +2018,7 @@ def add_lost_found():
     for k in ('item', 'desc', 'contact'):
         if k in data and data[k] is not None:
             data[k] = str(data[k])[:2000]
+    data['image'] = _lost_found_image(data.get('image'))
     data['id'] = int(time.time() * 1000)
     data['date'] = str(data.get('date') or '')[:20]
     if data.get('type') not in ('perdu', 'trouve'):
@@ -2010,9 +2031,12 @@ def add_lost_found():
 @role_required('editeur', 'admin', 'super_admin')
 def update_lost_found(lid):
     ads = read_json('lost_found')
-    data = {k: str(request.json.get(k) or '')[:2000] for k in ('item', 'desc', 'contact')}
-    data['date'] = str(request.json.get('date') or '')[:20]
-    data['type'] = request.json.get('type') if request.json.get('type') in ('perdu', 'trouve') else 'perdu'
+    req = request.json or {}
+    data = {k: str(req.get(k) or '')[:2000] for k in ('item', 'desc', 'contact')}
+    data['date'] = str(req.get('date') or '')[:20]
+    data['type'] = req.get('type') if req.get('type') in ('perdu', 'trouve') else 'perdu'
+    if 'image' in req:
+        data['image'] = _lost_found_image(req.get('image'))
     for i, a in enumerate(ads):
         if a['id'] == lid:
             ads[i] = {**a, **data}
