@@ -27,7 +27,17 @@
     "title": "Nouveau don (10.0 $)",
     "message": "Test Integration — RESPECTONS LES MESURES DE SECURITE via VODACOM_MPESA.",
     "link": "/admin/donations.html",
-    "read": false
+    "read": true
+  },
+  {
+    "id": 1786464556744,
+    "ts": 1786464556.7449152,
+    "date": "2026-08-11T18:09:16",
+    "kind": "probleme",
+    "title": "Problème système",
+    "message": "Une erreur interne est survenue sur le serveur (InternalServerError).",
+    "link": "/admin/journal.html",
+    "read": true
   },
   {
     "id": 1786542326439,
@@ -37,16 +47,26 @@
     "title": "Nouveau don (25.0 $)",
     "message": "YAGIRWA GEDEON GUIDE — RESPECTONS LES MESURES DE SECURITE via AIRTEL_MONEY.",
     "link": "/admin/donations.html",
-    "read": false
+    "read": true
   },
   {
-    "id": 1786672997154,
-    "ts": 1786672997.1544383,
-    "date": "2026-08-14T04:03:17",
-    "kind": "probleme",
-    "title": "Problème système",
-    "message": "Une erreur interne est survenue sur le serveur (InternalServerError).",
-    "link": "/admin/journal.html",
-    "read": false
+    "id": 1786703347748,
+    "ts": 1786703347.7485337,
+    "date": "2026-08-14T10:29:07",
+    "kind": "publicite",
+    "title": "Demande de publicite : STOP EBOLA",
+    "message": "Demandeur : YAGIRWA GEDEON GUIDE (gedeonmukeshaba@gmail.com)",
+    "link": "/admin/ads.html",
+    "read": true
+  },
+  {
+    "id": 1786703367764,
+    "ts": 1786703367.764882,
+    "date": "2026-08-14T10:29:27",
+    "kind": "publicite",
+    "title": "Publicite validee",
+    "message": "La publicite est maintenant visible sur la page d'accueil.",
+    "link": "",
+    "read": true
   }
 ]

@@ -1,5 +1,19 @@
 [
   {
+    "title": "MANQUE D'EAU POTABLE, UN DANGER RÉEL À KABARE",
+    "description": "MANQUE D'EAU POTABLE, UN DANGER RÉEL À KABARE",
+    "image": "/assets/uploads/93af52fd-ef4d-40a7-ac27-4ccdb2943545.jpg",
+    "status": "active",
+    "speed": 5000,
+    "goal": 0.0,
+    "collected": 0.0,
+    "collected_cdf": 0.0,
+    "startDate": "",
+    "endDate": "",
+    "id": 1786701783733,
+    "createdAt": "2026-08-14T10:03:03"
+  },
+  {
     "title": "RESPECTONS LES MESURES DE SECURITE",
     "description": "La maladie a Virus EBOLA existe et tue, mais elle est maitrisable ",
     "image": "/assets/uploads/0a11f51f-dd9a-4d38-814f-d78ad6691526.jpg",

@@ -8,7 +8,7 @@
     "link": "actualites.html",
     "icon": "💃",
     "color": "#8e44ad,#9b59b6",
-    "sort": 1,
+    "sort": 0,
     "createdAt": "2026-06-01T00:00:00"
   },
   {
@@ -20,7 +20,7 @@
     "link": "actualites.html",
     "icon": "📜",
     "color": "#c0392b,#e74c3c",
-    "sort": 2,
+    "sort": 1,
     "createdAt": "2026-06-01T00:00:00"
   },
   {
@@ -32,7 +32,7 @@
     "link": "actualites.html",
     "icon": "🎵",
     "color": "#2980b9,#3498db",
-    "sort": 3,
+    "sort": 2,
     "createdAt": "2026-06-01T00:00:00"
   },
   {
@@ -44,7 +44,7 @@
     "link": "actualites.html",
     "icon": "📖",
     "color": "#e67e22,#f39c12",
-    "sort": 0,
+    "sort": 3,
     "createdAt": "2026-06-01T00:00:00"
   },
   {
@@ -190,5 +190,14 @@
     "color": "",
     "sort": 7,
     "createdAt": "2026-06-01T00:00:00"
+  },
+  {
+    "page": "faq",
+    "cat": "CHRONIQUE DE JAMES MUKESHABA",
+    "title": "Quels types de sujets et d'actualités couvrez-vous ?",
+    "text": "La Chronique de James Mukeshaba est un média d'information dédié au traitement de l'actualité locale, nationale et internationale. Nous couvrons prioritairement les questions de développement, la politique, la société, la culture, le sport et les initiatives communautaires, en privilégiant des analyses rigoureuses, des reportages de terrain et des informations vérifiées.",
+    "sort": 0,
+    "id": 1786709699051,
+    "createdAt": "2026-08-14T12:14:59"
   }
 ]
